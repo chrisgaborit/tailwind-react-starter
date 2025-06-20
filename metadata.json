@@ -1,0 +1,6 @@
+{
+  "name": "Copy of eLearning Storyboard Generator 31 May 25",
+  "description": "An application that takes textual information (e.g., from a PPT) and uses Gemini API to generate a storyboard for developing an eLearning module.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

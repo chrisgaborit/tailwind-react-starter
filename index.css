@@ -1,0 +1,86 @@
+/* ✅ Import fonts FIRST (required before Tailwind) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@600;700&display=swap');
+
+/* ✅ Tailwind core directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  ✅ Your custom base styles and component classes.
+  This is the recommended way to add your own styles.
+*/
+@layer base {
+  :root {
+    font-family: 'Inter', sans-serif;
+    color-scheme: dark;
+    background-color: #1c1c1e;
+    color: #ffffff;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-brandDark text-white m-0 min-h-screen flex justify-center items-start pt-12 px-4 font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-brilliantBlue;
+  }
+  
+  input,
+  textarea,
+  select {
+    @apply bg-brandField text-white border border-brandGray rounded-md p-3 w-full h-14;
+  }
+
+  textarea {
+    @apply min-h-[120px];
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-gray-400;
+  }
+
+  button {
+    @apply bg-brilliantBlue text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 ease-in-out;
+  }
+
+  button:hover {
+    background-color: #036fc2; /* This is fine, or you can use @apply bg-blue-700; */
+  }
+  
+  button:focus,
+  button:focus-visible {
+    outline: 2px solid #0387E6;
+    outline-offset: 2px;
+  }
+
+  a {
+    @apply text-brilliantBlue underline;
+  }
+  a:hover {
+    @apply text-blue-400;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #2c2c2e;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 6px;
+    border: 2px solid #2c2c2e;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #555 #2c2c2e;
+  }
+}
