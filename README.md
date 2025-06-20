@@ -1,14 +1,45 @@
-# Run and deploy your AI Studio app
+# ✨ AI eLearning Storyboard Generator
 
-This contains everything you need to run your app locally.
+A full-stack web app for generating intelligent, branded, level-specific eLearning storyboards using the **Google Gemini API**. Designed for L&D professionals, instructional designers, and content creators.
 
-## Run Locally
+Built with:
+- **Frontend**: React + Vite + Tailwind CSS
+- **Backend**: Node.js + Express
+- **Deployment**: Firebase (frontend) & Cloud Run (backend)
 
-**Prerequisites:**  Node.js
+---
 
+## 🚀 Features
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+✅ Generate structured, scene-by-scene eLearning storyboards  
+✅ Choose module **type** (e.g. onboarding, compliance, product, soft skills)  
+✅ Choose **tone** (e.g. friendly, formal, humorous)  
+✅ Choose **language** (e.g. English AU, Spanish, Mandarin)  
+✅ Choose **complexity level (1–4)** — from static to fully interactive  
+✅ Apply **branding** (fonts, colours) to match your company style  
+✅ Export as **PDF** with beautifully styled output  
+✅ Supports **SCORM-compatible** content structure  
+✅ Fully responsive UI and intuitive form interface  
+✅ Ready for **Firebase Hosting** and **Cloud Run** deployment  
+
+---
+
+## 🧠 AI-Powered Storyboarding
+
+Leverages Gemini 1.5 Pro for intelligent prompt processing. Storyboards are dynamically created based on best-practice learning design principles, instructional flow, media usage, tone of voice, and visual structure.
+
+---
+
+## 🛠️ Getting Started (Run Locally)
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- NPM or Yarn
+- Gemini API Key
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/chrisgaborit/tailwind-react-starter.git
+cd tailwind-react-starter
