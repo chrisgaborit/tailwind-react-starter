@@ -9,11 +9,11 @@ Your task is to generate a fully structured scene-by-scene storyboard JSON outpu
 Module Details:
 - Organisation: ${formData.organisationName}
 - Module Name: ${formData.moduleName}
-- Learning Duration (minutes): ${formData.durationMinutes}
+- Learning Duration (minutes): ${formData.duration}
 - Learning Outcomes: ${formData.learningOutcomes}
-- Module Complexity: ${formData.moduleLevel}
+- Module Complexity: ${formData.complexityLevel}
 - Desired Tone: ${formData.tone}
-- Output Language: ${formData.language}
+- Output Language: ${formData.outputLanguage}
 - Brand Guidelines: ${formData.brandGuidelines || "None provided"}
 
 Rules:
@@ -21,6 +21,7 @@ Rules:
 - The response must ONLY include the JSON object. No commentary, no notes, no explanation.
 - Use approximately 120 words per minute to calculate the number of scenes.
 - Each scene should include: sceneNumber, sceneTitle, narrationScript, visualDescription, onScreenText, interaction, and knowledgeCheck.
+- Ensure every field is filled with detailed and relevant content. Do NOT leave any field blank.
 
 Start generating the storyboard.
 `;

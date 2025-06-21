@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { StoryboardFormData } from '../types/storyboardTypes';  // ✅ Correct path to your type
+import { StoryboardFormData } from '../types/storyboardTypes';
 
 type PromptComponents = {
   module?: string;
@@ -10,7 +10,6 @@ type PromptComponents = {
   branding?: string;
 };
 
-// Mapping fields to their corresponding prompt folders
 const SUBFOLDER_MAP: Record<keyof PromptComponents, string> = {
   module: 'modules',
   level: 'levels',
@@ -22,10 +21,10 @@ const SUBFOLDER_MAP: Record<keyof PromptComponents, string> = {
 export const buildSystemPrompt = (formData: StoryboardFormData): string => {
   const components: PromptComponents = {
     module: formData.moduleType,
-    level: formData.moduleLevel,
+    level: formData.complexityLevel,   // ✅ Fixed
     tone: formData.tone,
-    language: formData.language,
-    branding: formData.brandGuidelines,  // ✅ use your correct property here
+    language: formData.outputLanguage, // ✅ Fixed
+    branding: formData.brandGuidelines,
   };
 
   const promptDir = path.join(__dirname, '../prompts');

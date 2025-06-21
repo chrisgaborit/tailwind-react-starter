@@ -1,5 +1,6 @@
 import express from 'express';
-import { generateStoryboard, StoryboardFormData } from '../services/geminiService';
+import { generateStoryboard } from '../services/geminiService';
+import { StoryboardFormData } from '../types/storyboardTypes';
 
 const router = express.Router();
 
