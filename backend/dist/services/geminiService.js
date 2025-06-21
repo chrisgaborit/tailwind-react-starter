@@ -9,46 +9,69 @@ async function generateStoryboard(formData) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+    console.log("[DEBUG] Raw Gemini response:", text);
     try {
-        const scenes = JSON.parse(text);
-        return scenes;
+        const cleaned = text
+            .replace(/^```json/, "")
+            .replace(/^```/, "")
+            .replace(/```$/, "")
+            .trim();
+        const parsed = JSON.parse(cleaned);
+        if (!Array.isArray(parsed)) {
+            throw new Error("Parsed response is not an array of scenes.");
+        }
+        return parsed;
     }
     catch (err) {
-        console.error("❌ Failed to parse Gemini response as JSON:", err);
-        throw new Error("AI response could not be parsed as valid storyboard JSON.");
+        console.error("❌ Failed to parse Gemini response as storyboard JSON:", err);
+        throw new Error("The AI response was not in the expected storyboard format (array of scenes).");
     }
 }
 function buildPrompt(formData) {
     return `
-You are an expert eLearning designer. Based on the information below, generate a detailed storyboard with 8–16 scenes.
+You are a senior instructional designer and expert in digital learning.
 
-Each scene should follow this structure:
+Your task is to generate a **rich, interactive storyboard** for an eLearning module with the following specifications.
+
+Each scene must follow this structure and all fields must be fully completed — **no empty values**:
 {
   "sceneNumber": 1,
-  "objectivesCovered": "",
-  "visual": "",
-  "narration": "",
-  "onScreenText": "",
-  "userInstructions": "",
-  "interactions": "",
-  "accessibilityNotes": ""
+  "title": "Scene title here",
+  "objectivesCovered": "Which objectives this scene supports",
+  "visual": "Describe visual elements clearly (e.g., animations, characters, infographics, background imagery)",
+  "narration": "Exact voiceover script",
+  "onScreenText": "Concise and visible text that appears onscreen (not narration)",
+  "userInstructions": "What the learner should do (e.g., Click the button to continue, Drag the items, Select the correct answer)",
+  "interactions": "Type of interaction in this scene (e.g., multiple-choice, drag-and-drop, branching, video play, reflection journal)",
+  "accessibilityNotes": "Alt text, closed captions, keyboard support, or screen reader labels"
 }
 
-Details:
+⚠️ Do not leave any fields empty. Even simple scenes should contain meaningful content in each field.
+
+Include:
+- 8 to 16 scenes total
+- Variation across scenes in interactivity and format
+- Use the tone and branding described below
+- Write in ${formData.outputLanguage}
+- Output ONLY a valid JSON array — no markdown, no commentary
+
+Project Inputs:
 - Module Name: ${formData.moduleName}
-- Output Language: ${formData.outputLanguage}
-- Module Type: ${formData.moduleType}
-- Complexity Level: ${formData.complexityLevel}
 - Target Audience: ${formData.targetAudience}
-- Tone: ${formData.tone}
-- Organisation: ${formData.organisation}
-- Duration: ${formData.duration}
+- Module Type: ${formData.moduleType}
+- Organisation: ${formData.organisationName}
 - Brand Guidelines: ${formData.brandGuidelines}
-- Learning Outcomes: ${formData.learningOutcomes}
+- Fonts: ${formData.fonts}
+- Colours: ${formData.colours}
+- Logo URL: ${formData.logoUrl}
+- Tone: ${formData.tone}
+- Complexity Level: ${formData.complexityLevel}
+- Duration: ${formData.duration}
+
+Learning Outcomes:
+${formData.learningOutcomes}
 
 Content:
 ${formData.content}
-
-Return ONLY a valid JSON array of scenes, no intro or outro.
-  `.trim();
+`.trim();
 }

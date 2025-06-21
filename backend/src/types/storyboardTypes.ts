@@ -4,51 +4,66 @@ export enum ModuleType {
   Onboarding = 'Onboarding',
   Sales = 'Sales',
   Leadership = 'Leadership',
-  SoftSkills = 'Soft Skills'
+  SoftSkills = 'Soft Skills',
+  Systems = 'Systems or Technical Training',
+  Behavioural = 'Soft Skills or Behavioural'
 }
 
 export enum ModuleLevel {
   Level1 = 'Level 1',
   Level2 = 'Level 2',
-  Level3 = 'Level 3'
+  Level3 = 'Level 3',
+  Level4 = 'Level 4'
 }
 
 export enum Tone {
-  Professional = 'Professional',
+  Formal = 'Formal',
+  Friendly = 'Friendly',
+  Inspiring = 'Inspiring',
   Conversational = 'Conversational',
-  Playful = 'Playful'
+  Confident = 'Confident & Persuasive',
+  Instructional = 'Direct & Instructional',
+  Reflective = 'Reflective & Story-Driven',
+  Strategic = 'Empowering & Strategic'
 }
 
 export enum SupportedLanguage {
   English = 'English',
   Spanish = 'Spanish',
   French = 'French',
-  German = 'German'
+  German = 'German',
+  Arabic = 'Arabic',
+  Hindi = 'Hindi',
+  Japanese = 'Japanese',
+  Indonesian = 'Indonesian',
+  ChineseSimplified = 'Chinese (Simplified)'
 }
 
 export interface StoryboardFormData {
   moduleName: string;
   moduleType: ModuleType;
-  moduleLevel: ModuleLevel;
-  tone: Tone;
+  complexityLevel: string; // Changed from enum to allow frontend string binding
+  tone: string;
+  outputLanguage: string;
   organisationName: string;
-  audience: string;
+  targetAudience: string;
+  duration: string;
+  brandGuidelines: string;
+  fonts: string;
+  colours: string;
+  logoUrl: string;
   learningOutcomes: string;
-  mainContent: string;
-  durationMinutes: number;
-  language: SupportedLanguage;
-  brandGuidelines: string;  // <-- now required (not optional)
+  content: string;
 }
 
 export interface StoryboardScene {
-  sceneTitle: string;
-  visualDescription: string;
-  narrationScript: string;
-  onScreenText: string;
-  interaction?: string;
-  knowledgeCheck?: string | {
-    question: string;
-    options: string[];
-    correctAnswer: string;
-  };
+  sceneNumber: string;
+  title?: string;
+  objectivesCovered?: string;
+  visual?: string;
+  narration?: string;
+  onScreenText?: string;
+  userInstructions?: string;
+  interactions?: string;
+  accessibilityNotes?: string;
 }
