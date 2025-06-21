@@ -12,5 +12,6 @@ exports.MODULE_TYPE_LOGIC_ERROR = "Internal error: Could not find specific logic
 exports.LEVEL_DESCRIPTIONS = {
     [storyboardTypes_1.ModuleLevel.Level1]: "Focus: Foundational knowledge. Style: Direct instruction, simple interactions (e.g., click next, simple MCQs).",
     [storyboardTypes_1.ModuleLevel.Level2]: "Focus: Application and understanding. Style: More interactivity, scenarios, case studies, guided exploration (e.g., tabs, drag & drop).",
-    [storyboardTypes_1.ModuleLevel.Level3]: "Focus: Strategic thinking, complex problem-solving. Style: High interactivity, simulations, branching scenarios, deep reflection."
+    [storyboardTypes_1.ModuleLevel.Level3]: "Focus: Strategic thinking, complex problem-solving. Style: High interactivity, simulations, branching scenarios, deep reflection.",
+    "Level 4": "Advanced scenario-based simulations or AI-powered branching training"
 };

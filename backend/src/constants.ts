@@ -13,5 +13,5 @@ export const LEVEL_DESCRIPTIONS: { [key in ModuleLevel]: string } = {
   [ModuleLevel.Level1]: "Focus: Foundational knowledge. Style: Direct instruction, simple interactions (e.g., click next, simple MCQs).",
   [ModuleLevel.Level2]: "Focus: Application and understanding. Style: More interactivity, scenarios, case studies, guided exploration (e.g., tabs, drag & drop).",
   [ModuleLevel.Level3]: "Focus: Strategic thinking, complex problem-solving. Style: High interactivity, simulations, branching scenarios, deep reflection."
-  "Level 4": "Advanced scenario-based simulations or AI-powered branching training"
+  [ModuleLevel.Level4]: "Advanced scenario-based simulations or AI-powered branching training",
 };

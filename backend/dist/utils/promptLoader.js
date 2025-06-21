@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildSystemPrompt = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-// Mapping fields to their corresponding prompt folders
 const SUBFOLDER_MAP = {
     module: 'modules',
     level: 'levels',
@@ -17,10 +16,10 @@ const SUBFOLDER_MAP = {
 const buildSystemPrompt = (formData) => {
     const components = {
         module: formData.moduleType,
-        level: formData.moduleLevel,
+        level: formData.complexityLevel, // ✅ Fixed
         tone: formData.tone,
-        language: formData.language,
-        branding: formData.brandGuidelines, // ✅ use your correct property here
+        language: formData.outputLanguage, // ✅ Fixed
+        branding: formData.brandGuidelines,
     };
     const promptDir = path_1.default.join(__dirname, '../prompts');
     let fullPrompt = '';
