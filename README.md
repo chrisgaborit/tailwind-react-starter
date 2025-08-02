@@ -43,3 +43,46 @@ Leverages Gemini 1.5 Pro for intelligent prompt processing. Storyboards are dyna
 ```bash
 git clone https://github.com/chrisgaborit/tailwind-react-starter.git
 cd tailwind-react-starter
+
+---
+
+## 🛠️ Project Troubleshooting History & Supabase Backend Integration
+
+> **Context:**  
+> This section tracks major technical lessons and the integration journey for the Node.js backend and Supabase Postgres DB.  
+> Share this with future devs or paste into ChatGPT if you ever get stuck — it’s your “project memory”!
+
+### Debugging a Node.js Backend to Supabase Connection
+
+**Initial State & Goal:**  
+Node.js/Express backend on localhost:8080, REST API `/api/storyboards` for saving JSON to a Supabase-hosted Postgres DB.
+
+#### Debugging Journey (Problems & Solutions)
+
+1. **Network Connection Failure**
+    - Error: `getaddrinfo ENOTFOUND ...supabase.co`
+    - Solution: Switched to Transaction Pooler string (IPv4).
+
+2. **Authentication & Region Mismatch**
+    - Error: `Tenant or user not found`
+    - Solution: Correct password & fixed DB region in .env.
+
+3. **Schema Mismatch (Missing Columns)**
+    - Error: `column "created_by" does not exist`
+    - Solution: Added columns in Supabase Table Editor.
+
+4. **Schema Mismatch (Incorrect Data Type)**
+    - Error: `invalid input syntax for type timestamp: "test@learno.com"`
+    - Solution: Changed column type from timestamp to text.
+
+**Final Working Configuration**
+- `.env` contains:
+    ```env
+    DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[YOUR-PASSWORD]@[REGION_HOSTNAME]:6543/postgres"
+    ```
+- Table schema: `id (uuid, pk)`, `content (jsonb)`, `tags (text[])`, `level (int4)`, `is_best_example (bool)`, `created_by (text)`
+- `{"success":true}` on POST = connected!
+
+---
+
+*Keep this updated whenever you solve a major integration issue or change infra!*
