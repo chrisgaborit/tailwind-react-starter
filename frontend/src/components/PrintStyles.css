@@ -1,0 +1,193 @@
+/* Default Hidden State */
+.printable-container {
+  display: none;
+}
+
+/* --- PRINT STYLES ONLY --- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-container,
+  .printable-container * {
+    visibility: visible;
+  }
+
+  .printable-container {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: #000;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Global HTML / Body Fixes */
+  html, body {
+    background: white !important;
+    color: black !important;
+    width: 100%;
+    height: auto;
+    font-size: 12pt;
+    overflow: visible;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  /* A4 Landscape Page */
+  .page {
+    page-break-after: always;
+    width: 297mm;
+    height: 210mm;
+    padding: 20mm;
+    box-sizing: border-box;
+    font-size: 11pt;
+    background: white;
+  }
+
+  .page:last-of-type {
+    page-break-after: auto;
+  }
+
+  .doc-title {
+    font-size: 28pt;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+  }
+
+  /* --- Cover Page / Brief Page --- */
+  .cover-page h2,
+  .brief-page h2 {
+    font-size: 16pt;
+    margin-top: 15px;
+  }
+
+  .cover-page ul,
+  .brief-page ul {
+    list-style: disc;
+    margin-left: 20px;
+  }
+
+  .info-table,
+  .version-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .info-table td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    background: #f0f4f7;
+  }
+
+  .version-table th {
+    background: #4a90e2;
+    color: #fff;
+    padding: 8px;
+    border: 1px solid #4a90e2;
+  }
+
+  .version-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+
+  /* --- Storyboard Pages --- */
+  .scene-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14pt;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+  }
+
+  .scene-title {
+    font-weight: bold;
+  }
+
+  .scene-id {
+    font-family: monospace;
+    font-size: 10pt;
+    color: #555;
+  }
+
+  .scene-type {
+    font-size: 10pt;
+    margin-bottom: 10px;
+  }
+
+  .storyboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    table-layout: fixed;
+    word-break: break-word;
+  }
+
+  .storyboard-table th,
+  .storyboard-table td {
+    border: 1px solid #bbb;
+    padding: 8px;
+    vertical-align: top;
+    font-size: 10pt;
+  }
+
+  .storyboard-table th {
+    background: #eef1f5;
+    font-weight: bold;
+  }
+
+  .dev-notes-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dev-notes-section {
+    padding: 5px 0;
+  }
+
+  .dev-notes-section h4 {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 10pt;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .th-event {
+    width: 5%;
+  }
+
+  .th-audio {
+    width: 25%;
+  }
+
+  .th-ost {
+    width: 25%;
+  }
+
+  .th-dev-notes {
+    width: 45%;
+  }
+
+  .td-event,
+  .td-audio,
+  .td-ost,
+  .td-dev-notes {
+    font-size: 9.5pt;
+  }
+}

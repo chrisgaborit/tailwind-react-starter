@@ -1,4 +1,4 @@
-import { StoryboardFormData } from "../types/storyboardTypes";
+import { StoryboardFormData } from '../types/storyboardTypesArchive';
 
 export function generateSystemInstruction(formData: StoryboardFormData): string {
   return `
@@ -14,7 +14,7 @@ Module Details:
 - Module Complexity: ${formData.complexityLevel}
 - Desired Tone: ${formData.tone}
 - Output Language: ${formData.outputLanguage}
-- Brand Guidelines: ${formData.brandGuidelines || "None provided"}
+- Brand Guidelines: ${formData.brandGuidelines || 'None provided'}
 
 Rules:
 - The output MUST be valid JSON.

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const MODEL_NAME = "gemini-1.5-pro-latest";
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const MODEL_NAME = 'gemini-1.5-pro-latest';
 
 export interface StoryboardScene {
   sceneNumber: number;
@@ -45,13 +45,13 @@ export async function generateStoryboard(formData: StoryboardFormData): Promise<
     generationConfig,
     history: [
       {
-        role: "system",
+        role: 'system',
         parts: [{ text: systemInstruction }],
       },
     ],
   });
 
-  const userPrompt = "Generate the full storyboard based on the provided parameters.";
+  const userPrompt = 'Generate the full storyboard based on the provided parameters.';
   const result = await chatSession.sendMessage(userPrompt);
   const response = result.response;
   const text = response.text();
@@ -63,9 +63,9 @@ export async function generateStoryboard(formData: StoryboardFormData): Promise<
   try {
     parsed = JSON.parse(jsonText);
   } catch (e) {
-    console.error("AI response could not be parsed as JSON:", e);
-    console.error("AI raw output:", text);
-    throw new Error("The AI response was not in the expected format.");
+    console.error('AI response could not be parsed as JSON:', e);
+    console.error('AI raw output:', text);
+    throw new Error('The AI response was not in the expected format.');
   }
 
   return parsed;
@@ -76,7 +76,7 @@ function extractJSON(rawText: string): string {
   const start = rawText.indexOf('[');
   const end = rawText.lastIndexOf(']');
   if (start === -1 || end === -1) {
-    throw new Error("Valid JSON array not found in AI output.");
+    throw new Error('Valid JSON array not found in AI output.');
   }
   return rawText.substring(start, end + 1);
 }

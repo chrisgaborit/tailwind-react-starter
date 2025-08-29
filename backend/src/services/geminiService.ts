@@ -1,88 +1,284 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { StoryboardFormData, StoryboardScene } from "../types/storyboardTypes";
+// backend/src/services/geminiService.ts
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { VertexAI } from '@google-cloud/vertexai';
+import { Storage } from '@google-cloud/storage';
+import { v4 as uuidv4 } from 'uuid';
+import dotenv from 'dotenv';
+import JSON5 from 'json5';
+dotenv.config();
 
-export async function generateStoryboard(
-  formData: StoryboardFormData
-): Promise<StoryboardScene[]> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+import { StoryboardFormData } from '../types/storyboardTypesArchive';
+import { StoryboardModule, StoryboardPage, Event as StoryboardEvent } from '../types';
+import { getLayoutTemplate } from '../utils/getLayoutTemplate';
+import { getBestStoryboards } from '../db/storyboardDb'; // ✅ Memory system
 
-  const prompt = buildPrompt(formData);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+const vertexAI = new VertexAI({
+  project: process.env.GOOGLE_CLOUD_PROJECT || '',
+  location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
+});
 
-  console.log("[DEBUG] Raw Gemini response:", text);
+const storage = new Storage();
+const bucketName = process.env.GCS_BUCKET_NAME || 'genesis-storyboard-images';
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/* -------------------------------------------
+   Duration helpers (accept string or number)
+-------------------------------------------- */
+function parseDurationMins(input?: string | number): number {
+  if (input === 0) return 0;
+  if (input == null) return 20;
+  if (typeof input === 'number' && !Number.isNaN(input)) return input;
+
+  const str = String(input).toLowerCase().trim();
+
+  // pure integer
+  const numOnly = str.match(/^(\d+)$/);
+  if (numOnly) return parseInt(numOnly[1], 10);
+
+  // ranges like "15-20" or "15–20" → use upper bound
+  const range = str.match(/(\d+)\s*[-–]\s*(\d+)/);
+  if (range) return parseInt(range[2], 10);
+
+  // minutes variants
+  const mins = str.match(/(\d+)\s*(min|mins|minute|minutes)\b/);
+  if (mins) return parseInt(mins[1], 10);
+
+  // hours variants
+  const hours = str.match(/(\d+)\s*(h|hr|hrs|hour|hours)\b/);
+  if (hours) return parseInt(hours[1], 10) * 60;
+
+  const fallback = parseInt(str, 10);
+  return Number.isNaN(fallback) ? 20 : fallback;
+}
+
+function clampInt(n: number, lo: number, hi: number) {
+  n = Math.round(n);
+  return Math.max(lo, Math.min(hi, n));
+}
+
+/* -------------------------------------------
+   JSON extraction (tolerant of fences)
+-------------------------------------------- */
+function extractJsonBlock(text: string): string {
+  if (typeof text !== 'string') return text as unknown as string;
+  const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/);
+  if (fenced) return fenced[1].trim();
+
+  // try to slice from first '{' to last '}'
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first >= 0 && last > first) return text.slice(first, last + 1);
+
+  return text.trim();
+}
+
+/* -------------------------------------------
+   GCS image upload + Vertex generation
+-------------------------------------------- */
+async function uploadImageToGCS(imageBuffer: Buffer, prompt: string): Promise<string> {
+  const filename = `image_${uuidv4()}.png`;
+  const file = storage.bucket(bucketName).file(filename);
+
+  await file.save(imageBuffer, {
+    metadata: { contentType: 'image/png', metadata: { prompt } },
+    public: true,
+  });
+
+  return `https://storage.googleapis.com/${bucketName}/${filename}`;
+}
+
+async function generateImageFromPrompt(prompt: string): Promise<string> {
+  console.log(`🖼️ Generating image for prompt: "${prompt}"`);
   try {
-    const cleaned = text
-      .replace(/^```json/, "")
-      .replace(/^```/, "")
-      .replace(/```$/, "")
-      .trim();
+    const generativeModel = vertexAI.getGenerativeModel({ model: 'imagegeneration@006' });
 
-    const parsed = JSON.parse(cleaned);
+    const resp = await generativeModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
 
-    if (!Array.isArray(parsed)) {
-      throw new Error("Parsed response is not an array of scenes.");
+    const base64Image =
+      // some transports return a data: URL; trim it if present
+      resp.response.candidates?.[0]?.content?.parts?.[0]?.fileData?.fileUri?.replace(
+        /^data:image\/png;base64,/i,
+        ''
+      );
+
+    if (!base64Image) {
+      console.error('No image data found in Vertex AI response:', resp.response);
+      throw new Error('No image data returned from Imagen.');
     }
 
-    return parsed;
-  } catch (err) {
-    console.error("❌ Failed to parse Gemini response as storyboard JSON:", err);
-    throw new Error(
-      "The AI response was not in the expected storyboard format (array of scenes)."
-    );
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+    return await uploadImageToGCS(imageBuffer, prompt);
+  } catch (error) {
+    console.error('❌ Vertex AI Image generation error:', error);
+    return '';
   }
 }
 
-function buildPrompt(formData: StoryboardFormData): string {
-  return `
-You are a senior instructional designer and expert in digital learning.
+// ===============================
+// 🎯 MEMORY-INTEGRATED GENERATION
+// ===============================
 
-Your task is to generate a **rich, interactive storyboard** for an eLearning module with the following specifications.
+export async function generateStoryboardFromGemini(
+  formData: StoryboardFormData
+): Promise<StoryboardModule> {
+  // ✅ Resolve duration to minutes internally (supports string "15 minutes" or numeric)
+  const durationMins = clampInt(
+  parseDurationMins((formData as any).durationMins ?? (formData as any).duration),
+  1, 90
+);
+  const targetPages = clampInt(durationMins, 8, 20); // aim for ~1 min/page, bounded [8,20]
 
-Each scene must follow this structure and all fields must be fully completed — **no empty values**:
+  const layoutDescription = getLayoutTemplate(formData.screenType || '');
+
+  // === Fetch best examples for context injection ===
+  const bestExamples = await getBestStoryboards(
+    [formData.moduleType],                     // tags: array of strings
+    Number(formData.complexityLevel),          // level: number
+    2                                          // limit
+  );
+
+  const bestExamplesText = bestExamples.length
+    ? bestExamples
+        .map(
+          (ex, idx) =>
+            `\n\n====================\nBEST EXAMPLE #${idx + 1}:\n${JSON.stringify(ex.content, null, 2)}`
+        )
+        .join('\n')
+    : '\n(No prior best examples found for this module type/level.)';
+
+  // === Compose the system prompt with best examples injected ===
+  const systemPrompt = `
+You are a meticulous and thorough "AI Multimedia Producer" and "Senior Prompt Engineer". Your persona is that of a director giving explicit, machine-readable commands to a suite of AI media generation tools. Your primary directive is to be exhaustive and complete.
+
+Below are examples of our best previous eLearning storyboards for this type/level. Study them for structure, depth, style, and instructional design best practice:
+${bestExamplesText}
+
+📌 CRITICAL OUTPUT INSTRUCTIONS:
+1. Your entire response MUST be a single, valid JSON object.
+2. The root object MUST have a single key named "storyboardModule".
+3. Your final output's 'pages' array MUST contain a complete page object for EVERY entry listed in the 'tableOfContents'. There must be no missing pages.
+4. Do not use placeholders like "// ...remaining content...". Generate every single page.
+5. The JSON must be strictly valid. Do not include comments or trailing commas.
+6. Do not include references to stock asset IDs (e.g., SS:617698028) — instead, describe every image or video using detailed AI prompt instructions.
+7. You MUST include the following FIVE pages at the beginning of the storyboard, regardless of module type or content:
+   - Page 1: Title of Module, Duration (${durationMins} minutes), Level
+   - Page 2: Pronunciation Guide
+   - Page 3: Table of Contents
+   - Page 4: Introduction
+   - Page 5: Learning Objectives
+
+🎯 DURATION & SCOPE:
+- Target duration: ${durationMins} minutes (UK English).
+- Aim for ~${targetPages} total pages (±2). Do not exceed 20 pages.
+
+📚 CRITICAL PROCESS ALGORITHM:
+1. Analyze the USER'S RAW CONTENT from beginning to end.
+2. Generate all high-level metadata: 'moduleName', 'learningOutcomes', 'revisionHistory', 'pronunciationGuide'.
+3. Generate a COMPLETE 'tableOfContents' array (starting with the 5 mandatory pages above).
+4. For EACH AND EVERY tableOfContents entry, generate a corresponding page in the 'pages' array using the schema below.
+
+📦 OUTPUT STRUCTURE:
 {
-  "sceneNumber": 1,
-  "title": "Scene title here",
-  "objectivesCovered": "Which objectives this scene supports",
-  "visual": "Describe visual elements clearly (e.g., animations, characters, infographics, background imagery)",
-  "narration": "Exact voiceover script",
-  "onScreenText": "Concise and visible text that appears onscreen (not narration)",
-  "userInstructions": "What the learner should do (e.g., Click the button to continue, Drag the items, Select the correct answer)",
-  "interactions": "Type of interaction in this scene (e.g., multiple-choice, drag-and-drop, branching, video play, reflection journal)",
-  "accessibilityNotes": "Alt text, closed captions, keyboard support, or screen reader labels"
+  "storyboardModule": {
+    "moduleName": string,
+    "learningOutcomes": string,
+    "revisionHistory": [{ "version": string, "date": string, "author": string, "description": string }],
+    "pronunciationGuide": [{ "term": string, "pronunciation": string }],
+    "tableOfContents": [{ "pageNumber": number, "title": string }],
+    "pages": [ ... ],
+    "durationMins": number
+  }
 }
 
-⚠️ Do not leave any fields empty. Even simple scenes should contain meaningful content in each field.
+🎬 PAGE EVENT FORMAT:
+Each page must include at least one instructional "event":
+{
+  "pageNumber": number,
+  "pageTitle": "string",
+  "events": [
+    {
+      "eventNumber": number,
+      "onScreenText": "Exact on-screen text",
+      "aiProductionBrief": {
+        "audio": {
+          "script": "Narration script",
+          "voice": "e.g., 'female, calm, Australian'",
+          "pacing": "e.g., 'medium-paced, conversational'"
+        },
+        "visual": {
+          "mediaType": "image | video | animation",
+          "style": "e.g., 'flat design', 'photorealistic'",
+          "subject": "Highly detailed visual prompt for AI generation",
+          "composition": "e.g., 'medium shot, center frame'",
+          "environment": "e.g., 'corporate office with branded decor'",
+          "lighting": "e.g., 'natural soft lighting'",
+          "colorPalette": { "primary": "#...", "secondary": "#...", "accent": "#..." },
+          "animationSpec": "if applicable"
+        },
+        "interactive": {
+          "interactionType": "None | Multiple-Choice-Quiz | Drag-and-Drop | Click-to-Reveal-Tabs",
+          "data": "Data model for the interaction"
+        },
+        "branchingLogic": "e.g., 'On completion go to Page X'"
+      }
+    }
+  ]
+}
 
-Include:
-- 8 to 16 scenes total
-- Variation across scenes in interactivity and format
-- Use the tone and branding described below
-- Write in ${formData.outputLanguage}
-- Output ONLY a valid JSON array — no markdown, no commentary
-
-Project Inputs:
-- Module Name: ${formData.moduleName}
-- Target Audience: ${formData.targetAudience}
-- Module Type: ${formData.moduleType}
-- Organisation: ${formData.organisationName}
-- Brand Guidelines: ${formData.brandGuidelines}
-- Fonts: ${formData.fonts}
-- Colours: ${formData.colours}
-- Logo URL: ${formData.logoUrl}
-- Tone: ${formData.tone}
-- Complexity Level: ${formData.complexityLevel}
-- Duration: ${formData.duration}
-
-Learning Outcomes:
-${formData.learningOutcomes}
-
-Content:
+🧩 LAYOUT CONTEXT (reference): ${layoutDescription || '(none)'}
+📝 USER'S RAW CONTENT:
 ${formData.content}
-`.trim();
+`;
+
+  let responseText = '';
+
+  try {
+    const textModel = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const result = await textModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
+    });
+
+    responseText = result.response.text();
+
+    // Tolerant extraction: fenced or raw JSON
+    const jsonString = extractJsonBlock(responseText);
+    const parsed = JSON5.parse(jsonString);
+
+    if (!parsed.storyboardModule) {
+      throw new Error("Parsed JSON did not contain 'storyboardModule'.");
+    }
+
+    // ✅ Ensure durationMins is present for downstream consumers
+    parsed.storyboardModule.durationMins = durationMins;
+
+    // ✅ Generate images for any image-type events
+    for (const page of parsed.storyboardModule.pages as StoryboardPage[]) {
+      for (const event of (page.events || []) as StoryboardEvent[]) {
+        const prompt = (event as any)?.aiProductionBrief?.visual?.subject;
+        const mediaType = (event as any)?.aiProductionBrief?.visual?.mediaType;
+        if (prompt && String(mediaType).toLowerCase() === 'image') {
+          console.log('✅ --- PAUSING BEFORE IMAGE GENERATION --- ✅');
+          (event as any).generatedImageUrl = await generateImageFromPrompt(prompt);
+          await sleep(2000);
+        }
+      }
+    }
+
+    return parsed.storyboardModule as StoryboardModule;
+  } catch (error: any) {
+    console.error('❌ Failed to generate or parse storyboard.');
+    console.error('🔍 The raw text received from the AI that caused the crash was:');
+    console.error('--- BEGIN AI RESPONSE ---');
+    console.error(responseText);
+    console.error('--- END AI RESPONSE ---');
+    throw new Error(
+      'Failed to generate or parse storyboard. The AI response may be malformed or an API failed.'
+    );
+  }
 }

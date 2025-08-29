@@ -1,0 +1,425 @@
+MODEL: gpt-4o
+
+SYSTEM:
+You are an expert instructional design director producing build‑ready, award‑level (Brandon Hall / LearnX calibre) eLearning storyboards in UK English.
+
+NON‑NEGOTIABLES:
+- Output MUST be a single valid JSON object per the schema below (no prose, no markdown).
+- Use UK spellings (behaviour, organisation, programme).
+- Avoid vague terms like "appropriate", "generic", "some". Prefer concrete user actions, filenames, triggers/variables, explicit copy.
+- VO pace ≈110 wpm; OST ≤70 words per screen. VO complements OST (do not read bullets verbatim).
+- Enforce accessibility placeholders (alt‑text, keyboard path, captions on by default).
+
+MODEL MEMORY ANCHORS (always apply):
+- Target quality: comparable to Brandon Hall Gold / LearnX Platinum storyboards (governance, completeness, dev‑ready detail).
+- Structure discipline:
+  * Every scene contains: OST, VO (non‑duplicative), visuals, AI image prompt, alt‑text, motion notes, asset filenames.
+  * Interactivity includes explicit user steps/choices, feedback copy, variables, and completion rules.
+  * Never leave fields empty. If truly unknown, add a TODO line in notes (e.g., "TODO: SME to confirm product acronym").
+- Level‑aware interactivity:
+  * Follow the caller-provided profile (types allowed, frequency, minimum KC items, branching requirement).
+  * Do NOT add branching when the profile says it’s not required; use light interactions instead.
+- Assessment quality:
+  * Knowledge checks provide option‑level feedback in a coaching tone.
+  * For scenario items, include concise rationale in feedback that references the decision criteria.
+- Accessibility baseline:
+  * Provide alt‑text for each visual concept; captions "on by default"; include a basic keyboard path and tab order hint.
+- Media & assets:
+  * Use concrete AI image prompts with camera, composition, subject, action, environment, and style (e.g., "Wide shot… natural afternoon light… shallow depth of field… clean corporate photography").
+  * Provide asset filenames/placeholders (e.g., "img_S2_framework.png", "vo_S3_branching_take1.wav").
+- VO/OST pairing rule:
+  * OST = headline + up to 3 bullets; VO expands with nuance (no verbatim reading).
+- Language & tone:
+  * Professional, empowering, concise; UK English throughout.
+
+SCHEMA TO OUTPUT:
+
+{
+  moduleName: string;
+  revisionHistory: { dateISO: string; change: string; author: string }[];
+  pronunciationGuide: { term: string; pronunciation: string; note?: string }[];
+  pages: Page[];
+}
+
+Page = {
+  pageNumber: number;
+  pageTitle: string;
+  events: Event[];
+}
+
+Event = {
+  eventNumber: number;
+  onScreenText?: string;
+  generatedImageUrl?: string;
+  aiProductionBrief: {
+    visual: {
+      mediaType: 'Image' | 'Animation' | 'Video' | 'Graphic';
+      style: string;
+      subject: string;
+      composition: string;
+      environment: string;
+      animationSpec?: string;
+    };
+    audio: {
+      script: string;
+      voice: 'Male' | 'Female';
+      pacing: 'Slow' | 'Normal' | 'Fast';
+    };
+    interactive: {
+      interactionType: string;
+      layoutDescription?: string;
+      behaviourExplanation?: string;
+      learningPurpose?: string;
+    };
+  };
+}
+
+USER:
+You are designing a storyboard. Follow the user request AND the examples, but adhere strictly to the interactivity profile.
+
+--- START OF CONTEXT EXAMPLES ---
+No similar examples were found in the database.
+--- END OF CONTEXT EXAMPLES ---
+
+INTERACTIVITY PROFILE (must follow)
+- Level selected: Level 3
+- Minimum interactions per 10 minutes: 3
+- Preferred interaction types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Minimum knowledge checks (items): 3
+- Branching scenario required: Yes
+
+HARD CONSTRAINTS:
+- If branching is NOT required, use light interactions only (click‑to‑reveal, simple hotspots, single‑stage drag‑drop).
+- Provide at least 3 knowledge check items distributed across the module with clear, coaching‑oriented feedback.
+- Keep interaction variety: do not repeat the same interaction type more than 1 times in a row.
+
+--- START OF USER REQUEST ---
+🔷 Module Details
+- Module Name: Life Insurance Code of Practice (LICOP)
+- Type: Compliance
+- Complexity Level: Level 3
+- Duration: 20 minutes
+
+🔷 Audience & Purpose
+- Target Audience: Underwriting and Insurance Admin Staff, Claims Staff, Other Insurance Staff Members
+- Organisation: AMP
+- Learning Outcomes: Explain the significance of the
+Code in the life insurance
+industry;
+• Explain how the Code aligns to
+AMP’s customer experience
+• Recall the core principles of
+the Code and how these
+principles are embedded in
+your team and individual role;
+• Decide on the best course of
+action when applying the Code
+in your role
+- Instructional Purpose: Not specified
+
+🔷 Learning Style & Design
+- Screen Type: Scenario
+- Interaction Style: Click-to-Reveal
+- Brand Guidelines: Adhere to modern, clean design principles.
+- Colours: Primary Colours Maastricht Blue Hex: #001E41 RGB: (0, 30, 65) Pantone: 282 C  amp.dev +2 schemecolor.com +2 pickcolorcode.com +2 dafont.com +2 nickverbene.com +2 brandgradients.com +2 Maya Blue Hex: #5BCBF5 RGB: (91, 203, 245) Pantone: 305 C  amp.com.au +3 pickcolorcode.com +3 schemecolor.com +3 nickverbene.com +2 schemecolor.com +2 pickcolorcode.com +2 Picton Blue Hex: #31B2E7 RGB: (49, 178, 231) Pantone: 298 C  pickcolorcode.com +1 schemecolor.com +1 australianmade.com.au +6 schemecolor.com +6 pickcolorcode.com +6 Rich Electric Blue Hex: #0C9ED9 RGB: (12, 158, 217) Pantone: 2925 C  brandgradients.com +2 pickcolorcode.com +2 schemecolor.com +2 fontspace.com +2 schemecolor.com +2 helpx.adobe.com +2 NCS Blue Hex: #0088CA RGB: (0, 136, 202) Pantone: Process Blue C  australianmade.com.au +6 pickcolorcode.com +6 schemecolor.com +6 brandgradients.com +4 schemecolor.com +4 pickcolorcode.com +4 Honolulu Blue Hex: #0066B3 RGB: (0, 102, 179) Pantone: 2144 C  pickcolorcode.com +1 schemecolor.com +1 schemecolor.com Secondary Colours Japanese Laurel Hex: #09A600 amp.dev Clementine Hex: #EC6600 nickverbene.com +3 amp.dev +3 schemecolor.com +3 Guardsman Red Hex: #C80000 helpx.adobe.com +6 amp.dev +6 ampol.com.au +6 Pear Hex: #A6E22E amp.dev School Bus Yellow Hex: #FFDC00 fontspace.com +12 amp.dev +12 schemecolor.com +12 Bittersweet Hex: #FF7272 pickcolorcode.com +2 amp.dev +2 schemecolor.com +2 Robin's Egg Hex: #00DCC0 amp.dev Confetti Hex: #E1EB64 amp.dev Lavender Magenta Hex: #EB49E1 amp.dev Electric Violet Hex: #5500D7 amp.dev Whisper Hex: #FAFAFC dafont.com +3 amp.dev +3 schemecolor.com +3 Athens Gray Hex: #F3F3F6 amp.dev Iron Hex: #E2E5E6 amp.dev +1 schemecolor.com +1 River Bed Hex: #48525C amp.dev +1 dafont.com +1 Oslo Gray Hex: #8C8F94
+- Fonts: Font: Poppins Bold Colour: #20202A Sizes: H1: 36 px H2: 28 px H3: 22 px H4: 18 px H5: 16 px H6: 14 px  amp.dev +4 amp.dev +4 nickverbene.com +4 Body Text Font: Noto Sans Regular Colour: #48525C Sizes: Large: 16 px Medium: 14 px  nickverbene.com +2 amp.dev +2 pickcolorcode.com +2 Monospace Text Font: Fira Mono Colour: #000000 Size: 14 px  nickverbene.com +4 amp.dev +4 ampol.com.au +4 pickcolorcode.com +2 schemecolor.com +2 amp.dev +2
+
+🔷 Tone & Language
+- Tone: Motivational & Inspiring
+- Output Language: English (UK)
+
+🔷 Creative Guidance
+- Additional Notes: None
+
+🔷 Course Content:
+"""
+LICOP eLearning outline
+for TLF
+August 2017
+Intro / general section – ALL to complete
+Information about the LICOP:
+- Purpose of the LICOP
+- 6 core principles
+- Codifies good practice
+- Key areas that the code covers
+- Overall message – customer at centre of the experience
+- Contains timeframe guidelines to be met by Insurance teams
+- Focus on need for teams to collaborate together
+- Some info about each branch and who should complete them
+2 |
+Purpose of the LICOP
+The Life Insurance Code of Practice (LICOP) was designed as a commitment to high standards of customer
+service across the Life Insurance industry.
+At the heart of LICOP is a promise to provide our customers with an experience that is honest, fair and
+transparent.
+The LICOP promotes service that is timely, delivered with respect and with information that is easily
+understood.
+Adopting these principles and adhering to the LICOP is an important step in our life insurance journey.
+3 |
+Background of LICOP
+Tell me more about the Life Insurance Code of Practice…
+The LICOP was issued in October 2016 by the Financial Services Council (FSC). It is an industry guideline
+that outlines minimum conditions and expectations for us to meet across our life insurance practice. It covers
+everything from sales practices and marketing to underwriting processes and claims management as well as
+much more.
+These standards aim to:
+• Promote high standards of service to customers
+• Provide a benchmark of consistency within the industry
+• Establish a framework for professional behaviour and responsibilities
+Our commitment to our customers continues to be at the forefront of everything we do. The LICOP provides
+us with an opportunity to continue to develop our customer’s experience with AMP life insurance.
+4 |
+Key areas of the Code
+The LICOP “codified” what good practice (minimum conditions and standards) is in life insurance. Key areas
+of focus in the code include:
+Underwriting and insurance administration
+Claims
+Product design
+Sales
+Marketing
+Complaints
+Supporting customers with additional needs and customers experiencing financial difficulty
+5 |
+Timeframes to be met by our teams
+The LICOP outlines a number of timeframes for specific interactions or actions to occur within. At AMP, we aim
+to complete these actions well within these timeframes. We use our reporting tools to monitor how we are
+going in meeting these timeframes.
+Key timeframes to be met:
+6 |
+Timeframes to be met by our teams
+7 |
+Collaboration of teams and which branch to select
+At AMP our teams collaborate together to provide the best experience to our customers. Whilst some of the
+code commitments or timeframes may seem specific to a team, it is important that we can appreciate as a
+whole the commitments we make to customers.
+Three branches to choose from:
+1. Underwriting and Insurance Admin staff members
+2. Claims staff members
+3. Other Insurance staff members (as well as our contact centres and AMP Assist staff members)
+It is recommended that staff complete the branch relevant to them, but note that they can complete all 3
+branches if they wish.
+8 |
+Branch 1: general
+• 1 internal scenario (i.e. colleagues chatting about code and what this means
+for their team). Scenario in product team where they are preparing for a
+product annual review – focus on code requirements they must meet for this
+(e.g. review of medical definitions), plus also the development of a customer
+communication. Focus on plain language.
+• 1 external scenario (two instances) – respond to access to information
+request. Raise this with Admin who complete it and send to customer.
+Requests for access to information must be met within 10 days.
+• 1 internal/external scenario (complaints) – managing a customer complaint
+related to AMP Assist selling insurance – what should happen? Spin this into
+a positive scenario (i.e. what could have the consultant done better?)
+9 |
+Branch 1, scenario 1
+Relates to Section 3 of LICOP
+New insurance team member starts and is receiving base info they need to know about the Code. The team
+should be “Proposition” (i.e. product team). They will need to help with a PDS review and roll. Scenario
+should touch on a few key things: use of plain language, customer testing to ensure ease of understanding,
+review of medical definitions.
+Should also show a review of communications issued to customers to ensure requirements in 3.4 are met.
+10 |
+Branch 1, scenario 2
+Relates to Section 14 of LICOP
+TWO INSTANCES:
+ONE: Customer calls contact centre requesting access to information gathered about them. Information
+requested is about reports gathered about them during underwriting process (from independent service
+providers).
+This should be a simple scenario – consultant notes the request and processes this.
+TWO: Customer calls UW team asking for access to information (Independent service provider reports that
+have been gathered about them during claims time). It is determined that the information gathered about
+them is a bit sensitive and would best be delivered by a doctor. The UW assessor informs the customer that
+they will be sending the reports to their doctor and to please make an appointment with them.
+11 |
+Branch 1, scenario 3
+Relates to Section 4 of LICOP
+Complaint with AMP Assist and selling insurance.
+Customer calls and makes a complaint about a policy that has been sold to them via AMP Assist. I would
+suggest that the conversation / activity could flow with the customer complaining about a few items from the
+below list
+Use activity/scenario to determine reasons why customers would complain about selling or marketing of
+insurance, including:
+Marketing:
+- Must be clear and not misleading
+- Appropriate use of images
+- Statements are consistent with relevant policy
+Sales (AMP Assist):
+- Minimum information must be disclosed to customer (e.g. premium, features, benefits, exclusions, limits
+and cooling off periods).
+- No pressure selling
+- Obtain evidence customer has consented to purchase the policy
+- Rules / guidelines around replacing an existing life insurance policy with another insurer.
+12 |
+Branch 2: Claims
+• Would be good for the scenario to show a day-in-the-life of a claims assessor.
+13 |
+Branch 2: Claims
+• The activity should include all of the above timeframes and show a flow from a
+customer first calling to discuss making a claim to a final decision being made.
+• Maybe there could be two scenarios or activities here – one to show IP claims
+decision, one to show all other claims decisions.
+• This section should be interactive but succinct.
+• Note that the following slides outline what information should be included in the
+eLearning. However, how this is structured in scenarios / activities I will leave up
+to the guidance of the experts.
+14 |
+Branch 2, scenario 1
+Relates to Section 8 of LICOP
+Show the claims lifecycle – perhaps this can be via a series of “interactions” or activities
+How we support you when you make a claims: (8. 24-26)
+- Compassion and respect
+- Acknowledge is a difficult time for customers
+- Work with customers who are having difficulty providing information
+- Income related claims – special requirements (8.26)
+When a customer makes a claim:
+- Not discourage them from making a claim
+- Consider all features of the policy to which the claim relates in order to ensure that the customer is
+claiming for all available benefits under the policy.
+- Within 10 business days of being notified of the claim, explain to the customer their cover and claim
+process, including why we request certain information from them, and any waiting period prior to a claim
+being paid. Provide them with contact details they can use.
+- Keep customer informed of their claim status / progress every 20 days. Respond to requests for access to
+info within 10 days.
+15 |
+Branch 2, scenario 1
+What AMP requires to assess a claim:
+- Only ask for relevant information
+- May ask for general authority to gain information from other sources (e.g. doctor)
+- Request the information needed early in the process
+- Additional requirements for income related claims (section 8.9)
+- Requirements for interviews and surveillance (8.11 and 8.12)
+Claims decisions and benefit payments:
+- Delay in meeting timeframes: what is an unexpected circumstance? (8.14)
+- Communicate claims decision within 10 business days (8.15)
+- Income related claims, decision to be made within 2 months (8.16)
+- All other claims, decision to be made within 6 months. (8.17)
+- Decline a claim – what AMP will do (8.19)
+16 |
+Branch 2, scenario 1
+Income related benefits:
+- 8.21-23 – can this please be made succinct and included as a reminder for staff (particularly section 8.22
+and 23)
+Urgent Financial needs: (8.27-30)
+- Customers can make a request for urgent financial need support.
+- Request relevant documentation for this (8.28)
+- If in urgent need, can request for faster process
+- Notify customer about decision within 5 business days
+17 |
+Branch 3: UW and Insurance Admin
+• Go through underwriting process with a customer – maybe a TPS (telepersonal
+statement) interview? Show different things for consideration and gathering
+internal and external outstandings. Maybe show UW having to reach out for
+information prior to making decision? (both internally to a policy colleague, and
+externally to a doctor). After decision show flow through to IA for the
+administration process.
+• Second scenario – refund of application (this is insurance administration).
+Customer is having application refunded – provide reasons that this can occur.
+Refund must occur within 15 business days.
+• Also show a request for info coming in and being responded to. This would be
+from IA.
+18 |
+Branch 3: UW and Insurance Admin
+19 |
+Branch 3, scenario 1
+This relates to section 5 of the LICOP
+Underwriting team receive an application for insurance cover. They must gather required information about
+the customer so that they can assess the application.
+- Duty of disclosure – purpose and requirement
+- May require to gather information / have discussions with external parties (e.g. doctors)
+- May require additional information from an independent service provider (include 5.7 and 5.8 information
+here)
+- When have all information from customer, internally (e.g. policy advice) and externally (e.g. doctors), a
+decision can be made on the insurance application. This decision must be communicated within 5
+business days.
+- Non disclosure process (5.20) – I think this information should also be included.
+20 |
+Branch 3, scenario 2
+This relates to section 6 of the LICOP
+Customer contacts AMP to cancel their life insurance policy. Process follows whereby Insurance Admin staff
+member (IA) checks the customer's policy and determines if a refund is to be applied. If so, this must be
+refunded within 15 business days.
+Scenario extension: when customer calls to cancel their policy, they also request access to information
+gathered about them during the UW process. This request is reviewed and responded to within 10 business
+days.
+21 |
+Final sections – all
+• Additional needs – show an example of Contact Centre helping additional needs
+customer – maybe a simple scenario like asking for access to information and
+maybe a payment of a premium? (i.e. 2 examples). One example should be
+English as a second language, the other can be an elderly customer. Add
+hyperlink to the AMP policy.
+• Complaints process – key things to remember during complaints – maybe short
+overview of fact that customer comes first, complaints procedures and
+timeframes to be met within.
+22 |
+Final sections – all
+Incidents and breaches - “An Incident is an event, error, control failure, or business issue that
+has resulted (or could result) in a loss, in reputational damage or in a breach of AMP’s
+regulatory obligations. Breaches of the FSC Life Insurance Code of Practice are to be recorded
+as incidents.
+Incidents are recorded in the Incident Management Database and are reviewed using the
+Incident Management processes described in the Enterprise Risk Management Handbook.
+The management of incidents aims to identify the root cause of the incident to allow for actions
+to minimise the impact of existing incident, identify improvements to reduce the likelihood of
+future occurrence of incidents and to remediate losses to customers.
+In addition, the incident management process includes consideration of all incidents at the
+Incident Working Group and, where warranted, at the Breach Review Committee to determine
+whether breaches of regulation are significant and are therefore reportable to regulators such
+as ASIC or APRA. The same process is to be used to determine whether a breach of the FSC
+Life Insurance Code of Practice is significant and is reportable to the FSC Life Code
+Compliance Committee.”
+23 |
+ALL
+Supporting customers with additional needs (Section 7)
+Customer calls AMP and is struggling to use English. The contact centre staff member offers the use of a
+translation service for the call. The customer accepts and suggests the language they would like to
+communicate in.
+This is just one example of how we can help customers.
+I think this section should be about our 4 types of additional needs categories:
+- Preference to speak in another language
+- Elderly
+- Disabled
+- Aboriginal and Torres Strait Islander
+Perhaps we can have an activity about how we help each customer group – maybe a way of helping that is
+dragged and dropped under each group OR a flash card of a way of helping followed by a selection of the
+different groups it applies to?
+Kate is key contact for this area so can work on this together.
+24 |
+ALL
+Complaints (Section 9)
+Two key “minimum” timeframes for responding to complaints:
+- Respond within 90 days for policies owned by a superannuation trustee
+- Respond within 45 days for policies not owned by a superannuation trustee
+Reminders for staff about best ways to avoid complaints:
+- Open communication with customers
+- Keep well within timeframes outlined in code (e.g. timeframes for specific interactions or actions).
+- Clear written communications
+25 |
+ALL
+Raising breaches of the Code
+I will supply you with the key contact to discuss this with – she will have a succinct blurb about this J (I don’t
+have the process offhand exactly – but basically a staff member should raise to their business leader who
+triages it up to our risk team for incident management. If needed, this committee will then raise this up to the
+breach committee who will raise it externally as required).
+26 |
+Thank you
+"""
+--- END OF USER REQUEST ---
+
+QUALITY MANDATES (must-pass):
+- Scenes: 6–8 total (unless Level 1 → 4–6). Ensure a clear progression (Awareness → Application → Decision → Reflection).
+- Each scene: OST (≤70 words), VO (complements OST), visuals + AI-image prompt + alt-text, motion notes, asset filenames.
+- Interactivity: follow the Level profile; embed knowledge checks with option-level feedback (coaching tone).
+- Developer readiness: include behaviour logic, variables, and completion rules in interactive briefs.
+- Accessibility: alt-text present; captions on by default; basic keyboard path specified.
+- Language: UK English (behaviour, organisation, programme).
+
+OUTPUT RULES:
+- Create a realistic learning sequence across 4–10 pages.
+- Each page should include 2–3 events that serve a clear instructional purpose.
+- Distribute interactions according to the profile above; embed knowledge checks with option‑level feedback.
+- Add developer‑ready detail (layout, behaviour logic, variables, completion rules) in the interactive briefs.
+- Provide alt‑text and clear visual prompts suitable for AI image generation (camera, composition, subject, environment, style).
+- Return JSON ONLY (no commentary, no markdown).

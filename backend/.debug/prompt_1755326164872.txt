@@ -1,0 +1,892 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director producing build-ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+Scene 447: Scene 447
+Paramedics should be adaptable and responsive to cultural differences in their approach to care. They should be willing to modify their practices or procedures, whenever possible and safe, to align with patients’ cultural preferences and needs.
+
+Scene 448: Scene 448
+Paramedics adapt their approach to care based on cultural differences. For instance, they may modify treatment plans to accommodate cultural practices. If a patient prefers a traditional herbal remedy alongside conventional medicine, paramedics can work collaboratively to ensure the patient's safety while respecting their cultural beliefs.​
+
+Scene 449: Click to hear audio example for Flexibility and Adaptability
+Click to hear audio example for Flexibility and Adaptability
+
+Scene 450: Cross-Cultural Communication
+Cross-Cultural Communication
+
+Scene 451: 7.
+7.
+
+Scene 452: Scene 452
+Effective Cross-Cultural Communication skills are vital for cultural sensitivity. Paramedics should listen actively, ask open-ended questions, and be attentive to non-verbal cues. They should avoid jargon and use plain language, ensuring that patients understand the information being conveyed.
+
+Scene 453: Scene 453
+Paramedics employ effective communication skills across cultures. They may use visual aids, gestures, or cultural references to explain medical procedures or conditions when language barriers exist. They actively listen and allow patients to ask questions and express their concerns.​
+
+Scene 454: Click to hear audio example for Cross-Cultural Communication
+Click to hear audio example for Cross-Cultural Communication
+
+Scene 455: Personalised Care
+Personalised Care
+
+Scene 456: 8.
+8.
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+Scene 737: So it’s important that their requirements are fulfilled in time.
+So it’s important that their requirements are fulfilled in time.
+
+Scene 738: Attend to them in time.
+Attend to them in time.
+
+Scene 739: Show text.
+Show text.
+
+Scene 740: Look Smart
+Look Smart
+
+Scene 741: 2.1
+2.1
+
+Scene 742: Scene 742
+You will be our face to the residents, clients and customers of Anglicare - whatever role you’re in.
+
+Scene 743: You are Anglicare’s face to residents, clients and customers
+You are Anglicare’s face to residents, clients and customers
+
+Scene 744: Fade in text.
+Fade in text.
+
+Scene 745: 435584389
+435584389
+
+Scene 746: 2.2
+2.2
+
+Scene 747: Your appearance and actions gives the direct impression of Anglicare and you.
+Your appearance and actions gives the direct impression of Anglicare and you.
+
+Scene 748: Your appearance and actions are a direct impression of Anglicare and you
+Your appearance and actions are a direct impression of Anglicare and you
+
+Scene 749: Fade in the text.
+Fade in the text.
+
+Scene 750: 2.3
+2.3
+
+Scene 751: Scene 751
+Some of you will be required to wear our uniform. Talk to your manager how to get it and when to wear it.
+
+Scene 752: Wear your uniform when required
+Wear your uniform when required
+
+Scene 753: Fade in the text.
+Fade in the text.
+
+Scene 754: Be a Team Player
+Be a Team Player
+
+Scene 755: 3.1
+3.1
+
+Scene 756: No matter where you work, you will always be part of a team.
+No matter where you work, you will always be part of a team.
+
+Scene 757: You will work with a team
+You will work with a team
+
+Scene 758: Show text and image..
+Show text and image..
+
+Scene 759: Scene 759
+Path: \trunk\Client_Inputs\UpdatedContent_July2017\04 What we do\Partnerships\Disaster Recovery images
+--- END OF EXAMPLE 2 ---
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~NaN (±2)
+- Minimum interactive scenes: 7
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Adapting Your Style
+Module Type: Soft Skills & Leadership
+Complexity Level: Level 3
+Target Duration (mins): NaN
+Audience: Managers
+Tone: Inspirational & Uplifting
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): Recognise your behavioural tendencies and how they affect others | Identify respect | appreciate | and value individual differences | Develop strategies for working together to increase productivity | Enhance your effectiveness in completing tasks by improving your relationships with others Copyright | No part of this work may be reproduced in any form or by any electronic or | mechanical means | including the use of information storage and retrieval | systems | without permission in writing from the publisher | Violators will be | prosecuted to the fullest extent permitted by law | The publisher has made a sincere effort to ensure the accuracy and quality of its | program materials | however | no warranty | expressed or implied | is provided | The | publisher disclaims any responsibility or liability for any direct or indirect | damages resulting from the use of the information in this manual or products | described in it | Mention of any product or resource does not constitute an | endorsement by the publisher of that product or resource | All case studies and | simulations are intended to be fictional | any resemblance to real persons or | companies is coincidental | The Learning Factor | Level 31 | RBS Tower | 88 Phillip St | Sydney NSW 2000 | T: (02) 8999 8819 | T: 1300 668 622 | W: www | learningfactor | com | au | E: enquiries@learningfactor | com | au | © The Learning Factor | Adapting Your Style - Participant Manual v | 110920 | Page | 2 | Bankwest Values & Beehaviours | The Bankwest Values and Beehaviours define leadership behaviours for our organisation – it defines | ‘how’ we perform our roles | It is a framework that sets out the behavioural expectations for all | colleagues at all levels | The behaviours are aligned to our Core Values as shown in the diagram | below | Customer Focus Results Driven One Team | Bankwest Leader | Behavioural Levels | Business Leader | Leader of Leaders | Leader | Colleague | Values Based Behaviours | Leader | Leader of Leaders | Business Leader | Colleague | Bankwest Leader | Customer | Focus One Team Results Driven | Customer | Focus One Team Results Driven |  Customer | Satisfaction  Teamwork |  Driving Results |  Accountable |  Customer | Satisfaction |  Teamwork |  Leading with | Vision & Values |  Growing Talent |  Driving Results |  Accountable |  Commercial | Acumen | The Behaviours can be used as a tool to help you identify your priorities for development | By | understanding the behaviours required at both yours and others’ levels | you’ll be able to determine | the behaviour required to progress through the organisation | This will help you to specifically target | your development to help you reach your goals sooner | All Leadership Development programs are carefully reviewed to ensure that they are delivering the | capabilities aligned to our behaviours | For more information on the Bankwest Values and Behaviours | visit the myPerformance page on | peoplespace on the Hive | Course Objectives | Successful completion of this course will enable you to: | Recognise your behavioural tendencies and how they affect others | Identify | respect | appreciate | and value individual differences | Develop strategies for working together to increase productivity | Enhance your effectiveness in completing tasks by improving your | relationships with others | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 3 | Session One | Self Awareness | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 4 | Self Concept | “Know thyself | It then follows as the night the day | thou canst not be false to any man | ” | - William Shakespeare | To be able to confidently adapt your style to meet the challenges of relationship | situations | you need to have an idea of your starting point – that is | who are you? | What is your own self concept? | It is not easy to know yourself completely | Your self concept is your image of who | you are | a collation of the pictures | perceptions and ideas you have about | yourself | Your self concept evolves as a result of complex influencing factors in life | it | impacts the way you react to everything in life – particularly your relationships with | others – and underpins how you feel (e | g | puzzled | angry | excited | in/out of control | etc | ) | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 5 | Influences on the Self Concept | Your appearance and | physical/psychological | condition | Your social traits | YOUR SELF | Talents you possess or | lack | Your intellectual | capacity | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Your moods and | feelings | Your social roles | Your strong beliefs | Page | 6 | The Johari Window | This model shows 4 different aspects of the self | The two left-hand quadrants that | are „known to self‟ are most obviously incorporated into our self concept | However | the impact of behaviours that stem from the right-hand „Not known to | self‟ quadrants (i | e | behaviours from others in reaction to us and our own surprising | behaviours) can still impact how we feel about ourselves | Known to self Not known to self | Known | to | OPEN SELF BLIND SELF | others | Not | known | HIDDEN SELF UNKNOWN SELF | to | others | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 7 | The Johari Window (Continued) | Consider the implications of a Johari Window that has unequal quadrants: | OPEN | SELF | BLIND SELF | HIDDEN SELF | UNKNOWN SELF | UKNOWN SELF HIDDEN SELF | OPEN | SELF | BLIND SELF | HIDDEN SELF | UNKNOWN | SELF | HIDDEN SELF | UKNOWN | SELF | OPEN SELF BLIND | SELF | HIDDEN SELF | UNKNOWN SELF | UKNOWN SELF | HIDDEN SELF | Increasing self awareness means being willing to involve yourself in experiences | that will make the Open Self quadrant larger | and decrease the size of the other | three quadrants | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 8 | EXERCISE: YOU‟RE JOHARI WINDOW | Think about 2 relationships you are in | Draw the Johari Window configuration you | feel represents your OPEN | HIDDEN | BLIND and UNKNOWN SELF in each of these | relationships | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 9 | Flexibility = Health | A healthy self concept is flexible | Simply living life presents many changes | and we | need to be able to modify our self concept so we can stay as resourceful as possible | through all circumstances | Changes that Can/Should | Change Our Self Concept | Examples | Type of change Physical | intellectual | emotional | spiritual etc | Situation Social | work | family etc | Stage of life cycle Infant | toddler | preschool | primary | adolescent | young adult | mid- | adulthood | mature | senior | aged | Mental state Alert | tired | hungry | satiated | confused | clear etc | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 10 | Self Disclosure | You are constantly sending out messages that disclose information about yourself to | others – intentionally and unintentionally | Self disclosure in relationships can serve a useful purpose because: | It defines some part of yourself to others – by letting others know you | you | reduce misunderstandings | It increases self knowledge – you gain deeper insights about yourself by | talking | and by giving others the opportunity to give feedback | By sharing yourself | it promotes intimacy and openness with others | An indication of your self concept is how much you feel comfortable disclosing | about yourself | Though it is not necessarily „wrong‟ to choose not to disclose | information | your decisions on whether to do so can tell you a lot about who you | are | Of course | self disclosure must be done appropriately so that it enhances | relationships | rather than making them awkward or uncomfortable | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 11 | EXERCISE: CONDITIONS OF APPROPRIATE SELF DISCLOSURE | List factors to consider when determining the appropriateness of self disclosure: | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual Page | 12 | v | 110922 | ACTIVITY: APPROPRIATE SELF DISCLOSURE CASE STUDIES | In the case studies below | what factors about the appropriateness of self disclosure | could be relevant in each situation? How would you advise in these situations? | Case study No 1 | A team member has been feeling guilty for the past several months about a | promotion she gained over a colleague who is also a friend | She was given this | promotion because she put forward the friend‟s ideas for a new project as her own | though the friend is not aware of this | She feels this is making her „closed up‟ in her | relation to her friend | She wants to confess this error in judgment and her guilt to her | friend | Case study No 2 | Sarah and Jerry have worked on many projects for more than 2 years | and spend a | lot of time at work together | Sarah has been honest about most things and has self | disclosed to Jerry her criticisms of their boss | her fears | her insecurities | her ambitions | her home life hassles and so on | Yet Jerry doesn‟t seem to reciprocate | He almost | never shares his feelings and has told Sarah little about his home life | Sarah wonders | if she should continue to self disclose or if she should begin to limit her disclosures | Case study No 3 | Tom has been a key figure in an important roll-out | sharing the decision-making role | with Frank | Their skills are uniquely complementary and they have a history of | success in their shared projects | Tom has been offered a job in another company | which is a competitor to theirs | starting immediately | While he is keen to take the | job | he knows it will leave Frank in the lurch | Tom wants to ring Frank to resign from | the project and disclose his employment with a competitor organisation | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 13 | EXERCISE: WHAT HAVE YOU LEARNED? | Reflect on your responses to the case study exercise | What insights does this give | you that can add to your self awareness? | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | EXERCISE: WAYS TO INCREASE SELF AWARENESS | List actions you could take to increase your level of self awareness: | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | ________________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual Page | 14 | v | 110922 | Session Two | Trust and Rapport | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 15 | Trust | A key component of communication | Grows over time | Once lost | is hard to regain | Includes giving something of yourself | being genuinely interested in the other | person and seeing communication as a shared experience | Many factors work together to create trust including: | Credibility | Dependability | Predictability | Valuing the common good | Emotional safety | Though of course trust is impossible to measure | a model for understanding the „trust | factor‟ in a relationship is: | Where: | T = C + R + I | S | T = Trust Factor | C = Credibility – how much you can believe | R = Reliability – how much you can depend on | I = Intimacy – how close you feel | S = Self Orientation | Trust grows when you feel the other person is „on the same wavelength‟ as yourself: | that he or she understands the situation the same way you do and that therefore | their actions are likely to be ones of which you will approve | When this satisfying | sense of similarity and familiarity exists | we refer to it as being in a state of rapport | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 16 | Measuring the Trust Factor | T = C + R + 1 | S | T = Trust Factor | C= Credibility | R = Reliability | I = Intimacy | S = Self Orientation | Exercise 1: | Think of a “difficult customer” and work out the trust factor | Score yourself out of 10 for the following factors | T ( ) = C ( ) + R ( ) + I ( ) | S ( ) | What could you do to increase the TRUST FACTOR? | Exercise 2: | Think of an “easy customer” and work out the trust factor | Score yourself out of 10 for the following factors | T ( ) = C ( ) + R ( ) + I ( ) | S ( ) | What could you do to increase the TRUST FACTOR? | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 17 | Rapport | Rapport occurs when the differences between you and another person are | minimised | and the similarities are enhanced | Rapport operates on an unconscious level between two or more people | but it can | be raised to consciousness and shaped to meet the needs of the situation | Matching and Mirroring | Matching and mirroring is a rapport-building technique where you make a | conscious effort to “be like” the other person by imitating or duplicating their | observable behaviours | Matching is duplicating the action (e | g | they shift weight to their right | leg | you shift weight to your right leg) | Mirroring is copying in mirror-image (e | g | they shift weight to their right leg | you shift weight to your left leg) | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 18 | EXERCISE: LIST BEHAVIOURS OF OTHERS THAT YOU CAN MATCH OR MIRROR | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | ________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | __________________________________________________________________________________ | ________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual Page | 19 | v | 110922 | Pacing and Leading | Matching the behaviour of the other person over a period of time is also known as | pacing | Pacing may take anything from a few seconds to many minutes | depending on their predisposition to subconsciously notice the similarities with them | that you display | Once they feel „in step‟ with you | they will be more likely to follow | your lead as you introduce new and different ideas | Their enhanced level of trust | and rapport will mean they are prepared to consider your propositions more openly | Their respect follows based on the accuracy of your insights and the value of your | solutions or suggestions that you present to meet their needs | Keep it Subtle | To be successful | rapport building must not be obvious to the parties involved | It | needs to be invisible | operating at an „unconscious level‟ | If the other person | becomes aware you are „trying‟ to build rapport | you can appear insincere and not | genuine | as mocking or trivialising | This can hinder your relationship building process | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 20 | Preparation for Rapport Building | Building rapport is easier if you can prepare in advance for meeting the other | person | If possible | allow some time to consider: | What could be important to them in the long term - rely on your past | experience and any research you are able to do (e | g | asking others who | know the person well) | What is „top of mind‟ for them at the moment | What you can relate to that is similar to this person‟s situation | If you are not familiar with the person who you will be meeting | consider what | „types‟ of issues concern people in that kind of position | For example: | A Managing Director could be concerned with ROI | developing the | business | market share | competitive advantage | A Marketing Manager could be concerned with marketplace | positioning | branding | consumer sentiment | marketplace exposure | Rapport building is not difficult | however many people forget to do it and don‟t | prepare themselves before a situation where a message must be communicated | When you do this you have the advantage of rapport building and developing a | greater level of trust and respect with the people you meet | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 21 | Session Three | Relating to People | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 22 | What People See | EXERCISE: HOW WE ARE SEEN | Three words most like | Three words others think | you are: | about you are: | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 23 | The Iceberg Model | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 24 | Introducing DiSC | DiSC is a behaviour identification model that can help you understand your own | behaviour in a specific situation and help you relate to the behaviours of others | DiSC focuses on context-specific behaviours not personality | This means that your | behavioural profile will be different depending on the situation you are analysing | There is no such thing as a „bad‟ DiSC profile | All of us have behaviours that work | well for us and behaviours that could be improved | Through the DiSC model it is possible to identify | understand | accept | respect and | manage differences | It teaches that being different does not equal being wrong | Different is simply different | DiSC helps you gain clarity on: | Why you react in certain ways to other people (and vice versa) | How to maximise what you do well | How to adapt your behaviour to meet the needs of other people and | situations | How to develop a positive attitude about yourself | which causes others | to have confidence in you | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 25 | Marston‟s Model | Dr William Moulton Marston was a behavioural psychologist | a contemporary of Carl | Jung during the 1920‟s | He created the DiSC model as a result of researching behaviour on the premise that | people act differently depending how they perceive 2 aspects of a situation: | 1 | Perception of their personal power – which may be Active/Direct or | Inactive/Indirect | 2 | Perception of their environment – which may be Assessing or Accepting | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 26 | „D‟ DIMENSION BEHAVIOUR (DOMINANT | DIRECT | DECISIVE) | If you have a high D dimension of behaviour | your strengths as a co-worker or | team member may be that you: | Make decisions when others cannot | Confront tough issues or situations | Accept change as a personal challenge | Keep the team focused and on task | Others may see limitations because you: | May come across as unapproachable | Can be insensitive to others | Show impatience with others | Try to move the team before it is ready | You can be a more effective D by: | Developing more patience | Toning down your directness and asking more questions | Working on your body language to seem more approachable and | offering more encouragement in conversation | Summary: | D‟s are good at directing and deciding | but may become autocratic | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 27 | „I‟ DIMENSION BEHAVIOUR (INFLUENCING | INSPIRING) | If you have a high i dimension of behaviour | your strengths as a co-worker or team | member may be that you: | Are available to others | Inspire others | Spread your enthusiasm and positive attitude to others | Give positive feedback to your colleagues | Others may see limitations because you: | Can be disorganised | May be superficial in your approach | Lack follow-through | You can be a more effective i by | Listening more carefully | Becoming more organised | Providing more detail | Summary: | i‟s are good at promoting and persuading | but may oversell and manipulate | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 28 | „S‟ DIMENSION BEHAVIOUR (STEADINESS | STABLE | SECURE) | If you have a high S dimension of behaviour | your strengths as a co-worker or team | member may be that you: | Are a good team player | Are sensitive to others‟ needs | Approach meeting agendas methodically | Listen well | Are likeable | Others may see limitations because you: | Can be indecisive | May be indirect | Resist change | You can be a more effective S by: | Becoming more assertive and direct | Learning to cope better with a change | Not carrying the burden of everyone else‟s problems | Summary: | S‟s are Good at being steady and agreeable | but may give in despite their needs | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 29 | „C‟ DIMENSION BEHAVIOUR (CORRECT | CONSCIENTIOUS | CAREFUL) | If you have a high C dimension of behaviour | your strengths as a co-worker or | team member may be that you: | Are thorough | Follow standards | Emphasise accuracy | Use diplomacy | Others may see limitations because you: | Can be overly concerned with perfection | Act aloof | Tend to hamper others‟ creativity by sticking to the rules | You can be a more effective C by: | Accepting differences | Being more open | Focusing on communication | Summary: | C‟s are good at analysing and checking | but may become perfectionistic and | indecisive | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 30 | ACTIVITY: GETTING ACQUAINTED WITH YOUR BEHAVIOURAL STYLE | In a group of your primary behaviour type write your responses to these questions | on a flip chart: | 1 | How you are at your best? | 2 | How you are at your worst? | 3 | What is an animal mascot that typifies the essence of your D | I | S or C | behaviour? | 4 | What is a brief slogan | theme or jingle that captures the main message from | your D | i | S or C behaviour? (Alternatively | draw a flag that represents your | primary behaviour type | ) | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 31 | Strengths Can Become Weaknesses | EXERCISE: TAKING IT TO THE EXTREME | Describe how the following positive behaviours could turn into workplace | weaknesses if taken to the extreme: | Strength Potential weakness | A “C” analyst is good at | carefully checking | information | A “D” manager is good at | delegating | An “S” team member is | willing to help anyone who | asks | An “i” tech support person is | good at promoting his ideas | and persuading people | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 32 | ACTIVITY: COMPARING YOUR BEHAVIOURAL STYLE WITH OTHERS | Draw the table below on a flip chart | then fill it in | The three other DiSC | types | What you like about | them | What you don‟t like | about them | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 33 | DiSC at a Glance | D’s Recognised by High self | confidence | Forcefulness | Competitiveness | Preferred work | environment | Busy | Formal | Priority Task Pace Fast Gains security by Being in control Motivated by Achievement Measures | progress by | Results Major fear Being taken | advantage of | Loss of control | Irritated by Inefficiency | Indecision | Slowness | Decisions are Quick Major limitations Impatience | Selective | listening | Could increase | effectiveness by | Developing | patience and | listening skills | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | i’s Talkativeness | Enthusiasm | Optimism | Energy | Stimulating | Personal | Friendly | Relationship Fast Flexibility | Variety | Social | Recognition | Applause | Praise | Social | Rejection | Routine | Formality | Spontaneous Lack of follow | through | Self discipline | Follow through | on tasks | S’s Friendliness | Cooperation | Persistence | Patience | Personal | Relaxed Friendly | Relationship Slow Close | relationships | Acceptance | Stability | Appreciation Personal | rejection | Sudden change | Insensitivity | Impatience | Considerate Overly modest | Resist change | Belief in | themselves | Being more open | to change | C’s | Accuracy | May be cautious | Concern for high | standards | Structured | Organised | Functional | Formal | Task | Slow | Preparation | Correctness | Getting it right | Criticism of what | they do | Surprises | Unpredictability | Deliberate | Overly critical of | self and others | Being more | tolerant of others | Page | 34 | Session Four | Adapting Style | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 35 | Communication Effectiveness | Ideally at work you want everyone not just to understand | but also to agree and | buy into the messages you convey | How do you communicate in a complex working environment when: | The people you work with are all different | Their behaviour can become extreme | Your behaviour type works well with some | and not so well with others | The four DiSC dimensions provide insight into how people tend to react to certain | types of communication and feedback | Overview: How to Communicate Potential Communication Breakdowns | D Prefer brief communication | with clear expectations | Can react in a way that appears blunt | and insensitive | i Prefer informal conversations | (written follow-up is advised) | May oversell their ideas and | overestimate themselves | S Prefer a friendly | clear | systematic approach | May be flustered by too much | information/change too quickly | be | unable to identify the priorities (eg take | care of people before tackling the task) | C Prefer clear expectations | deadlines and requests to use | their expertise | May double/triple check data or not | work with others assigned to the task | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 36 | COMMUNICATING TO „D‟ DIMENSION OF BEHAVIOUR | High D‟s want others to be direct | straightforward | and open to their need for | results | Try to: | Make communication brief and to the point | Respect their need for autonomy | Be clear about rules and expectations | Let them initiate | Show your competence | Stick to the topic | Show independence | Eliminate time-wasters | Be prepared for: | Blunt | demanding approaches | Lack of empathy | Lack of sensitivity | Little social interaction | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 37 | COMMUNICATING TO „I‟ DIMENSION OF BEHAVIOUR | High i‟s want others to be friendly and to recognise their contributions | Try to: | Approach them informally | Be relaxed and sociable | Let them verbalise thoughts and feelings | Keep the conversation light | Provide written details | Give public recognition for individual accomplishments | Use humour | Be prepared for: | Attempts to persuade or influence others | A need for the limelight | Overestimation of self and others | Overselling ideas | Vulnerability to perceived rejection | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 38 | COMMUNICATING TO „S‟ DIMENSION OF BEHAVIOUR | High S‟s want others to be relaxed | agreeable | cooperative and appreciative | Try to: | Be logical and systematic in your approach | Provide a consistent and secure environment | Let them know how things will be done | Use sincere appreciation | Show their importance to the organisation | Let them adapt slowly to change | Be prepared for: | Friendliness to colleagues and supervisors | Resistance to change | Difficulty identifying priorities | Difficulty with deadlines | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 39 | COMMUNICATING TO „C‟ DIMENSION OF BEHAVIOUR | High C‟s want others to minimise socialising | give details | and value accuracy | Try to: | Give clear expectations and deadlines | Show dependability | Demonstrate loyalty | Be tactful and emotionally reserved | Allow precedent to be a guide | Be precise and focused | Value high standards | Be prepared for: | Discomfort with ambiguity | Resistance to vague or general information | Desire to double-check | Little need for affiliation with others | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 40 | Adaptability | Natural behaviour is: | What is most comfortable for me | What I feel like doing at the time | What meets my needs | My “comfort zone” | Adapted behaviour is: | What is most appropriate or effective | What I think is the best thing to do | What meets the needs of the situation | Sometimes out of my “comfort zone” | Adaptability is: | The will and the skill to engage in a range of behaviours not necessarily | characteristic of your style in response to dealing effectively with the | requirements of a situation or relationship | Managing relationship tension throughout the relationship process | Learning from each experience and improving | Often over-estimated as a personal skill! | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 41 | EXERCISE: IMPROVING ADAPTABILITY | List at least 2 specific actions each behavioural type can take to improve their level | of adaptability | Type How to improve adaptability | D | i | S | C | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 42 | Applying DiSC to Manage Conflict | There is no workplace that is entirely free of conflict | Depending upon the focus of | your work and the demands placed on you | you may find yourself regularly in | situations fraught with conflict potential | The DiSC model helps identify some of these risky areas so the conflict itself may be | circumvented | lessened or nullified | Potential Areas of Conflict | PRIORITY | Priority refers to what aspect of work is most important | „People‟ or „Task‟ | A „People‟ orientation means the focus is on the human aspects of a | situation | and may sacrifice efficiency or facts in the interests of ensuring | everyone in that situation feels comfortable and happy | i and S styles | see people as the priority | A „Task‟ orientation means the focus is on completion | accuracy and | efficiency of doing the work | and may sacrifice the finer niceties of | human interaction | C and D styles see the Task as the priority | PACE | Pace relates to how quickly tasks are completed | D and i styles prefer to complete things quickly in order to move onto the | next thing | S and C prefer to take time to check for consistency | implications and | accuracy | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 43 | PRIORITY AND PACE CONFLICTS | The greatest area of conflict is between diagonally opposite quadrants where both | priority and pace are areas of conflict | Analyse the preferred behaviour style of the person or people involved in the | conflict | What is their priority? At what pace do they prefer to move things along? | It is important to identify these areas of potential conflict and disagreement so you | work to overcome it through rapport and matching/mirroring behaviours | Be conscious of managing your own preferences for priority and pace so that your | behaviour does not add fuel to the conflict fire! | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 44 | Heading Off Conflict | EXERCISE: WHAT YOU CAN DO TO MANAGE CONFLICT | Thinking of the exercises you have completed | adjustments to your style you can | make and actions you can take | what can you do to manage conflict | or perhaps | even head it off? | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual Page | 45 | v | 110922 | DiSC and Motivation | There are a number of myths about how someone can go about „motivating‟ | someone else | In fact | the truth is: | You cannot motivate other people | All people are motivated | People do things for their reasons | not yours | The four quadrants of DiSC can be re-interpretted to give insights into the reasons | people will be-motivated to do things: | Indirect | Task | People | Direct | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 46 | EXERCISE: | Match the kind of actions that would be likely to encourage each „get it‟ type to | motivate them to get involved | Put D | I | S or C as appropriate in the column provided | „Get it‟ Type What will encourage self motivation? | Praise their help | Clarify often | ask for specifics | Get it done (D) | Be indirect | Tie new ideas to old ones | Ask for realistic direction | advice | Get along (i) | Hold your ground and stay calm | Interrupt their interruptions | Get appreciated (S) | Salute their contributions and get on with | the task | Give them the last word | Acknowledge their contribution | Get it right (C) | Involve them in the process and in the | recognition | Help them focus on tasks and prioritising | Give them a face-saving out | Encourage input | enthusiasm | Ensure their commitment | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 47 | Behavioural Flexibility | It has been said that | in any situation | the strongest person is the one with the most | behavioural flexibility | That is | they can alter their behaviours and approaches to | ones which will be most effective in the situation | without losing congruency with | their own values and intentions | If our intention is to develop positive relationships with others | they need to be open | to the messages we send them | The door can be closed on this openness by: | Antagonism | Defensiveness | Fear | Mistrust | Much of these reactions can be removed if we can demonstrate a genuine | understanding and common ground with the person | Some of this can be | accomplished by the rapport-building technique of matching and mirroring | covered earlier | There are other strategies available as well | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 48 | Universals | Universal statements are statements that generalise a person‟s character or | behaviour in a negative way | The most common types of universal statements | involve the use of words such as “always” | “never” | “again” | “so” | Universal statements are problematic as they tend to point out “what is wrong” | instead of “how to be better” | E | g | “You always leave the toilet seat up” | “You never put the toothpaste cap back on” | “You forget to do this every time” | EXERCISE: LIST UNIVERSALS YOU COULD USE IN YOUR WORK SITUATIONS | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 49 | Truisms | Truisms differ from universals in that they are universally true | They create agreement | that builds common ground and rapport | even though they are extremely simple in | expression | E | g | “We know when you are asleep your unconscious can dream” | “You already know how to experience pleasant sensations like the warmth of | the sun on your skin” | EXERCISE: LIST TRUISMS RELEVANT TO THE SITUATION HERE AND NOW | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | __________________________________________________________________________________________ | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 50 | My Action Plan | Someone I work with: | What can I do to adapt my behaviour toward this person? | Someone I work with: | What can I do to adapt my behaviour toward this person? | Someone I work with: | What can I do to adapt my behaviour toward this person? | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 51 | SMART plan | © The Learning Factor | Adapting Your Style - Participant Manual v | 110922 | Page | 52
+Instructional Purpose: Not specified
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Screen Type: Scenario
+Interaction Style: Click-to-Reveal
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+Self Awareness
+“Know thyself. It then follows as the night the day,
+thou canst not then be false to any man.”
+– William Shakespeare
+Self Concept
+Ù Your image of who you
+are, a collation of the
+pictures, perceptions and
+ideas you have about
+yourself
+Causes of Inaccuracies in our Self Concept
+Ù Old, obsolete information
+Ù Overly critical views
+Ù Myths of perfection
+Ù We do not make good ‘carbon
+copies’
+Factors in Determining Whether to Self Disclose
+Ù Your goals
+Ù Respect for receiver
+Ù Amount
+Ù Topic
+Ù Breadth
+Ù Depth
+Ù Timing
+Ù Verbal/nonverbal messages
+Ù Positivity/negativity
+Ù Target recipient
+Ù Social context (what occasions
+with what rules?)
+Who Are You?
+Ù What do the suggestions you
+make tell you about who you
+are?
+Elements of Trust
+Ù Openness
+Ù Credibility
+Ù Dependability
+Ù Predictability
+Ù Valuing the common good
+Ù Emotional safety
+Ù Familiarity/similarity
+Rapport
+Ù When the differences
+between you and another
+person are minimised, and
+the similarities are
+enhanced
+Behaviour Is…
+Ù Observable
+Ù Situationally-based
+Ù Flexible
+Ù Dynamic
+Ù Based on thoughts and
+beliefs
+Marston’s Model: Self
+Perceives self as more powerful than the environment
+D i
+C
+S
+Perceives self as less powerful than the environment
+Marston’s Model: Environment
+D i
+Perceives an
+unfavourable
+environment
+Perceives a
+favourable
+environment
+C
+S
+Marston’s Model Simplified
+High D
+Ù Sees an unfavourable
+environment that they
+want to overcome
+Ù Tries to change, fix, or
+control things
+High i
+Ù Sees a favourable
+environment in which they
+can influence others
+Ù Tries to persuade,
+promote, or influence
+others
+High S
+Ù Sees a favourable environment
+that they want to maintain
+Ù Tries to be cooperative,
+supportive, and agreeable
+while keeping things stable
+High C
+Ù Sees an unfavourable
+environment that they do not
+want to try to change
+Ù Tries to work within established
+rules, guidelines, and
+procedures to ensure accuracy
+and quality
+Direct, Dominant, Decisive
+Direct, Dominant, Decisive
+Shapes the environment by overcoming opposition to
+accomplish results
+Ù Getting immediate results
+Ù Causing action
+Ù Accepting challenges
+Ù Making quick decisions
+Ù Questioning the status quo
+Ù Taking authority
+Ù Managing trouble
+Ù Solving problems
+D Preferred Environment
+Ù Power and authority
+Ù Prestige and challenge
+Ù Direct answers
+Ù A wide scope of operations
+Ù Opportunities for individual
+accomplishment
+Ù Opportunities for
+advancement
+Ù Freedom from controls and
+supervision
+Ù Many new and varied
+activities
+Influencing, Inspiring
+Influencing, Inspiring
+Shapes the environment by influencing or persuading
+others.
+Ù Contacting people
+Ù Making a good impression
+Ù Being articulate
+Ù Creating a motivational
+environment
+Ù Entertaining people
+Ù Being optimistic
+Ù Participating in a group
+i Preferred Environment
+Ù Popularity, social recognition
+Ù Public recognition of ability
+Ù Freedom of expression
+Ù Group activities outside of job
+Ù Freedom from control and detail
+Ù Coaching and counselling
+Ù Favourable working conditions
+Steadiness, Stable, Secure
+Steadiness, Stable, Secure
+Cooperates with others within existing circumstances
+to carry out tasks
+Ù Demonstrating patience
+Ù Showing loyalty
+Ù Helping others
+Ù Performing in a
+consistent manner
+Ù Being a good listener
+Ù Developing specialised
+skills
+Ù Creating a stable work
+environment
+S Preferred Environment
+Ù Maintenance of status quo
+Ù Predictable routines
+Ù Credit for work accomplished
+Ù Minimal work infringement on home life
+Ù Sincere appreciation
+Ù Identification with a group
+Ù Minimal conflict
+Correct, Conscientious, Careful
+Correct, Conscientious, Careful
+Works conscientiously within existing circumstances
+to ensure quality
+Ù Concentrating on
+key details
+Ù Being diplomatic
+Ù Checking for accuracy
+Ù Adhering to key directives
+and standards
+Ù Thinking analytically
+Ù Using indirect
+approaches to conflict
+Ù Using a systematic
+approach to situations
+C Preferred Environment
+Ù Control of those factors that affect their performance
+Ù Clearly defined performance expectations
+Ù Values on quality and accuracy
+Ù A reserved, business-like atmosphere
+Ù Recognition for specific skills and accomplishments
+Activity
+Ù How you are at your best?
+Ù How you are at your worst?
+Ù What is an animal mascot that typifies the essence of
+your D, i, S or C behaviour?
+Ù What is a brief slogan, theme or jingle (or draw a flag)
+that represents your primary behaviour type?
+Basic DiSC Concepts
+Ù Similar styles tend to be compatible socially
+Ù Work task effectiveness is strengthened by mixing
+different styles
+Ù Mixing different styles may result in interpersonal
+conflicts
+Ù We can effectively work together with all styles –
+provided that certain conditions exist:
+a. Mutual respect
+b. Mutual trust
+c. Willingness to adapt
+Communicating with D
+Do:
+Ù Be brief, direct, and to the point
+Ù Remember they desire results
+Ù Answer “What”, not “How”
+Ù Focus on task, cut small talk
+Ù Identify opportunities/challenges
+Communicating with D
+Don’t:
+Ù Ramble
+Ù Repeat yourself
+Ù Waste time
+Ù Make statements without support
+Communicating with i
+Do:
+Ù Allow social time
+Ù Give them opportunity to talk
+Ù Show excitement
+Ù Involve brainstorming/creativity
+Ù Ask feeling/opinion questions
+Ù Help transfer talk to action
+Communicating with i
+Don’t:
+Ù Skip introductions
+Ù Do all the talking
+Ù Give lots of details
+Ù Answer “Who”, not “What” or “How”
+Communicating with S
+Do:
+Ù Go slow and easy/be patient
+Ù Earn trust
+Ù Show genuine interest
+Ù Draw out their opinion
+Ù Provide reassurance/show benefit
+Ù Answer all questions
+Communicating with S
+Don’t:
+Ù Rush decision
+Ù Be pushy, aggressive, demanding or confrontational
+Ù Be vague/general
+Communicating with C
+Do:
+Ù Prepare in advance
+Ù Use facts/be specific
+Ù Address pros and cons
+Ù Use logical/organised approach
+Ù Be patient, persistent, and diplomatic
+Communicating with C
+Don’t:
+Ù Answer questions vaguely/casually
+Ù Socialise
+Ù Rush
+Ù Forget documentation
+Adaptability
+Ù The will and the skill to engage in a range of behaviours
+not necessarily characteristic of your style in response to
+dealing effectively with the requirements of a situation or
+relationship
+What is Adaptability?
+Ù Managing relationship tension throughout the relationship
+process
+Ù Learning from each experience and improving
+Creating Comfort in Relationships
+Higher
+Individual
+Tension
+Individual
+Discomfort
+Zone
+Individual
+Comfort
+Zone
+Lower
+Lower Your Adaptability Higher
+Key Points about Adaptability
+Ù We think we are more adaptable than we really are
+Ù None of us has “perfect” adaptability
+Ù Adaptability is a tool
+Ù Adaptability is situational
+Improving Adaptability
+If you are High “D” you can:
+Ù Reduce your emphasis on controlling people and
+conditions
+Ù Be more patient
+Ù Be more accepting and open to others
+Ù Listen more
+Improving Adaptability
+If you are High “i” you can:
+Ù Reduce your emphasis on approval from others
+Ù Be open to facts and data
+Ù Be more prepared and organised
+Ù Listen more
+Improving Adaptability
+If you are a High “S” you can:
+Ù Reduce your emphasis on resistance to new ideas and
+opportunities
+Ù Be more direct with your opinion
+Ù Be quicker to adapt
+Improving Adaptability
+If you are High “C” you can:
+Ù Reduce your emphasis on perfectionism
+Ù Be more flexible in solving problems
+Ù Be more open to the views of others
+Summary
+We are most effective when we:
+Ù Understand our own behaviour
+Ù Understand the behaviour of others
+Ù Assess the needs of the situation
+Ù A
+
+--- CONTENT FROM FILE: Adapting Your Style_PowerPoint_v110922  -  Compatibility Mode.pdf ---
+
+Adapting Your Style
+
+Course Objectives
+ÙRecognise your behavioural tendencies and how they 
+affect others
+ÙIdentify respect, appreciate, and value individual 
+differences
+ÙDevelop strategies for working together to increase 
+productivity
+ÙEnhance your effectiveness in completing tasks by 
+improving your relationships with others
+
+“I will go anywhere, provided it be forward.”
+— David Livingstone
+
+Self Awareness
+“Know thyself.  It then follows as the night the day, 
+thou canst not then be false to any man.”
+–William Shakespeare
+
+Self Concept
+ÙYour image of who you 
+are, a collation of the 
+pictures, perceptions and 
+ideas you have about 
+yourself 
+
+Causes of Inaccuracies in our Self Concept
+ÙOld, obsolete information
+ÙOverly critical views
+ÙMyths of perfection
+ÙWe do not make good ‘carbon 
+copies’
+
+Factors in Determining Whether to Self Disclose
+ÙYo u r   g o a l s
+ÙRespect for receiver 
+ÙAmount
+ÙTo p i c
+ÙBreadth
+ÙDepth
+ÙTiming
+ÙVerbal/nonverbal messages
+ÙPositivity/negativity
+ÙTa r g e t   r e c i p i e n t
+ÙSocial context (what occasions 
+with what rules?)
+
+Who Are You?
+ÙWhat do the suggestions you 
+make tell you about who you 
+are? 
+
+Elements of Trust
+ÙOpenness
+ÙCredibility
+ÙDependability
+ÙPredictability
+ÙValuing the common good
+ÙEmotional safety
+ÙFamiliarity/similarity
+
+Rapport
+ÙWhen the differences 
+between you and another 
+person are minimised, and 
+the similarities are
+enhanced 
+
+Behaviour Is...
+ÙObservable
+ÙSituationally-based
+ÙFlexible
+ÙDynamic
+ÙBased on thoughts and
+beliefs
+
+Marston’s Model: Self
+Perceives self as more powerful than the environment
+Di
+S
+C
+Perceives self as less powerful than the environment
+
+Marston’s Model: Environment
+Di
+SC
+Perceives an 
+unfavourable 
+environment
+Perceives a 
+favourable 
+environment  
+
+Marston’s Model Simplified
+
+High D
+ÙSees an unfavourable 
+environment that they 
+want to overcome
+ÙTries to change, fix, or 
+control things
+
+High i
+ÙSees a favourable 
+environment in which they 
+can influence others
+ÙTries to persuade, 
+promote, or influence 
+others
+
+High S
+ÙSees a favourable environment 
+that they want to maintain
+ÙTries to be cooperative, 
+supportive, and agreeable 
+while keeping things stable
+
+High C
+ÙSees an unfavourable 
+environment that they do not 
+want to try to change
+ÙTries to work within established 
+rules, guidelines, and 
+procedures to ensure accuracy 
+and quality
+
+Direct, Dominant, Decisive
+
+Direct, Dominant, Decisive
+Shapes the environment by overcoming opposition to 
+accomplish results
+ÙGetting immediate results
+ÙCausing action
+ÙAccepting challenges
+ÙMaking quick decisions
+ÙQuestioning the status quo
+ÙTa k i n g   a u t h o r i t y
+ÙManaging trouble
+ÙSolving problems
+
+D Preferred Environment
+ÙPower and authority
+ÙPrestige and challenge
+ÙDirect answers
+ÙA wide scope of operations
+ÙOpportunities for individual 
+accomplishment
+ÙOpportunities for 
+advancement
+ÙFreedom from controls and 
+supervision
+ÙMany new and varied 
+activities
+
+Influencing, Inspiring
+
+Influencing, Inspiring
+Shapes the environment by influencing or persuading 
+others.
+ÙContacting people
+ÙMaking a good impression
+ÙBeing articulate
+ÙCreating a motivational 
+environment
+ÙEntertaining people
+ÙBeing optimistic
+ÙParticipating in a group
+
+i Preferred Environment
+ÙPopularity, social recognition
+ÙPublic recognition of ability
+ÙFreedom of expression
+ÙGroup activities outside of job
+ÙFreedom from control and detail
+ÙCoaching and counselling
+ÙFavourable working conditions
+
+Steadiness, Stable, Secure
+
+Steadiness, Stable, Secure
+Cooperates with others within existing circumstances 
+to carry out tasks
+ÙDemonstrating patience
+ÙShowing loyalty
+ÙHelping others
+ÙPerforming in a 
+consistent manner
+ÙBeing a good listener
+ÙDeveloping specialised 
+skills
+ÙCreating a stable work 
+environment
+
+S Preferred Environment
+ÙMaintenance of status quo
+ÙPredictable routines
+ÙCredit for work accomplished
+ÙMinimal work infringement on home life
+ÙSincere appreciation
+ÙIdentification with a group
+ÙMinimal conflict
+
+Correct, Conscientious, Careful
+
+Correct, Conscientious, Careful
+Works conscientiously within existing circumstances 
+to ensure quality
+ÙConcentrating on 
+key details
+ÙBeing diplomatic
+ÙChecking for accuracy
+ÙAdhering to key directives 
+and standards
+ÙThinking analytically
+ÙUsing indirect 
+approaches to conflict
+ÙUsing a systematic 
+approach to situations
+
+C Preferred Environment
+ÙControl of those factors that affect their performance
+ÙClearly defined performance expectations
+ÙValues on quality and accuracy
+ÙA reserved, business-like atmosphere
+ÙRecognition for specific skills and accomplishments
+
+Activity
+ÙHow you are at your best?
+ÙHow you are at your worst?
+ÙWhat is an animal mascot that typifies the essence of 
+your D, i, S or C behaviour?
+ÙWhat is a brief slogan, theme or jingle (or draw a flag) 
+that represents your primary behaviour type?
+
+Basic DiSC Concepts
+ÙSimilar styles tend to be compatible socially
+ÙWork task effectiveness is strengthened by mixing 
+different styles
+ÙMixing different styles may result in interpersonal 
+conflicts
+ÙWe can effectively work together with all styles – 
+provided that certain conditions exist:
+ a. Mutual respect
+ b. Mutual trust
+ c. Willingness to adapt
+
+Communicating with D
+Do:
+ÙBe brief, direct, and to the point
+ÙRemember they desire results
+ÙAnswer “What”, not “How”
+ÙFocus on task, cut small talk
+ÙIdentify opportunities/challenges
+
+Communicating with D
+Don’t:
+ÙRamble
+ÙRepeat yourself
+ÙWaste time
+ÙMake statements without support
+
+Communicating with i
+Do:
+ÙAllow social time
+ÙGive them opportunity to talk
+ÙShow excitement
+ÙInvolve brainstorming/creativity
+ÙAsk feeling/opinion questions
+ÙHelp transfer talk to action
+
+Communicating with i
+Don’t:
+ÙSkip introductions
+ÙDo all the talking
+ÙGive lots of details
+ÙAnswer “Who”, not “What” or “How”
+
+Communicating with S
+Do:
+ÙGo slow and easy/be patient
+ÙEarn trust
+ÙShow genuine interest
+ÙDraw out their opinion
+ÙProvide reassurance/show benefit
+ÙAnswer all questions
+
+Communicating with S
+Don’t:
+ÙRush decision
+ÙBe pushy, aggressive, demanding or confrontational
+ÙBe vague/general
+
+Communicating with C
+Do:
+ÙPrepare in advance
+ÙUse facts/be specific
+ÙAddress pros and cons
+ÙUse logical/organised approach
+ÙBe patient, persistent, and diplomatic
+
+Communicating with C
+Don’t:
+ÙAnswer questions vaguely/casually
+ÙSocialise
+ÙRush
+ÙForget documentation
+
+Adaptability
+ÙThe will and the skill to engage in a range of behaviours 
+not necessarily characteristic of your style in response to 
+dealing effectively with the requirements of a situation or 
+relationship
+
+What is Adaptability?
+ÙManaging relationship tension throughout the relationship 
+process
+ÙLearning from each experience and improving
+
+Creating Comfort in Relationships
+Individual
+Discomfort
+Zone
+Individual
+Comfort
+Zone
+Individual
+Te n s i o n
+Lower
+Higher
+LowerYo u r  A d a p t a b i l i t yHigher
+
+Key Points about Adaptability
+ÙWe think we are more adaptable than we really are
+ÙNone of us has “perfect” adaptability
+ÙAdaptability is a tool
+ÙAdaptability is situational
+
+Improving Adaptability
+If you are High “D” you can:
+ÙReduce your emphasis on controlling people and 
+conditions 
+ÙBe more patient
+ÙBe more accepting and open to others 
+ÙListen more
+
+Improving Adaptability
+If you are High “i” you can:
+ÙReduce your emphasis on approval from others
+ÙBe open to facts and data
+ÙBe more prepared and organised 
+ÙListen more
+
+Improving Adaptability
+If you are a High “S” you can:
+ÙReduce your emphasis on resistance to new ideas and 
+opportunities 
+ÙBe more direct with your opinion
+ÙBe quicker to adapt 
+
+Improving Adaptability
+If you are High “C” you can:
+ÙReduce your emphasis on perfectionism 
+ÙBe more flexible in solving problems 
+ÙBe more open to the views of others
+
+Summary
+We are most effective when we:
+ÙUnderstand our own behaviour
+ÙUnderstand the behaviour of others
+ÙAssess the needs of the situation
+ÙAdapt our behaviour appropriately
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~NaN scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario-based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.

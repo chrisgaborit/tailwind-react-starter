@@ -1,0 +1,225 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
+  "screenLayout": string | {
+    "description": string,
+    "elements": Array<Record<string, any>>
+  },
+
+  "templateId": string,
+  "screenId": string,
+
+  // Structured audio + legacy mirror
+  "audio": {
+    "script": string,
+    "voiceParameters": {
+      "persona": string,
+      "gender"?: "Female" | "Male" | "Neutral" | string,
+      "pace": string,
+      "tone": string,
+      "emphasis": string
+    },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  // Short OST + optional style block
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: {
+      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+      "color"?: string, "alignment"?: string, "position"?: string,
+      "animation"?: string
+    }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+
+    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],      // HEX codes expected
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "assetId"?: string
+    },
+    "overlayElements"?: Array<{
+      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
+      "content"?: string,
+      "style"?: {
+        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+        "color"?: string, "alignment"?: string, "position"?: string,
+        "padding"?: string, "border"?: string, "animation"?: string
+      },
+      "aiGenerationDirective"?: string
+    }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  // Detailed interaction + legacy mirrors
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
+- Ensure **≥5 distinct interaction types** across the module.
+- Provide **≥3 branching decision points** with consequences + coaching feedback.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment**.
+- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
+- Accessibility: captions ON, alt text, keyboard path & focus order, reduced‑motion fallback.
+
+USER:
+You are designing a Brandon‑Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Page Title\nUnit Launch\nType\nText and Static Image / Graphic\nEvent\nAudio\nOn-Screen Text (OST)\nProfessional Banking Fundamentals\nChapter 7 – Risk Management in Banking\nRisk Indicators and Registers\nLet’s Get Started\nPage Title\nOverview\nType\nText and Static Image / Graphic\nEvent\nAudio\nOn-Screen Text (OST)\nThis unit will take approximately 20 minutes to complete.\nTo navigate through this unit, there are arrows to continue next and go back.\nThis unit is one of several in the Risk Management in Banking chapter. A Knowledge Check will be provided at the conclusion of the chapter to assist in reinforcing your learning. This does not count towards your final exam.\nPage Title\nLearning introduction and objectives\nType\nAnimated Text and Static Image / Graphic\nEvent\nVideo/Audio\nOn-Screen Text (OST)\nIntroduction\nWelcome to the Risk Indicators and Registers unit.\nThis unit addresses the three key tools used to measure, monitor and classify specific risks. These three tools are Key Risk Indicators (KRIs,) a risk register and risk impact ratings.\nBy the end of this unit you will be able to:\nApply Key Risk Indicators to specific risks\nComplete a risk register\nAssign a risk impact rating.\nClick here to begin\nTopic 1: Key Risk Indicators (KRIs)\nPage Title\nIntroducing risk indicators\nType\nStatic text\nClickable icon\nEvent\nAudio\nOn-Screen Text (OST)\nManagers have always looked at information to tell them how well their business is doing. An obvious indicator of performance is financial information, such as the profit and loss statement or sales figures.\nKey Performance Indicators (KPIs) are essential management information. What they do not generally indicate, however, is how much risk is being taken to achieve that performance.\nBy identifying and assessing the severity of risks and properly understanding the cause of the chain of events, objective measurement criteria – called risk indicators – can be chosen to measure ongoing risk status.\nWHAT ARE RISK INDICATORS?\nMetrics that help with the monitoring and control of identified risks over time. They are a ‘health check’ of the performance of the business and can be used by all functions to ensure that risk is controlled satisfactorily. They usually measure the effects of risk at set control points in the business and act as early warning\nsignals to alert management to problem areas.\nClick next to determine when a risk indicator becomes “key”.\nPage Title\nKey Risk Indicators (KRIs)\nType\nTransitional text\nEvent\nAudio\nOn-Screen Text (OST)\nA risk indicator becomes ‘key’ when it tracks a particularly important risk exposure (a key risk) or does so particularly well (a key indicator). Ideally the indicator does both, that is, it tracks a particularly important risk, particularly well.\nA metric is considered a key risk indicator (KRI) when it can be used to measure:\nThe amount of exposure to a risk or risks\nThe effectiveness of controls implemented to reduce or mitigate risk exposure\nHow well risk exposures are being managed\nDID YOU KNOW?\nA KRI provides information about the level of exposure to a given risk at a certain time.\nClick next to determine effective KRIs.\nPage Title\nEffective KRIs\nType\nAltered refer comments\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\n[COLUMN 1 HEADING] To be effective, KRI’s must be:\n[COLUMN 2 HEADING] Drag and drop the definitions to match the terms which determine an effective KRI.29/7 CP reviewer comment: (please alter interaction given email received from TLF 29/7)\nMeasurable = A number, count, percentage, dollar volume.\nPredictable = Provide early warning signals.\nComparable = Track over a period of time (trends).\nInformational = Measure the status of the risk and control.\nPage Title\nExample KRI\nType\nStatic text.\nWhole page Imagery\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nA KRI provides information about the level of exposure to a given risk at a certain time. It should therefore be related to the specific risk whose exposure it represents.\nAn example is the relationship between the risk of process errors and the number of customer complaints. As the number of process errors increases, there is an increased probability of the occurrence of customer complaints.\nPage Title\nOther KRI examples\nType\nStatic text and dynamic interaction on each image\nEvent\nAudio\nOn-Screen Text (OST)\nIn a banking context, other examples of Key Risk Indicators are:\nPeople. High fail rates in training programs, high staff turnover rates, low employee engagement scores.\nTechnology. Failure rates, % system drop-outs; user/customer acceptance.\nRegulatory. Compliance incidents and breaches; privacy breaches; failure to meet AML-CTF obligations.\nPerformance. Failure to meet sales/performance targets; reduction in customer service scores; reduction in customer retention.\nClick next to proceed\nPage Title\nRisk tolerance\nType\nAnimated text\nEvent\nAudio\nOn-Screen Text (OST)\nRisk indicators also provide early warning about whether an exposure to risk is changing.\nDID YOU KNOW?\nTolerances or limits are usually tied to risk indicators (i.e. by defining threshold levels or changes) which, when exceeded, alert management to areas of potential problems.\nSome key risk indicators will be that a specific limit has been exceeded and that action will be required. Of course, if the limit is exceeded by a comparatively small amount, then one type of action may be required, whereas a different  action may be required  from a greater level of\nexcess.\nKRI’s tend to differ across different business units. It is therefore possible that a risk indicator may be a KRI in some businesses but only an RI in another.\nTopic 2: Risk Registers\nPage Title\nRisk register\nType\nTransitional text\nEvent\nAudio\nOn-Screen Text (OST)\nNone\nIn order to manage risk properly it is essential there is a regular and effective monitoring and reporting process in place.\nWHAT IS A RISK REGISTER?\nA risk management tool that can be used to monitor and report on risk. It’s a log of key risks associated with a project or business unit and also includes details of the control measures that have been identified to mitigate the risks.\nKEY CONTENT ITEMS\nThe key content items in a risk register are some or all of the following:\nReference numbers assigned to each identified risk (Risk ID).\nIdentified Risk (Risk Name or Risk Description)\nName of the project/business unit/division.\nDate last reviewed and modified, and by whom.\nA risk score (obtained by multiplying the probability/likelihood x consequence/impact).\nThe control measures (and procedure names) identified for handling the risk.\nWhether the risk is within appetite.\nResidual risk rating (after controls have been applied).\nClick next to calculate a risk score.\nPage Title\nCalculate a risk score\nType\nTransitional/Animated text.\nClick and reveal table.\nEvent\nAudio\nOn-Screen Text (OST)\nNone\nA risk score is Item E in the key content items in a risk register. Let’s take a closer look at calculating a risk score.\nPROBALITY/LIKELIHOOD OF RISK OCCURING\n5\nAlmost certain\n4\nLikely\n3\nPossible\n2\nUnlikely\n1\nRare\nX\nCONSEQUENCE/IMPACT OF RISK EVENT\n5\nSignificant\n4\nExtensive\n3\nModerate\n2\nNegligible\n1\nInsignificant\n= [RISK SCORE]\nPage Title\nExample risk register\nType\nAnimated table\nClick to reveal row items\nEvent\nAudio\nOn-Screen Text (OST)\nRead the Risk Description in the table below. Click to reveal how each risk is treated on our example Risk Register.\nPage Title\nTesting risk register\nType\nText and Static Image / Graphic\nNumber\n13a\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nQuestion 2\nList some of the benefits of maintaining such a risk register for a project or business unit in a bank.\nWrite your response below, then click on the button to see how your answer compares.\nPage Title\nResponse – testing risk
+
+[…truncated…]
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~18 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection, Interactive Video
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Test Rag
+Module Type: Product Training
+Complexity Level: Level 3
+Target Duration (mins): 5
+Audience: Call Centre Staff
+Tone: Authoritative & Concise
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): Paramedic Response
+Instructional Purpose: Soft Skills Development
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: 🖼️ Imagery & Visual Style
+Element	Guideline
+Imagery	Use realistic, high-resolution photography that aligns with a modern workplace or human-centric AI theme. Prefer unsplash.com, pexels.com, or branded stock.
+Graphics	Leverage minimal, premium-quality vector icons when needed. No clip art.
+Backgrounds	Prefer gradient transitions using Bright Purple or clean Black backgrounds.
+Layout Style	Use spacious layouts with clear hierarchy, large headings, and central alignment.
+Visual Effects	Allow light glow or blur effects behind text or on buttons when it enhances readability.
+Page Numbering	Bottom-right corner in Brilliant Blue or White for contrast.
+💬 Tone and Voice
+Forward-thinking, professional, yet human
+Speak with clarity, simplicity, and authority
+Avoid buzzwords; favour real impact and results
+Every statement should feel empowering and visionary
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Company Images (binary uploaded or URLs):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+What legal responsibility do paramedics have when at a voluntary dying site?
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~5 min).
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Include **captions ON** by default, keyboard path hints and focus order.
+- Use **UK English** throughout.
+- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
+
+SPECIFICATION TEMPLATES (adapt as needed):
+- visual.visualGenerationBrief must include:
+  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
+- overlayElements[]:
+  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
+- audio:
+  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
+- interactionDetails:
+  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
+- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
+- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.

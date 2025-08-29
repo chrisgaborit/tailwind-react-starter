@@ -1,45 +1,51 @@
 "use strict";
+/**
+ * ==================================================================
+ * SHARED TYPES FOR STORYBOARD GENERATOR
+ * (Upgraded with AI visual briefs, rich interactions, audio directives,
+ *  and metadata — while remaining backward-compatible with existing code)
+ * ==================================================================
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Language = exports.Tone = exports.ModuleLevel = exports.ModuleType = void 0;
-var ModuleType;
-(function (ModuleType) {
-    ModuleType["Compliance"] = "Compliance";
-    ModuleType["Onboarding"] = "Onboarding";
-    ModuleType["ProductTraining"] = "Product Training";
-    ModuleType["SalesTraining"] = "Sales Training";
-    ModuleType["SoftSkills"] = "Soft Skills";
-    ModuleType["Leadership"] = "Leadership";
-    ModuleType["Safety"] = "Safety";
-    ModuleType["Risk"] = "Risk";
-    ModuleType["Ethics"] = "Ethics";
-    ModuleType["ITProcess"] = "IT Process";
-    ModuleType["Services"] = "Services";
-    ModuleType["Induction"] = "Induction";
-})(ModuleType || (exports.ModuleType = ModuleType = {}));
+exports.InstructionalPurpose = exports.LearningMode = exports.MODULE_TYPES = exports.ModuleLevel = void 0;
+/* ---------------------------------------
+   Levels / Module kinds / Tone / Language
+----------------------------------------*/
 var ModuleLevel;
 (function (ModuleLevel) {
-    ModuleLevel["Level1"] = "Level 1 - Focus: Foundational knowledge. Style: Direct instruction, simple interactions (e.g., click next, simple MCQs).";
-    ModuleLevel["Level2"] = "Level 2 - Focus: Application and understanding. Style: More interactivity, scenarios, case studies, guided exploration (e.g., tabs, drag & drop).";
-    ModuleLevel["Level3"] = "Level 3 - Focus: Strategic thinking, complex problem-solving. Style: High interactivity, simulations, branching scenarios, deep reflection.";
-    ModuleLevel["Level4"] = "Level 4 - Focus: Immersive and adaptive learning. Style: Gamification, AI-driven personalisation, virtual/augmented reality, advanced simulations.";
+    ModuleLevel["Level1"] = "Level 1";
+    ModuleLevel["Level2"] = "Level 2";
+    ModuleLevel["Level3"] = "Level 3";
+    ModuleLevel["Level4"] = "Level 4";
 })(ModuleLevel || (exports.ModuleLevel = ModuleLevel = {}));
-var Tone;
-(function (Tone) {
-    Tone["Professional"] = "Professional";
-    Tone["Conversational"] = "Conversational";
-    Tone["Inspirational"] = "Inspirational";
-    Tone["Authoritative"] = "Authoritative";
-})(Tone || (exports.Tone = Tone = {}));
-var Language;
-(function (Language) {
-    Language["English"] = "English";
-    Language["Spanish"] = "Spanish";
-    Language["French"] = "French";
-    Language["ChineseSimplified"] = "Chinese (Simplified)";
-    Language["Hindi"] = "Hindi";
-    Language["Arabic"] = "Arabic";
-    Language["German"] = "German";
-    Language["Japanese"] = "Japanese";
-    Language["Indonesian"] = "Indonesian";
-    Language["Devanagari"] = "Devanagari (Script for Hindi, Marathi, etc.)";
-})(Language || (exports.Language = Language = {}));
+exports.MODULE_TYPES = [
+    "Compliance",
+    "Onboarding & Induction",
+    "Product Training",
+    "Soft Skills & Leadership",
+    "Systems & Process Training",
+    "Customer Service",
+    "Health, Safety & Wellbeing",
+    "Sales & Marketing",
+    "Technical or Systems Training",
+    "Personal Development",
+];
+/* ---------------------------------------
+   Auxiliary enums used by UI components
+----------------------------------------*/
+var LearningMode;
+(function (LearningMode) {
+    LearningMode["SelfPaced"] = "Self-paced";
+    LearningMode["InstructorLed"] = "Instructor-led";
+    LearningMode["VirtualClass"] = "Virtual classroom";
+    LearningMode["Blended"] = "Blended";
+})(LearningMode || (exports.LearningMode = LearningMode = {}));
+var InstructionalPurpose;
+(function (InstructionalPurpose) {
+    InstructionalPurpose["Awareness"] = "Awareness";
+    InstructionalPurpose["Knowledge"] = "Knowledge";
+    InstructionalPurpose["Skill"] = "Skill / Practice";
+    InstructionalPurpose["Behaviour"] = "Behaviour change";
+    InstructionalPurpose["Assessment"] = "Assessment / Certification";
+})(InstructionalPurpose || (exports.InstructionalPurpose = InstructionalPurpose = {}));
+//# sourceMappingURL=types.js.map

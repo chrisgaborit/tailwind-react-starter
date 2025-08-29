@@ -1,19 +1,20 @@
-// backend/src/StoryboardFormData.ts
+// frontend/src/types/StoryboardFormData.ts
 
 export interface StoryboardFormData {
   moduleName: string;
   moduleType: string;
-  organisationName: string;
-  outputLanguage: string;
-  brandGuidelines: string;
-  logoUrl: string;
-  colours: string;
-  fonts: string;
-  learningOutcomes: string;
-  targetAudience: string;
-  knowledgeCheck: string;
   complexityLevel: string;
-  duration: string;
   tone: string;
-  moduleComplexity: string;
+  outputLanguage: string;
+  duration?: string;
+  learningModes?: string[];
+  organisationName?: string;
+  targetAudience?: string;
+  colours?: string;
+  fonts?: string;
+  learningOutcomes: string;
+  content: string;
+  screenType?: string;
+  interactionStyle?: string;
+  instructionalPurpose?: string;
 }

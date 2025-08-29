@@ -34,3 +34,20 @@ coverage/
 .idea/
 *.local
 *.cache
+# Python venvs
+.venv/
+embedding-migration/.venv/
+
+# Debug + scratch
+backend/.debug/
+*.log
+*.map
+
+# PDFs / test artifacts
+*.pdf
+test-*.pdf
+backend/test-*.pdf
+backend/storyboard_*.pdf
+
+# macOS files
+.DS_Store

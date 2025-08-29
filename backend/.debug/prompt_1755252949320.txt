@@ -1,0 +1,454 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award‑winning eLearning design director producing build‑ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON‑NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On‑screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+USER:
+You are designing a Brandon‑Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+Scene 306: Debt is a ‘cheaper’ option for companies to raise funds.
+Debt is a ‘cheaper’ option for companies to raise funds.
+
+Scene 307: Scene 307
+Providers of debt have a more senior claim over the entity’s assets or security over specific assets
+
+Scene 308: Scene 308
+An entity’s ability to access debt is dependent upon the existing debt burden and earnings relative to debt
+
+Scene 309: Scene 309
+It is additionally supported by unencumbered real assets that can be pledged as security
+
+Scene 310: Scene 310
+Note: Related party investments or loans may not always be carried at fair or realisable values. Unless the credit quality of the related party is known, a view on the materiality of assets must be determined.
+
+Scene 311: Scene 311
+Now, we need to zoom in on the second topic “Debt/Third-party creditors” and then transition to the next slide – starting with provider of debt.
+
+Scene 312: Scene 312
+Start with the background image and then fade out and bring in the pointers in the same format as equity.
+
+Scene 313: Start with the image and text, and then the three examples one by one
+Start with the image and text, and then the three examples one by one
+
+Scene 314: Next button to go to the next slide.
+Next button to go to the next slide.
+
+Scene 315: 959301380
+959301380
+
+Scene 316: Page Title
+Page Title
+
+Scene 317: Common Issues
+Common Issues
+
+Scene 318: Type
+Type
+
+Scene 319: Animated Screen
+Animated Screen
+
+Scene 320: Number
+Number
+
+Scene 321: 9
+9
+
+Scene 322: Screen Layout
+Screen Layout
+
+Scene 323: Evet
+Evet
+
+Scene 324: Audio
+Audio
+
+Scene 325: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 326: Internal Development Notes
+Internal Development Notes
+
+Scene 327: Screen/Media Treatment
+Screen/Media Treatment
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+Scene 142: Ethical Foundations
+Ethical Foundations
+
+Scene 143: Type
+Type
+
+Scene 144: Text and Image_Scrn_04
+Text and Image_Scrn_04
+
+Scene 145: Number
+Number
+
+Scene 146: 5
+5
+
+Scene 147: Screen Layout
+Screen Layout
+
+Scene 148: Screen Layout
+Screen Layout
+
+Scene 149: Event
+Event
+
+Scene 150: Audio
+Audio
+
+Scene 151: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 152: Internal Development Notes
+Internal Development Notes
+
+Scene 153: Screen/Media Treatment
+Screen/Media Treatment
+
+Scene 154: 1
+1
+
+Scene 155: None
+None
+
+Scene 156: ETHICAL FOUNDATIONS
+ETHICAL FOUNDATIONS
+
+Scene 157: Scene 157
+Ethical foundations are the fundamental values or principles that resonate with you, with the first being to ‘know thyself’. Spend time reflecting on your values and how you interpret what is right or good.
+
+Scene 158: Scene 158
+Like Aristotle, you may find that you want to cultivate virtues – practising certain habits – to extend and build your character into your best version of yourself.
+
+Scene 159: Scene 159
+Of course, this is likely to take a lifetime, so don’t be disappointed if you don’t meet all your own high standards every now and again.
+
+Scene 160: Scene 160
+Another ethical foundation is to know and understand your industry, your profession’s and your organisation’s ethical foundations.
+
+Scene 161: Scene 161
+These ethical foundations are often outlined in codes of ethics or conduct and are covered in detail in a later unit.
+
+Scene 162: Scene 162
+Codes can provide an effective resource to assist in making better ethical decisions.
+
+Scene 163: Possible image sourced via google images.
+Possible image sourced via google images.
+
+Scene 164: Static text with image
+Static text with image
+
+Scene 165: Standard screen navigation
+Standard screen navigation
+
+Scene 166: Page Title
+Page Title
+--- END OF EXAMPLE 2 ---
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag‑drop). Place a KC every **3–5 scenes**.
+- Provide **option‑level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Adapting Your Style
+Module Type: eLearning
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Leaders
+Tone: Professional, encouraging
+Output Language: English (UK)
+Organisation: Not specified
+Learning Outcomes (desired): Author to propose 3–5 outcomes aligned to the brief.
+Instructional Purpose: Not specified
+Brand Guidelines: None provided
+Colours: Default
+Fonts: Default
+Screen Type: Standard layout
+Interaction Style: Not specified
+Additional Notes: None
+
+--- SOURCE CONTENT (verbatim snippets allowed) ---
+
+
+--- CONTENT FROM FILE: storyboard_adapting_your_style-2.pdf ---
+
+
+
+Adapting Your Style
+Generated 15/08/2025, 4:59:30 pm
+Page Title
+Title
+Type
+Informative
+Number
+p01
+Screen Layout
+Standard slide layout • Clean corporate • Centered hero subject, negative space for UI text • Neutral office background
+AI Image Prompt
+Clean, modern illustration; accessible contrast; room 
+for headings; 16:9
+Alt Text
+Illustration supporting "Title"
+Aspect / Env
+16:9 • Neutral office background
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Welcome to Adapting Your Style).
+Adapting Your Style)
+Logo lockup; no interaction.
+Page 1 of 7
+
+Page Title
+Pronunciation Guide
+Type
+Interactive
+Number
+p02
+Screen Layout
+Standard slide layout • Clean corporate • Centered hero subject, negative space for UI text • Neutral office background • Interaction: Scenario
+AI Image Prompt
+Clean, modern illustration; accessible contrast; room 
+for headings; 16:9
+Alt Text
+Illustration supporting "Pronunciation Guide"
+Aspect / Env
+16:9 • Neutral office background
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Here are pronunciations for key terms 
+used in this module.
+Key terms with phonetic guidance.
+Two-column list: Term | Pronunciation. 
+Populate from pronunciationGuide if 
+available.
+Page 2 of 7
+Page Title
+Table of Contents
+Type
+Interactive
+Number
+p03
+Screen Layout
+Standard slide layout • Clean corporate • Centered hero subject, negative space for UI text • Neutral office background • Interaction: Scenario
+AI Image Prompt
+Clean, modern illustration; accessible contrast; room 
+for headings; 16:9
+Alt Text
+Illustration supporting "Table of Contents"
+Aspect / Env
+16:9 • Neutral office background
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Overview of topics and activities you'll 
+complete.
+What you'll cover
+List from tableOfContents or infer from 
+scene titles.
+Page 3 of 7
+
+Page Title
+Welcome & Learning Objectives
+Type
+Interactive
+Number
+p04
+Screen Layout
+Standard slide layout • Clean corporate • Centered hero subject, negative space for UI text • Neutral office background • Interaction: Scenario
+AI Image Prompt
+Clean, modern illustration; accessible contrast; room 
+for headings; 16:9
+Alt Text
+Illustration supporting "Welcome & Learning 
+Objectives"
+Aspect / Env
+16:9 • Neutral office background
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+By the end of this module, you will be 
+able to Recognise your behavioural 
+tendencies and how they affect others; 
+Identify respect; appreciate; and value 
+individual differences; Develop 
+strategies for working together to 
+increase productivity; Enhance your 
+effectiveness in completing tasks by 
+improving your relationships with others.
+Learning Objectives: - Recognise your behavioural
+tendencies and how they affect others - Identify
+respect - appreciate - and value individual
+differences - Develop strategies for working together
+to increase productivity - Enhance your
+effectiveness in completing tasks by improving your
+relationships with others
+Show outcomes on-screen and in VO; keep 
+OST under 70 words.
+Page 4 of 7
+
+Page Title
+Self-Awareness
+Type
+Interactive
+Number
+p05
+Screen Layout
+Split Screen • Illustrative, Inspirational • Focus on the mirror reflection • Personal space • Interaction: Click-to-Reveal
+AI Image Prompt
+Illustration of a person looking in a mirror, reflective 
+and thoughtful
+Alt Text
+Illustration of a person looking at themselves in the 
+mirror, contemplating their self-image
+Aspect / Env
+4:5 • Personal space
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Self-awareness forms the core of personal 
+growth. As Shakespeare once said, 'Know 
+thyself'. Understanding who you are and 
+your self-concept can guide your 
+interactions and decisions.
+Explore how self-awareness and your
+understanding of self-concept influence your
+interactions.
+Completion rule: User must click all 
+areas to continue. xAPI Verb: Experienced
+Page 5 of 7
+
+Page Title
+Marston’s Model of Behaviour
+Type
+Interactive
+Number
+p06
+Screen Layout
+Interactive Diagram • Infographic • Centered categories with expandable info • Neutral backdrop • Interaction: Interactive Diagram
+AI Image Prompt
+Animated diagram illustrating Marston's Model of 
+Behaviour with arrows and labels
+Alt Text
+Animated infographic showing Marston’s Behavioural 
+Model with Dominant, Influencing, Steady, 
+Conscientious categories
+Aspect / Env
+1:1 • Neutral backdrop
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Marston's Model categorises behaviours as 
+Dominant, Influencing, Steady, and 
+Conscientious. Each behaviour adapts 
+based on environmental favourability and 
+personal power perception.
+Discover your behavioural style through Marston’s
+Model: Dominant, Influencing, Steady, or
+Conscientious.
+Completion rule: Explore all model 
+sections. xAPI Verb: Interacted
+Provide option-level feedback. Allow 
+retry.
+Page 6 of 7
+
+Page Title
+Adaptability in Action
+Type
+Interactive
+Number
+p07
+Screen Layout
+Scenario-Based • Realistic • Close-up on participants’ faces showing expressions • Office meeting room • Interaction: Interactive Video
+AI Image Prompt
+Scenario-based video showing two colleagues 
+resolving a conflict through adaptive communication
+Alt Text
+Two professionals in discussion resolving conflict 
+through adaptive communication
+Aspect / Env
+16:9 • Office meeting room
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Adaptability is the skill to adjust your 
+behaviour according to the situation or 
+relationship needs. It’s pivotal in 
+fostering effective communication and 
+reducing relationship tension.
+Learn how adaptability enhances your interactions
+and decreases tension in relationships.
+Branching paths based on user choices. 
+xAPI Verb: Completed when all branches 
+explored.
+Page 7 of 7
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~20 scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario‑based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.

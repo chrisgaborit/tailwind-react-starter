@@ -83,3 +83,26 @@
     scrollbar-color: #555 #2c2c2e;
   }
 }
+
+/* ✅ PDF Export Helpers (for html2pdf.js) */
+.pdf-pagebreak {
+  break-after: page;
+  page-break-after: always;
+}
+
+.pdf-avoid-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+[data-html2canvas-ignore="true"] {
+  display: none !important;
+}
+
+/* ✅ Ensure backgrounds and colors print faithfully */
+@media print {
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
