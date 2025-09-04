@@ -1,0 +1,32 @@
+/* frontend/src/styles/brand.css */
+:root {
+  /* surface */
+  --sb-card-bg: #ffffff;
+  --sb-app-bg: #0b1220;
+
+  /* text */
+  --sb-text: #0f172a;
+  --sb-muted: #64748b;
+
+  /* borders */
+  --sb-border: #e5e7eb;
+
+  /* top bar */
+  --sb-bar-bg: #eaf3ff;      /* light brand tint */
+  --sb-bar-title: #0f172a;   /* label text */
+  --sb-bar-value: #005eb8;   /* brand primary */
+
+  /* table */
+  --sb-th-bg: #f3f4f6;
+  --sb-th-text: #111827;
+
+  /* accents */
+  --sb-accent: #0ea5e9;
+}
+
+/* Optional: quick preset example (AMP-ish) */
+.brand-amp {
+  --sb-bar-bg: #eef6ff;
+  --sb-bar-value: #0070c0;
+  --sb-border: #e2e8f0;
+}

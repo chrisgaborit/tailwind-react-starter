@@ -1,0 +1,154 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director producing build-ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (extra fields allowed but these MUST exist):
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "moduleTiming": {
+    "declaredMinutes": number,
+    "estimatedMinutes": number,
+    "notes"?: string
+  },
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,            // full script
+  "audioDirection"?: string,            // tone, pacing, emphasis e.g. [Tone: Encouraging][Pacing: Deliberate]
+  "onScreenText": string,               // ≤ 70 words
+  "timingSeconds"?: number,             // suggested time on this scene
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,                 // keep for compatibility
+    "aiBrief"?: string,                 // NEW: hyper-specific "AI Visual Generation Brief"
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string,
+    "brandIntegration"?: string
+  },
+  "videoAnimationBrief"?: string,       // if any animated/video elements
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,             // include [AI Action] & [AI Decision Logic] blocks
+  "accessibilityNotes": string
+}
+
+Brandon Hall Standard Enforcement:
+- Align total scene count to the *target scenes* from the brief (±2).
+- Ensure **≥5 distinct interaction types** across the module (click-to-reveal, drag & drop, scenario/branching, role play, quiz, simulation).
+- Include at least **3 branching decision points** with consequences and coaching feedback.
+- Insert a **knowledge check every 3–5 scenes** (varied formats).
+- End with a **capstone branching scenario** and an **action plan / commitment**.
+- Every scene must include: concise narration (full script), ≤70w OST (not a VO duplicate), concrete visual **aiBrief + alt text**, interaction (if applicable), developer notes (logic, completion rule/xAPI), and **timingSeconds** estimate.
+- Accessibility: captions ON, alt text, keyboard path hints and focus order guidance.
+
+VISUAL BRIEFING RULES (apply to visual.aiBrief):
+- Include **style** (Photorealistic / Vector / Flat / 3D / Abstract), **dominant & accent colours**, **subject matter** (who/what/how many), **composition/camera** (e.g., medium shot, eye-level, shallow depth), **mood/emotion**, and **brand integration** (e.g., subtle accents, motifs).
+- For interactivity visuals, specify UI components, states, and animations (e.g., 5 draggable chips with labels; buttons with selected/hover states; feedback panel slide-in).
+- Example for MCQ: “Question text in bold white; three large option buttons (A/B/C). Selected state adds bright border. Feedback panel animates up from bottom with subtle glow.”
+
+INTERACTION / FEEDBACK DETAIL (developerNotes must contain):
+- **[AI Action]** step-by-step behaviours (DnD success snap & lock; incorrect shake-back + hint).
+- **[AI Decision Logic]** for branching (if A → go to 10A; if B → 10B; log xAPI).
+- **Option-level feedback** for MCQs and **retry** logic.
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Topic\nThe Mindful Young Brain\nScreen type\nVideo\nScreen Title\nCourse Overview\nScreen number\n001\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\nNOTES (Client Comments)\nNote to Graphics (Global instructions)\nClient Feedback 2 Dec 2024\nPLEASE NOTE: In the updated storyboard, we have replaced outdated terminology like 'Childcare centre' with 'Early Childhood Education and Care Centres' to align with current standards. References to 'Colouring in' and 'Colour zones' have been removed, as these do not reflect ECEC principles. Instead, we have incorporated sensory-based activities that encourage children to identify emotions through body sensations and relational discussions, following Dr. Bruce Perry’s approach. Visuals must now reflect these changes by showcasing natural, calming environments and materials (e.g., bark, sand, leaves) instead of bright colours, plastic items, or abstract representations. Please review all visuals to ensure they emphasize supportive, sensory-rich settings that align with the developmental needs of children aged 0–5.\nPLEASE ALSO check that all spelling is UK English\nKeep this in mind for selection of images.\nPlease consider all images here as references and make final selections based on client feedback.\nWelcome to 'Think2Be Healthy,' the first module of our transformative course dedicated to exploring mindfulness and its pivotal role in early childhood development. I am Hilton Misso. My personal story is a testament to the power of the principles we'll explore together.\nGreen screen video.\nPresenter in the centre of the screen.\nShow Think2Be Healthy (please use the logo) centralised either above the presenter or at the bottom of the screen.\na\nAs a child, I faced daunting challenges: a fragile self-image, health issues, and a lack of motivation.\nShow icons for fragile self-image, health issues and lack of motivation at the bottom of the screen or in the space behind the presenter.\nSome references (see if these can be animated going from happy/neutral to sad)\nClear the icons at the end of the VO.\nPLEASE NOTE: An important thing to note is  that the Trend right now in all the Centres is natural colours, “nature colours” – this is seen in how the centres are painted, what the children wear and the toys and things they play with – imagine like like colours of dirt and sand and trees and nature. The Educators actually go out before they start the week and collect trees and bark and sand so the children can use these things to play with and maybe they would use a leaf to paint with rather than a brush. They DON’T use bright colours, they DON’T use plastics and have colourful walls or toys, its all very natural colours and things tio play with and even if they have say plastic toys they are natural colours and they use them with other natural things\nMy aspirations didn't extend beyond becoming a struggling musician.\nPresenter in the centre of the screen.\nBut today, I stand before you with a life that surpasses even my most ambitious dreams. I'm blessed with a wonderful family, an exceptional team, and a successful career that includes building one of Queensland's largest law firms, establishing 14 childcare centres, and owning a substantial real estate portfolio.\nMove the presenter to one side (or maybe top right) and show images and logos relevant to the VO.\nYou can take the images and logos shared by the client.\nEnvironments BEST\nhttps://www.dropbox.com/scl/fo/8r0w3yssjj4ywje0jydfv/h?rlkey=fxbd5g7e12bzka48n0f7tiltp&dl=0\nEnvironments\nhttps://www.dropbox.com/scl/fo/l4zbsanfkrs4la0vlvijk/h?rlkey=ptsburjode2ma6sfp04cmx65s&dl=0\nEnvironments\nhttps://www.dropbox.com/scl/fo/5vicn51n657pkecyddq3c/h?rlkey=wfthq3xa9uts91pmnfbqg1b24&dl=0\nSL Redcliffe people\nhttps://www.dropbox.com/scl/fo/cfc2n3swh7r3sqz56sxpz/h?rlkey=09e1pqhr67o94eqgrt7k9qe1a&dl=0\nSL Joyner people\nhttps://www.dropbox.com/scl/fo/06j2j4hhjio6javpvdgoh/h?rlkey=gogn03vt9soketk4xn9gvk79t&dl=0\nSL Cotton Tree people\nhttps://www.dropbox.com/scl/fo/9c0evujetau12ctegf9z1/h?rlkey=rfc0nrgxhxmcobd3om8koxz0f&dl=0\nSL Flinders people\nhttps://www.dropbox.com/scl/fo/j9vb9e72vrwjjkz1fh001/h?rlkey=d0m2re2x61f6fgd6pi82hz9gn&dl=0\nStock images\nhttps://www.dropbox.com/sh/9gjgiq6jhxxq4vw/AABAwcfs4_US04ygU6K3cYEfa?dl=0\nThis course isn't just about personal success; it's about empowering each and every one of you, and every child, to reach your full potential.\nShow images and/or videos of kids in the learning centres used in the client’s website. (Alternatively, you can use a series of photographs of children smiling, studying, playing, interacting with other kids etc. Please ensure that the images are of children of around age 5 and lower.)\nHere use images of only children (no adults).\nYou can probably use a show reel effect or something.\nThe transformation I experienced — from a child with limited prospects to a successful entrepreneur — was fuelled by the very teachings we'll delve into.\nPresenter in the centre of the screen.\nThe benefits of introducing mindfulness at a young age are profound and far-reaching.\nFor school-aged children, mindfulness contributes to heightened focus, improved grades, and better behaviour. Our goal is to equip you with these life-altering tools so that you can affect the children you teach.\nChange the positioning of the presenter.\nIn the free space show images of educators with kids (images from client website and/or the ones chared by the client).\nI am thrilled to welcome you to this course. I am confident that these principles, which have profoundly impacted my life, will do the same for you.\nShow the course landing page.\nNow, let's embark on this journey together, as I pass the stage to our exceptional experts who will lead you through this transformative training.\nTogether, we will learn how to ‘Think2Be Healthy’ in terms of mindfulness, for the betterment of our wonderful educators and our young ‘happy, healthy learners’.\nMove the presenter to the centre of the screen and show the course landing page in the background.\nTopic\nThe Mindful Young Brain\nScreen type\nScreen Title\nIntroduction\nScreen number\n002\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\nNOTES (Client Comments)\nWelcome to this topic of immense importance and timeliness: Mindfulness.\nBut what exactly is mindfulness?\nMindfulness\nShow the OST from the start of the VO.\nIn sync with the word ‘Mindfulness’ in the VO, underline it’\nSimply put, it is being fully present in a moment.\nBeing fully present mean being fully aware of what is happening within yourself and in your environment.\n[Definition: Cambridge Dictionary]\nRetain the underlined word from the first event and below that show the definition (with attribution).\n(Have copied the OST image in this column also for reference)\n[Definition: Cambridge Dictionary]\nThe state of mindfulness forms a bedrock which enables emotional self-regulation and mental well-being.\nScreen refresh.\nShow something like the reference below. Build the images from left to right in sync with the VO.\nWe need to not use the colour chart\nAs we embark on this exploratory journey into the realm of mindfulness, we’ll uncover how it significantly influences our youngest learners. Our focus is grounded in evidence-based research, highlighting that a child’s brain undergoes rapid development early in life.\nLet's dive in and discover how mindfulness can play a pivotal role in nurturing and guiding this incredible period of growth and development.\nIn this topic, let’s\nBecome aware of the impact of Mindfulness on emotional regulation and understand its  developmental importance\nLearn about Mindfulness Principles\nSee how to apply Mindfulness principles in everyday life\nIdentify long-term benefits of instilling Mindfulness in childhood\nScreen refresh.\nFade in the OST (there is no sync)\nShow (use visual techniques to create a sense of motion t
+
+[…truncated…]
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Power of Positive Thinking
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Employees, Sales, Marketing, Managers
+Tone: Supportive & Encouraging
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): 1 | Enhanced Stress Management: | Positive thinking helps individuals cope with stress more effectively by reframing negative situations and focusing on solutions rather than dwelling on problems | according to the Mayo Clinic | 2 | Improved Self-Esteem and Confidence: | By cultivating positive self-talk and focusing on one's strengths | individuals can build a stronger sense of self-worth and belief in their abilities | 3 | Increased Resilience to Setbacks: | Positive thinking fosters a mindset that views challenges as temporary and opportunities for growth | making it easier to bounce back from failures and setbacks | 4 | Better Physical and Mental Health: | Studies have linked positive thinking to improved physical health | such as reduced risk of cardiovascular disease and a stronger immune system | as well as enhanced mental well-being | 5 | Greater Problem-Solving Abilities: | A positive outlook can make individuals more creative and open to finding solutions to problems | as they are less likely to be bogged down by negative emotions and more likely to approach challenges with optimism
+Instructional Purpose: Soft Skills Development
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Primary Colours Maastricht Blue Hex: #001E41 RGB: (0, 30, 65) Pantone: 282 C  amp.dev +2 schemecolor.com +2 pickcolorcode.com +2 dafont.com +2 nickverbene.com +2 brandgradients.com +2 Maya Blue Hex: #5BCBF5 RGB: (91, 203, 245) Pantone: 305 C  amp.com.au +3 pickcolorcode.com +3 schemecolor.com +3 nickverbene.com +2 schemecolor.com +2 pickcolorcode.com +2 Picton Blue Hex: #31B2E7 RGB: (49, 178, 231) Pantone: 298 C  pickcolorcode.com +1 schemecolor.com +1 australianmade.com.au +6 schemecolor.com +6
+
+[…truncated…]
+Fonts: Font: Poppins Bold Colour: #20202A Sizes: H1: 36 px H2: 28 px H3: 22 px H4: 18 px H5: 16 px H6: 14 px  amp.dev +4 amp.dev +4 nickverbene.com +4 Body Text Font: Noto Sans Regular Colour: #48525C Sizes: Large: 16 px Medium: 14 px  nickverbene.com +2 amp.dev +2 pickcolorcode.com +2 Monospace Text Font: Fira Mono Colour: #000000 Size: 14 px  nickverbene.com +4 amp.dev +4 ampol.com.au +4 pickcolorcode.com +2 schemecolor.com +2 amp.dev +2
+Company Images (use where appropriate, maintain brand fit):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+--- CONTENT FROM FILE: pdfcoffee.com_the-power-of-positive-thinking-pdf-free.pdf ---
+--- END USER BRIEF ---
+
+VISUAL TEMPLATES (apply and adapt as relevant)
+- Title/Informative: Photorealistic office interior; clean lines; neutral palette with subtle brand accents.
+- MCQ: Bold white question text; A/B/C option buttons; selected state border; feedback panel animates in.
+- Drag & Drop: 5 draggable chips; clear labels; dark chips with Brilliant Blue highlight; labelled drop zones.
+- Scenario: Split panels or cards showing options; consequence screens with coaching notes.
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~20 scenes.
+- Each scene: full narration script, OST ≤ 70w, detailed **visual.aiBrief** + alt text, interaction, **developerNotes** with [AI Action] & [AI Decision Logic], **timingSeconds**.
+- Accessibility: captions ON by default; include keyboard path hints.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario-based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+TIMING PLAN
+- Module declared duration: 20 minutes.
+- Provide **moduleTiming.estimatedMinutes** and per-scene **timingSeconds** that sum to within ±15% of declared time.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above, include the first four scenes in order.
+- Populate **visual.aiBrief** with hyper-specific directives (style, palette with hexes if available, subject, composition/camera, mood, brand integration, and interactivity UI states where relevant).
+- Include **audioDirection** for tone/emphasis/pacing.
+- Include **videoAnimationBrief** where animations/videos are used (duration, content, transitions).
+- Include **[AI Action]** and **[AI Decision Logic]** blocks in developerNotes for interactions and branching.

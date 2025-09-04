@@ -1,0 +1,779 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director producing build-ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+Brandon Hall Standard Enforcement:
+- **Align total scene count** to the *target scenes* provided in the user brief (±2), rather than any fixed number per level.
+- Ensure **≥5 distinct interaction types** across the module (e.g., click-to-reveal, drag & drop, scenario/branching, role play, quiz, simulation).
+- Include at least **3 branching decision points** showing consequences with coaching feedback.
+- Insert a **knowledge check every 3–5 scenes** (varied formats).
+- End with a **capstone branching scenario** and an **action plan / commitment**.
+- Every scene must include: concise narration, ≤70w on-screen text (not a VO duplicate), concrete visual prompt + alt text, interaction (if applicable), developer notes (logic, completion rule, xAPI).
+- Accessibility: captions ON, alt text, keyboard path hints and focus order guidance.
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+Scene 203: Type
+Type
+
+Scene 204: Text and Static Image / Graphic
+Text and Static Image / Graphic
+
+Scene 205: Number
+Number
+
+Scene 206: 7
+7
+
+Scene 207: Screen Layout
+Screen Layout
+
+Scene 208: Event
+Event
+
+Scene 209: Audio
+Audio
+
+Scene 210: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 211: Internal Development Notes
+Internal Development Notes
+
+Scene 212: 6.
+6.
+
+Scene 213: Scene 213
+Here is an activity for you. Read the scenario and select the appropriate option.
+
+Scene 214: Scene 214
+Adam has recently quit HVP to start a business of his own. When he is brainstorming ideas with his business partner to acquire clients, it strikes him that he can call his contacts from HVP to help him.
+
+Scene 215: What do you think of this idea?
+What do you think of this idea?
+
+Scene 216: Select the correct option and click Submit.
+Select the correct option and click Submit.
+
+Scene 217: Read the scenario and select the appropriate option.
+Read the scenario and select the appropriate option.
+
+Scene 218: Scene 218
+Adam has recently quit HVP to start a business of his own. When he is brainstorming ideas with his business partner to acquire clients, it strikes him that he can call his contacts from HVP to help him.
+
+Scene 219: What do you think of this idea?
+What do you think of this idea?
+
+Scene 220: Option 1
+Option 1
+
+Scene 221: Yes, that would be a great start for his business.
+Yes, that would be a great start for his business.
+
+Scene 222: Option 2
+Option 2
+
+Scene 223: No, this does not comply with HVP company policies.
+No, this does not comply with HVP company policies.
+
+Scene 224: Correct Feedback
+Correct Feedback
+
+Scene 225: Scene 225
+You are right! Information about the organisation or clients must be kept confidential even after you leave HVP.
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+Scene 441: Screen Layout
+Screen Layout
+
+Scene 442: Event
+Event
+
+Scene 443: Audio
+Audio
+
+Scene 444: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 445: Internal Development Notes
+Internal Development Notes
+
+Scene 446: 12.
+12.
+
+Scene 447: Let us now take a look at the hours of work and performance management.
+Let us now take a look at the hours of work and performance management.
+
+Scene 448: Workday
+Workday
+
+Scene 449: Break frequency
+Break frequency
+
+Scene 450: Time in lieu
+Time in lieu
+
+Scene 451: ELMO
+ELMO
+
+Scene 452: Click each component to learn more.
+Click each component to learn more.
+
+Scene 453: Let us now take a look at the hours of work and performance management.
+Let us now take a look at the hours of work and performance management.
+
+Scene 454: Workday
+Workday
+
+Scene 455: Break frequency
+Break frequency
+
+Scene 456: Time in lieu
+Time in lieu
+
+Scene 457: ELMO
+ELMO
+
+Scene 458: This page will be a click-to-reveal screen. Use an infographic (1013598820
+This page will be a click-to-reveal screen. Use an infographic (1013598820
+
+Scene 459: Scene 459
+in HVP colours) to display the four components. When the learner clicks each element, display the explanation as a pop-up.
+
+Scene 460: Click each component to learn more.
+Click each component to learn more.
+
+Scene 461: Add instruction text and enable interactive elements.
+Add instruction text and enable interactive elements.
+
+Scene 462: Workday
+Workday
+
+Scene 463: 12.1
+12.1
+
+Scene 464: A typical workday should be around 7.6 hours, that is, 38 hours per week.
+A typical workday should be around 7.6 hours, that is, 38 hours per week.
+
+Scene 465: A typical workday should be around 7.6 hours, that is, 38 hours per week.
+A typical workday should be around 7.6 hours, that is, 38 hours per week.
+--- END OF EXAMPLE 2 ---
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~30 (±2)
+- Minimum interactive scenes: 7
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Internal Consulting Skills
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): 30
+Audience: Managers
+Tone: Inspirational & Uplifting
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): •	Apply a variety of tools and methodologies to your consulting projects | •	Utilise communication techniques to help you lead the consulting conversation | •	Demonstrate competence using the Internal Consultant Model
+Instructional Purpose: Soft Skills Development
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: 🖼️ Imagery & Visual Style
+Element	Guideline
+Imagery	Use realistic, high-resolution photography that aligns with a modern workplace or human-centric AI theme. Prefer unsplash.com, pexels.com, or branded stock.
+Graphics	Leverage minimal, premium-quality vector icons when needed. No clip art.
+Backgrounds	Prefer gradient transitions using Bright Purple or clean Black backgrounds.
+Layout Style	Use spacious layouts with clear hierarchy, large headings, and central alignment.
+Visual Effects	Allow light glow or blur effects behind text or on buttons when it enhances readability.
+Page Numbering	Bottom-right corner in Brilliant Blue or White for contrast.
+💬 Tone and Voice
+Forward-thinking, professional, yet human
+Speak with clarity, simplicity, and authority
+Avoid buzzwords; favour real impact and results
+Every statement should feel empowering and visionary
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Company Images (use where appropriate, maintain brand fit):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+--- CONTENT FROM FILE: storyboard_internal_consulting_skills.pdf ---
+
+Internal Consulting Skills
+Generated 18/08/2025, 7:06:05 pm
+Page Title
+Title
+Type
+Interactive
+Number
+p01
+Screen Layout
+Full-bleed hero with central CTA • Modern, clean, brand-driven with subtle gradients • Centre-aligned CTA over soft-focus workplace scene • Contemporary office, evening light •
+Interaction: Button CTA
+AI Image Prompt
+Create a modern hero graphic of a manager facilitating 
+a cross-functional discussion around a glass table, UI-
+style overlays hinting at decision branches. Use 
+Learno brand colours: Brilliant Blue #0387E6 accents, 
+Vivid Red #E63946 for CTA glow, Bright Purple 
+#BC57CF gradient, on black background with white 
+text.
+Alt Text
+Manager leading a diverse team discussion with 
+branching UI elements indicating choices.
+Aspect / Env
+16:9 • Contemporary office, evening light
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Welcome to Internal Consulting Skills for 
+managers. You’ll explore how to earn the 
+right, understand your client’s business 
+context, choose the right consulting 
+stance, and lead conversations that 
+create change without formal authority. 
+Expect scenarios, decisions, and tools 
+you can use today. When you’re ready, 
+select Start to begin your journey.
+Internal Consulting Skills Lead change without direct
+authority. Click Start to begin.
+Logic: Clicking Start advances to Scene 
+2. Completion rule (module-level): 
+Complete all scenes, score ≥75% across 
+KCs (3 of 4 correct), complete capstone 
+with ‘Collaborative plan enacted’ or 
+review all coaching feedback, and submit 
+action plan in Scene 20. xAPI: Send 
+‘launched’ and ‘progressed’ (1/20).
+Page 1 of 20
+
+Page Title
+Pronunciation Guide
+Type
+Interactive
+Number
+p02
+Screen Layout
+Accordion list • Minimalist list on dark theme • Left-aligned list with right-side phonetic bubble • Abstract UI • Interaction: Click-to-Reveal
+AI Image Prompt
+Design a clean accordion list UI with phonetic tags 
+beside terms, using #0387E6 for highlights and 
+#FFFFFF text on #000000 background.
+Alt Text
+Accordion list showing consulting terms with phonetic 
+hints.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Here are a few names and terms you may 
+encounter. Open each item to hear it and 
+see a quick note. Then continue.
+Tap each term to reveal how to say it and why it
+matters.
+Logic: Reveal state persists when 
+returning. No scoring. xAPI: 
+‘experienced’ each term as learner opens; 
+track which opened. Completion 
+dependency: none.
+Page 2 of 20
+
+Page Title
+Table of Contents
+Type
+Interactive
+Number
+p03
+Screen Layout
+Menu grid • Grid tiles with icons • Evenly spaced tiles, highlighted current tile • Abstract UI • Interaction: Menu Navigation
+AI Image Prompt
+Create a 4x5 grid of sleek tiles labelled with scene 
+titles, icons for quiz, branching, and toolkit. Use brand 
+colours for tile accents.
+Alt Text
+Grid menu of scene tiles indicating topics and 
+interaction types.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Use the menu to navigate. We recommend 
+moving in order, but you can revisit any 
+page. Knowledge checks and branching 
+scenarios appear throughout.
+Choose a section. Progress is saved. You’ll need to
+complete all scenes to finish.
+Logic: Free navigation allowed; gating on 
+capstone (Scene 19) requires prior scenes 
+visited. xAPI: ‘experienced’ events on 
+open; track visited scenes array.
+Page 3 of 20
+
+Page Title
+Welcome & Learning Objectives
+Type
+Interactive
+Number
+p04
+Screen Layout
+Tabbed reveal • Tabs with icons • Horizontal tabs top, content panel centre • Abstract UI • Interaction: Click-to-Reveal
+AI Image Prompt
+Design four tabs with icons: toolkit, chat bubbles, 
+model diagram, handshake. Use #0387E6 active tab, 
+#BC57CF accent lines, dark background.
+Alt Text
+Four objective tabs with icons representing tools, 
+conversation, model, and trust.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+By the end, you will apply practical 
+tools to consulting projects, utilise 
+communication techniques to lead the 
+consulting conversation, and demonstrate 
+competence using the Internal Consultant 
+Model—starting with Phase 1: Earn the 
+Right.
+Learning Objectives: • Apply tools and
+methodologies • Utilise conversation techniques •
+Demonstrate the Internal Consultant Model • Build
+trust and credibility fast
+Logic: All tabs must be viewed before 
+Next activates. xAPI: Send ‘experienced’ 
+for each tab; ‘progressed’ to 4/20.
+Page 4 of 20
+
+Page Title
+Consulting or Managing?
+Type
+Interactive
+Number
+p05
+Screen Layout
+Scenario MCQ • Photo-real with subtle overlay • Presenter foreground, team listening, process map on screen • Meeting room • Interaction: Scenario-based MCQ
+AI Image Prompt
+Generate an image of a female manager presenting a 
+process map to colleagues from different departments, 
+no formal authority indicated. Blue accent overlay.
+Alt Text
+Manager presents a process map to peers from other 
+departments.
+Aspect / Env
+16:9 • Meeting room
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Emma is coordinating a cross-functional 
+process change. She can influence 
+activities but does not control line 
+resources or implementation decisions. Is 
+Emma consulting or managing?
+Scenario: Emma influences a change without direct
+control. What role is she in?
+Correct: Consulting. Option feedback: 
+Consulting—Correct: influencing without 
+direct control equals consulting (manual, 
+p.5). Managing—Incorrect: managing 
+implies direct control. Both—Incorrect: 
+roles are defined by control, not effort. 
+Neither—Incorrect: scenario is classic 
+consulting. Scoring: 1 point. Retries: 1 
+retry then lock with feedback. xAPI: 
+‘answered’ with result true/false; store 
+response.
+Provide option-level feedback for each 
+response. Allow retry.
+Page 5 of 20
+
+Page Title
+Choosing Your Consulting Stance
+Type
+Interactive
+Number
+p06
+Screen Layout
+Branching choice • Three-path decision diagram • Central fork splitting into three paths • Abstract decision landscape • Interaction: Branching scenario
+AI Image Prompt
+Illustrate a forked path with three signposts labelled 
+Pair of Hands, Expert, Collaborator. Use brand colours 
+for each path.
+Alt Text
+Three diverging paths labelled with the three 
+consulting approaches.
+Aspect / Env
+16:9 • Abstract decision landscape
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Your client has defined a solution and 
+wants you to ‘just execute’. You see 
+risks they’ve overlooked. Which stance 
+will you take: pair of hands, expert, or 
+collaborator?
+Pick a stance for this situation: • Pair of hands •
+Expert • Collaborator
+Branch logic: Pair of hands → Outcome: 
+quick start but risk blind spots; 
+coaching: suggest raising risks 
+respectfully. Expert → Outcome: stronger 
+control, possible resistance; coaching: 
+build context with stakeholders first. 
+Collaborator (preferred) → Outcome: 
+shared diagnosis and buy-in; coaching: 
+jointly agree roles. Allow 1 backtrack to 
+explore other outcomes. xAPI: ‘chose’ 
+stance; ‘experienced’ consequence; 
+capture selected path.
+Provide option-level feedback. Allow 
+retry.
+Page 6 of 20
+
+Page Title
+Match the Three Approaches
+Type
+Interactive
+Number
+p07
+Screen Layout
+Two-column drag targets • Clean drag-and-drop UI • Left: draggables. Right: three drop zones with text. • Abstract UI • Interaction: Complex drag-and-drop
+AI Image Prompt
+Design a drag-and-drop interface with three draggable 
+labels and three description cards, blue hover states 
+and purple drop highlights.
+Alt Text
+Drag labels to description cards representing 
+consulting approaches.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Drag each label to its description. Pair 
+of hands, expert, and collaborator vary 
+by who holds control and how decisions 
+are made.
+Drag: Pair of hands • Expert • Collaborator → onto
+the correct descriptions.
+Correct mappings: Pair of hands → Client 
+controls problem/solution; consultant 
+implements. Expert → Consultant advises, 
+high directiveness. Collaborator → Shared 
+decisions, attention to technical and 
+human sides. Feedback per item on drop. 
+Retries unlimited. xAPI: ‘answered’ with 
+itemised results; ‘progressed’ 7/20.
+Page 7 of 20
+
+Page Title
+Client Business Issues Explorer
+Type
+Interactive
+Number
+p08
+Screen Layout
+Three hotspots on layered diagram • Concentric-layer diagram • Centre rings with three clickable hotspots • Abstract infographic • Interaction: Hotspot reveal
+AI Image Prompt
+Create a three-layer concentric diagram labelled 
+External, Organisational, Functional. Use blue outer 
+ring, purple middle, red inner nodes.
+Alt Text
+Three-layer diagram showing External conditions, 
+Organisational responses, Functional challenges.
+Aspect / Env
+16:9 • Abstract infographic
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Business issues arise from three layers: 
+external conditions, organisational 
+responses, and functional challenges. 
+Explore each to see examples.
+Click each layer: External → Organisational →
+Functional.
+Logic: All three hotspots must be viewed 
+to unlock Next. Content aligns to manual 
+pp.9–11. xAPI: ‘experienced’ each 
+hotspot; capture time on each.
+Page 8 of 20
+
+Page Title
+Classify External/Org/Functional
+Type
+Interactive
+Number
+p09
+Screen Layout
+Three-column categorise • Card-based drag board • Top: instruction; Bottom: three columns with cards • Abstract UI • Interaction: Complex drag-and-drop
+AI Image Prompt
+Design draggable cards: ‘Inflation’, ‘New product 
+launch’, ‘Upgrade comms platform’, ‘Union activity’, 
+‘Open new channel’, ‘Increase sales volume’. Columns 
+titled External, Organisational, Functional.
+Alt Text
+Cards to sort into three columns for the three layers of 
+business issues.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Classify each item. For example, interest 
+rates are an external condition; 
+restructuring is an organisational 
+response; increasing customer 
+satisfaction is a functional challenge.
+Drag items into External, Organisational, or
+Functional.
+Answers: External → Inflation, Union 
+activity. Organisational → New product 
+launch, Open new channel. Functional → 
+Upgrade comms platform (IT), Increase 
+sales volume (Sales). Feedback per card 
+upon drop: explain why. Scoring: 1 point 
+if ≥5/6 correct on final state. Retries: 
+2. xAPI: ‘answered’ with item results and 
+score.
+Page 9 of 20
+
+Page Title
+Skills Triad Check-in
+Type
+Interactive
+Number
+p10
+Screen Layout
+Matrix select • Matrix table with coloured chips • Rows: Data analysis, Stakeholder empathy, Contracting, Facilitation, Change planning. • Abstract UI • Interaction: Matrix selection
+AI Image Prompt
+Render a 3x5 matrix with behaviours as rows and the 
+three skill types as columns; selectable chips highlight 
+in blue.
+Alt Text
+A matrix to tag behaviours to the three skill types.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Internal consultants blend technical, 
+interpersonal, and consulting skills. Tag 
+each behaviour with the most fitting 
+category to reflect where you’re 
+strongest and where to grow.
+Select a category for each behaviour: Technical,
+Interpersonal, or Consulting.
+Reference mapping (for feedback): 
+Technical → Data analysis. Interpersonal 
+→ Stakeholder empathy. Consulting → 
+Contracting, Facilitation, Change 
+planning. No score; reflection saves 
+selections. xAPI: ‘responded’ with matrix 
+choices.
+Page 10 of 20
+
+Page Title
+Trust in Action: Interactive Dialogue
+Type
+Interactive
+Number
+p11
+Screen Layout
+Video with decision pauses • Live-action or animated with subtitles • Alternating over-shoulder shots; pause overlays • Open-plan office • Interaction: Interactive video
+AI Image Prompt
+Storyboard a two-person conversation in a modern 
+office; include on-screen subtitle captions and pause 
+icons at decision points. Neutral, inclusive casting.
+Alt Text
+Two colleagues in discussion with on-screen captions 
+and decision prompts.
+Aspect / Env
+16:9 • Open-plan office
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Watch a short exchange. At key moments, 
+choose what you would say to build trust—
+show openness, credibility, 
+dependability, and emotional safety.
+Play the dialogue. Make choices at prompts to
+shape trust.
+Pause 1: Share assumptions vs ask open 
+question—choose open question (Openness). 
+Pause 2: Promise stretch timeline vs 
+confirm what you can deliver—choose 
+dependable commitment (Dependability). 
+Pause 3: Critique bluntly vs frame as 
+shared goal—choose supportive framing 
+(Emotional safety). Non-graded; must make 
+choices to proceed. xAPI: ‘interacted’ at 
+timestamps; store choices.
+Provide option-level feedback. Allow 
+retry.
+Page 11 of 20
+
+Page Title
+Trust Decision Point
+Type
+Interactive
+Number
+p12
+Screen Layout
+Branching choice • Split-screen consequences • Three panels side-by-side • Abstract narrative panels • Interaction: Branching scenario
+AI Image Prompt
+Create a split-screen panel showing three potential 
+outcomes: gossip ripple, awkward silence, constructive 
+alignment.
+Alt Text
+Three outcomes illustrated: gossip spreading, silence, 
+and collaborative goal-setting.
+Aspect / Env
+16:9 • Abstract narrative panels
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+A stakeholder invites you to ‘vent’ about 
+another team. Do you join in, stay 
+silent, or redirect the conversation to 
+shared goals?
+Choose your response to the gossip invitation.
+Branches: Join gossip → Trust element 
+violated: Emotional safety; future 
+collaboration reduced. Stay silent → 
+Predictability ok, but openness lacking; 
+neutral outcome. Redirect to shared goals 
+(preferred) → Builds valuing common good 
+and credibility. Allow replay of other 
+branches. xAPI: ‘chose’ response; capture 
+trust element impact.
+Provide option-level feedback for each 
+response. Allow retry.
+Page 12 of 20
+
+Page Title
+Listener Receptivity Check
+Type
+Interactive
+Number
+p13
+Screen Layout
+Scenario MCQ • Photo with overlay labels • Client foreground, proposal docs on desk • Office • Interaction: Scenario-based MCQ
+AI Image Prompt
+Depict a client reviewing a proposal with a thoughtful 
+expression, sticky notes for ‘concerns’ and ‘evidence’.
+Alt Text
+Client looking at a proposal, noting concerns and 
+evidence requirements.
+Aspect / Env
+16:9 • Office
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Your proposal is practical, but the 
+client recalls a failed attempt and 
+raises concerns. They ask for evidence 
+and next steps. Which receptivity level 
+best fits?
+Select the best-fit receptivity level for this reaction.
+Correct: Voicing Concerns. Option 
+feedback: Enthusiastic—Too positive; 
+already committed. Engaged—Positive but 
+not raising past issues. Interested—
+Seeking more info, less concern-driven. 
+Impartial—Neutral stance. Voicing 
+Concerns—Correct per manual p.19. 
+Resistant—Sees proposal as more trouble. 
+Closed—Not open to improvement. Scoring: 
+1 point. Retries: 1. xAPI: ‘answered’ 
+with result.
+Provide option-level feedback for each 
+response. Allow retry.
+Page 13 of 20
+
+Page Title
+Internal Consultant Model: Phase 1
+Type
+Interactive
+Number
+p14
+Screen Layout
+Horizontal timeline tabs • Timeline with highlight on Phase 1 • Top timeline; bottom three sub-tabs • Abstract UI • Interaction: Click-to-Reveal
+AI Image Prompt
+Design a timeline with Phase 1 highlighted; three sub-
+tabs labelled Technical, Interpersonal, Consulting. Use 
+blue highlight and purple accents.
+Alt Text
+Timeline showing Phase 1 highlighted with three skill 
+pillars beneath.
+Aspect / Env
+16:9 • Abstract UI
+EventAudioOn-Screen Text (OST)Internal Development Notes
+1.
+Phase 1—Earn the Right—lays the 
+foundation through trust and rapport, 
+demonstrating your technical, 
+interpersonal, and consulting skills. 
+Explore how this pha
+
+[…truncated…]
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~30 scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario-based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { StoryboardFormData } from '../types/storyboardTypes';
+import { StoryboardFormData } from '../types/storyboardTypesArchive';
 
 type PromptComponents = {
   module?: string;
@@ -21,7 +21,7 @@ const SUBFOLDER_MAP: Record<keyof PromptComponents, string> = {
 export const buildSystemPrompt = (formData: StoryboardFormData): string => {
   const components: PromptComponents = {
     module: formData.moduleType,
-    level: formData.complexityLevel,   // ✅ Fixed
+    level: formData.complexityLevel, // ✅ Fixed
     tone: formData.tone,
     language: formData.outputLanguage, // ✅ Fixed
     branding: formData.brandGuidelines,

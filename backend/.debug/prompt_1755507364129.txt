@@ -1,0 +1,968 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director producing build-ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+Brandon Hall Standard Enforcement:
+- For Level 3 modules, include ~18–22 scenes with at least 5 distinct interaction types.
+- Include at least 3 branching decision points showing consequences with coaching feedback.
+- Insert a knowledge check every 3–5 scenes (varied formats).
+- End with a capstone branching scenario and an action plan / commitment.
+- Every scene must include: concise narration, ≤70w on-screen text (not a VO duplicate), concrete visual prompt + alt text, interaction (if applicable), developer notes (logic, completion rule, xAPI).
+- Accessibility: captions ON, alt text, keyboard path hints and focus order guidance.
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+Scene 203: Type
+Type
+
+Scene 204: Text and Static Image / Graphic
+Text and Static Image / Graphic
+
+Scene 205: Number
+Number
+
+Scene 206: 7
+7
+
+Scene 207: Screen Layout
+Screen Layout
+
+Scene 208: Event
+Event
+
+Scene 209: Audio
+Audio
+
+Scene 210: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 211: Internal Development Notes
+Internal Development Notes
+
+Scene 212: 6.
+6.
+
+Scene 213: Scene 213
+Here is an activity for you. Read the scenario and select the appropriate option.
+
+Scene 214: Scene 214
+Adam has recently quit HVP to start a business of his own. When he is brainstorming ideas with his business partner to acquire clients, it strikes him that he can call his contacts from HVP to help him.
+
+Scene 215: What do you think of this idea?
+What do you think of this idea?
+
+Scene 216: Select the correct option and click Submit.
+Select the correct option and click Submit.
+
+Scene 217: Read the scenario and select the appropriate option.
+Read the scenario and select the appropriate option.
+
+Scene 218: Scene 218
+Adam has recently quit HVP to start a business of his own. When he is brainstorming ideas with his business partner to acquire clients, it strikes him that he can call his contacts from HVP to help him.
+
+Scene 219: What do you think of this idea?
+What do you think of this idea?
+
+Scene 220: Option 1
+Option 1
+
+Scene 221: Yes, that would be a great start for his business.
+Yes, that would be a great start for his business.
+
+Scene 222: Option 2
+Option 2
+
+Scene 223: No, this does not comply with HVP company policies.
+No, this does not comply with HVP company policies.
+
+Scene 224: Correct Feedback
+Correct Feedback
+
+Scene 225: Scene 225
+You are right! Information about the organisation or clients must be kept confidential even after you leave HVP.
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+Scene 441: Screen Layout
+Screen Layout
+
+Scene 442: Event
+Event
+
+Scene 443: Audio
+Audio
+
+Scene 444: On-Screen Text (OST)
+On-Screen Text (OST)
+
+Scene 445: Internal Development Notes
+Internal Development Notes
+
+Scene 446: 12.
+12.
+
+Scene 447: Let us now take a look at the hours of work and performance management.
+Let us now take a look at the hours of work and performance management.
+
+Scene 448: Workday
+Workday
+
+Scene 449: Break frequency
+Break frequency
+
+Scene 450: Time in lieu
+Time in lieu
+
+Scene 451: ELMO
+ELMO
+
+Scene 452: Click each component to learn more.
+Click each component to learn more.
+
+Scene 453: Let us now take a look at the hours of work and performance management.
+Let us now take a look at the hours of work and performance management.
+
+Scene 454: Workday
+Workday
+
+Scene 455: Break frequency
+Break frequency
+
+Scene 456: Time in lieu
+Time in lieu
+
+Scene 457: ELMO
+ELMO
+
+Scene 458: This page will be a click-to-reveal screen. Use an infographic (1013598820
+This page will be a click-to-reveal screen. Use an infographic (1013598820
+
+Scene 459: Scene 459
+in HVP colours) to display the four components. When the learner clicks each element, display the explanation as a pop-up.
+
+Scene 460: Click each component to learn more.
+Click each component to learn more.
+
+Scene 461: Add instruction text and enable interactive elements.
+Add instruction text and enable interactive elements.
+
+Scene 462: Workday
+Workday
+
+Scene 463: 12.1
+12.1
+
+Scene 464: A typical workday should be around 7.6 hours, that is, 38 hours per week.
+A typical workday should be around 7.6 hours, that is, 38 hours per week.
+
+Scene 465: A typical workday should be around 7.6 hours, that is, 38 hours per week.
+A typical workday should be around 7.6 hours, that is, 38 hours per week.
+--- END OF EXAMPLE 2 ---
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~NaN (±2)
+- Minimum interactive scenes: 7
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Internal Consulting Skills
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): NaN
+Audience: Managers
+Tone: Inspirational & Uplifting
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): •	Apply a variety of tools and methodologies to your consulting projects | •	Utilise communication techniques to help you lead the consulting conversation | •	Demonstrate competence using the Internal Consultant Model
+Instructional Purpose: Soft Skills Development
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Screen Type: Scenario
+Interaction Style: Click-to-Reveal
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+--- CONTENT FROM FILE: Cisco Consulting Skills Participant Manual v141117.pdf ---
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+www.learningfactor.com.au 
+ 
+CONSULTING SKILLS 
+Conversations for Change 
+
+ 
+2 
+ 
+ 
+  
+Copyright 
+ 
+No  part  of  this  work  may  be  reproduced  in  any  form  or  by  any  electronic  or  mechanical  means, 
+including the use of information storage and retrieval systems, without permission in writing from the 
+publisher.  Violators will be prosecuted to the fullest extent permitted by law. 
+The publisher has made a sincere effort to ensure the accuracy and quality of its program materials; 
+however, no warranty, expressed or implied, is provided.  The publisher disclaims any responsibility or 
+liability for any direct or indirect damages resulting from the use of the information in this manual or 
+products  described  in  it.    Mention  of  any  product  or  resource  does  not  constitute  an  endorsement 
+by  the  publisher  of  that  product  or  resource.    All  case  studies  and  simulations  are  intended  to  be 
+fictional; any resemblance to real persons or companies is coincidental. 
+  
+The Learning Factor 
+ 
+Level 31, RBS Building 
+88 Phillip St 
+Sydney 2088 NSW Australia  
+P: +61 2 8999 8819 
+F: +61 2 9475 1113  
+  
+
+ 
+3 
+ 
+ 
+COURSE OBJECTIVES 
+ 
+ 
+ 
+Exercise: Personal Wants 
+ 
+When consulting with others, what do you hope this course will help you get better with?  
+ 
+ 
+ 
+ 
+ 
+ 
+Through group  discussion  and  practice, you 
+will be able to:   
+• Apply a variety of tools and 
+methodologies to your consulting 
+projects. 
+• Utilise communication techniques to 
+help you lead the consulting 
+conversation.  
+• Demonstrate competence using the 
+Internal Consultant Model. 
+ 
+
+ 
+4 
+ 
+ 
+  
+SESSION ONE 
+ Introduction 
+
+ 
+5 
+ 
+ 
+What is Internal Consulting? 
+ 
+Any  time  you  try  to  influence,  change  or  improve  something,  but  have  no  direct  control  over  the 
+implementation,  you  are  in  a  consulting  situation.    If  you  have  direct  control,  you  are  managing,  not 
+consulting.   
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+The consultant’s lack of direct control and authority are what make this role challenging. 
+ 
+In addition, a consultant deals with two types of change:  
+ 
+1. A structural, policy or procedural change (substance) 
+2. The change in one person or people who learn something new (process) 
+ 
+The  first  of  these,  a  substantive  change  to  a  system  within  the  organisation,  is  the  most  straightforward, 
+though  it  faces  all  the  challenges  that  any  workplace  change  must  confront  (e.g.  teething  problems, 
+tuning problems, timing problems etc). 
+ 
+The  second  type,  how  people  go  about  the  process  of  making  the  changes,  is  less  predictable,  and 
+often more challenging for the consultant.   
+ 
+The interpersonal relationships of  people involved on the  project need careful  managing to ensure that 
+everyone is willing to engage, tolerate differences, learn and cooperate. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Approaches to Internal Consulting 
+An internal consultant works inside one part of the organisation to help another 
+part of the organisation. 
+Help usually means solving a problem, enacting a change, giving advice or, in 
+some cases, working on large-scale transformations. 
+What makes the consultant’s job unique is that internal consultant’s work with 
+people over whom they have no direct authority or control.  
+(Meslin, 2007) 
+
+ 
+6 
+ 
+ 
+ 
+Directive vs. Non-Directive Consulting 
+ 
+The degree to which an internal consultant gets involved in the client’s actual operations and decisions 
+can vary, from relatively nondirective to highly directive.  Some of these variations are outlined below.   
+           (Lippett & Lippett, The Consulting Process in Action, 1978) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+7 
+ 
+ 
+Three Approaches 
+ 
+Along  the  scale  of  directiveness  there  are  three  general  positions  a  consultant  may  choose  (or  be 
+chosen) to take: as a pair of hands, as an expert or as a collaborator.  Each may be appropriate for 
+different consulting situations. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+8 
+ 
+ 
+Three Approaches (cont) 
+ 
+1.  Pair of hands 
+At the low level of directiveness, the client retains almost all of the control of the project, determining the 
+problem  and the solution, with the consultant implementing the solution.  The consultant is expected to 
+apply  specialised  knowledge  to  implement  action  plans  toward  the  achievement  of  goals  defined  by 
+the client.  
+ 
+Difficulties can arise when the client’s ideas and the consultant’s expertise suggest different directions for 
+the project. Also the full scope of the consultant’s specialised knowledge may be under-used because 
+of the nature of the client’s plans and pre-conceived solutions. 
+ 
+2.  Expert 
+At  the  high  end  of  directiveness,  the  expert  consultant  assumes  the  majority  of  control  for  the  project.  
+The  client  may  make  suggestions  but  the  consultant  advises  the  client  what  would  be  best  based  on 
+their expertise.  
+ 
+Advantages  of  this  approach  are  that  it  frees  line  management  up  from  involvement,  and  puts  the 
+project in the hands of someone who is acknowledged as having superior expertise. Disadvantages can 
+arise due to the expert’s lack of familiarity with the on-the-ground aspects of the project, and truncated 
+lines of communication with those affected. 
+ 
+3.  Collaborator 
+This approach sits somewhere midway along the directiveness scale.  It uses both the consultant’s expert 
+knowledge and the client’s knowledge of the operation and process. Decisions regarding actions to 
+take and implementation are all shared responsibilities, with equal attention given to both the technical 
+issues and the human interactions involved with this.  
+ 
+This can be a more satisfying way of proceeding, with all ideas deliberated together and joint decisions 
+made.    However,  it  can  be  more  time-consuming  and,  if  personalities  are  not  congenial,  subject  to 
+conflict.  It  may  also  be  hard  to  determine  responsibility  and  accountability  unless  these  are  carefully 
+spelled out. 
+ 
+The preferred mode of operation for most internal consultants is the collaborative approach  as it draws 
+on a larger base of expertise, both theirs and the client’s, to apply to the project. 
+  
+
+ 
+9 
+ 
+ 
+  Understanding the Client’s Business Issues – External Conditions 
+ 
+Business issues usually arise as a result of external conditions, organisational responses and the functional 
+challenges presented by the client’s specific area/department.  Developing your awareness of these 
+issues helps you to “stand in the client’s shoes” so you can better tune the advice and consulting services 
+you offer them. 
+ 
+External  conditions are   industry-wide   trends   that   affect  the   organisation.   As   a   general   rule,   the 
+organisation has little or no control over external conditions. They include: 
+ 
+Competitive practices 
+Financial conditions (e.g. inflation, recession, interest rates, exchange rates etc) 
+The state of the local, regional, national and/or global economy 
+Consumer demand and buying patterns 
+Federal  and  state  laws  (e.g.  regulation  and  deregulation,  tax laws,  trade  policy,  changes  in 
+legislation, compliance laws etc) 
+Cost and availability of materials 
+Availability and quality of labour, union activity etc. 
+ 
+ 
+Exercise: An External Condition 
+ 
+Identify one example of an external condition your client must respond to: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+ 
+10 
+ 
+ 
+Understanding the Client’s Business Issues – Organisational Responses 
+ 
+Organisational  responses are  the  strategies  an  organisation  undertakes  on  an  overall  basis.    Typically, 
+these strategies are in response to the external conditions the organisation is facing.   
+ 
+These responses might include:  
+ 
+New objectives to be more profitable or productive, or to increase sales 
+Reorganisation/downsizing or mergers/acquisitions 
+Centralisation or decentralisation 
+Open a new channel to market (technology based etc) 
+Use of work teams 
+New product development or diversification 
+ 
+Exercise: Organisational response 
+ 
+State  one  overall  strategy  your  client  has  developed  as  an  organisational  response  to the  external 
+condition cited above: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+ 
+11 
+ 
+ 
+Understanding the Client’s Business Issues – Functional Challenges 
+ 
+Functional challenges are the third level of business issues.  They reflect the pressures faced by individuals 
+and work groups within the organisation.   
+ 
+For example: 
+ 
+For customer service: increase customer satisfaction, reduce cost per service calls 
+For sales: increase sales volume, prospect more productively 
+For marketing: differentiate amongst products, devise new pricing strategies 
+For IT: manage data more efficiently, upgrade communication resources 
+ 
+Exercise: A functional challenge 
+ 
+Describe  a  challenge  your  client  and  his/her  colleagues  are  facing  that  has  been  brought  on  by  the 
+external conditions and organisational response you noted above: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+ 
+12 
+ 
+ 
+  
+SESSION TWO 
+Earn the Right 
+
+ 
+13 
+ 
+ 
+EARN THE RIGHT 
+ 
+ 
+Phase 1: Earn the Right 
+ 
+Phase 1 sets the foundation for your consulting relationship.  In it, you consciously do things to build trust 
+and rapport so that  your client comes to view you  as someone in whom they can have confidence. In 
+this phase you are demonstrating the three key skills Internal Consulting Skills. They are: 
+ 
+• Technical Skills 
+• Interpersonal Skills 
+• Consulting Skills 
+ 
+ 
+ 
+ 
+ 
+  
+
+ 
+14 
+ 
+ 
+Internal Consultant Skills 
+ 
+The end goal of the consulting model is for the internal consultant to create change – to both substance 
+and relationship.  Every time you consult to a person or group, they make a choice based on your input.   
+ 
+ 
+ 
+To enable your clients to make the right choices, you need to be proficient in 3 kinds of skills: 
+ 
+1. Technical skills 
+Your expertise in a specific aspect of the business is your first requirement in a consulting role.  This will 
+be based your experience in operational, management or organisational development functions. 
+ 
+2. Interpersonal skills 
+These  are  the  skills  that  reflect  your  ability  to  relate  with  others:  how  you  express  yourself,  respond, 
+give support or disagree reasonably within the contexts of a relationship. 
+ 
+3. Consulting skills 
+These skills  are  in  addition  to  your  technical  and  interpersonal  skills,  and  dictate  your  ability  to  enter 
+into, carry out and successfully complete consulting projects. 
+ 
+  
+
+ 
+15 
+ 
+ 
+Exercise:  
+ 
+In  triads,  brainstorm the  two  different  sets  of  interpersonal  and  consulting  skills  required  by  an  internal 
+consultant. Record on flip chart and present.   
+ 
+ 
+           Technical Skills  Interpersonal Skills  Consulting Skills 
+     
+ 
+• IT 
+ 
+• Retail 
+ 
+• Marketing 
+ 
+• Risk Management 
+ 
+• Sales 
+ 
+• HR 
+ 
+• Project Management 
+ 
+• Finance 
+ 
+• Operations 
+ 
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+•  
+ 
+ 
+ 
+ 
+ 
+ 
+EFFECTIVE ENGAGEMENT AND IMPLEMENTATION OF CONSULTING PROJECTS 
+  
+
+ 
+16 
+ 
+ 
+Building Trust 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+To  achieve  a  collaborative  relationship,  trust  is  essential.  Trust  depends  on  the  internal  consultant 
+developing and sustaining an image and reputation with the client that is high on the following factors: 
+ 
+• Familiarity/similarity 
+• Openness  
+• Credibility 
+• Dependability 
+• Predictability 
+• Valuing common good 
+• Emotional safety 
+ 
+ 
+ 
+  
+ 
+Trust 
+Is a key component in any successful relationship 
+Develops over time 
+Once lost, is hard to regain 
+Includes giving something of yourself, being genuinely 
+interested in the other person and seeing communication as a 
+shared experience 
+ 
+
+ 
+17 
+ 
+ 
+Exercise:  
+ 
+Identify the type of trust element that the statement is referencing. 
+ 
+ 
+  
+Concept 
+ 
+Action or Behaviour 
+A. Familiarity/  
+     Similarity 
+ 
+ 
+ 
+B.  Openness 
+ 
+ 
+ 
+C.  Credibility 
+ 
+ 
+ 
+ 
+D. Dependability 
+ 
+ 
+ 
+ 
+E.  Predictability 
+ 
+ 
+ 
+F.  Valuing the  
+    common 
+    good 
+ 
+ 
+ 
+G.  Emotional  
+      Safety 
+F or G 
+Do not indulge in back-stabbing or gossip 
+G 
+Maintain confidentiality 
+ Spend time with the client – get to know their personal 
+motivations and relate to these when communicating 
+with them 
+ Don’t spring unpleasant surprises 
+ Make good on promises 
+ Check  facts  so  your  spoken  or  written  word  can  be 
+believed 
+ Share  mistakes  you  have  made – and  what  you 
+learned from them  
+ Be honest when you disagree with something 
+ Express yourself in terms that support (not reduce) the 
+client’s self esteem 
+ Don’t take advantage of the client’s emotions 
+ Inform  yourself  about  the  business  issues  the  client 
+faces 
+ Accept  criticism  in  the  spirit  of  what  you  can  learn 
+from it  
+ Back up commitments you make with action 
+ Learn what is important to the client and why 
+ Put aside self-interest for the sake of the project 
+ Admit when you don’t know something 
+ Promote team efforts – thank, congratulate, recognise 
+and celebrate team success 
+ Have  the  courage  to  stand  up  for  your  own  beliefs 
+and standards 
+ Say nothing rather than say half-truths 
+ Show trust in the client 
+ Take   the client’s  concerns  to  heart,  treat  them 
+seriously 
+
+ 
+18 
+ 
+ 
+Proposal 
+ 
+Write a few notes about a proposal you have recently made to your client or preferably a change that 
+you think needs making.   
+ 
+ 
+ 
+Your   Client   or 
+Manager 
+ 
+  
+Your Proposal  
+  
+  
+  
+  
+  
+  
+  
+ 
+Best Outcome 
+ 
+  
+  
+ 
+  
+ 
+Dependent  on  how trusted you  are of having  the  skills  needed  to  put  forth  a  recommendation 
+(proposal) and seen as trustworthy, your proposals will land in one of 4 areas: 
+ 
+• At Jeopardy 
+• Counted In 
+• Left Out 
+• Have a Prospect  
+ 
+  
+
+ 
+19 
+ 
+ 
+Listener Receptivity 
+ 
+The type of reaction you received from your client may be a reflection of how well you are trusted in the 
+three areas of technical, interpersonal and consulting skills.  What type of reaction did you experience or 
+do you anticipate receiving? 
+ 
+ 
+Reaction ✓  Your Proposal ✓  You as A Trusted Consultant 
+Enthusiastic  Satisfied    with    your    proposal    and 
+committed to implementation.  
+ Routinely  seeks  you  for  information 
+and guidance in decision making. 
+ 
+Engaged  Sees   value   and   considers   how   to 
+implement.   
+ Sees  your  experience  and  expertise 
+as helpful in decision making 
+ 
+Interested  More  information  on   proposal  and 
+personal impacts.  
+ Solicits  information  but  doesn’t 
+necessarily implement. 
+ 
+Impartial  Listener   is   ready   to   consider   the 
+proposal 
+ Does not actively seek your 
+guidance or but will respond. 
+ 
+Voicing 
+Concerns 
+ Raises  concerns  and  may  bring  up 
+past experiences.  
+ Brings    up    past    experiences    and 
+questions your experience/expertise. 
+ 
+Resistant  Proposal   seems   more   trouble   than 
+the original problem being resolved.   
+ Listener  seems  uninterested  in  your 
+advice or support.  
+ 
+Closed  Listener  does  not  know  the  situation 
+can be improved.   
+ Does  not  seek  your  advice  or  does 
+not respond to your emails, calls.  
+ 
+ 
+ 
+  
+
+ 
+20 
+ 
+ 
+Listener Receptivity 
+ 
+Place an “x” where the two points intersect. 
+ 
+ 
+ 
+Proposal  
+Reaction 
+  
+Enthusiastic 
+At Jeopardy Counted in 
+Engaged 
+Interested 
+Impartial 
+Left out Have a Prospect 
+Voicing Concerns 
+Resistant 
+Closed 
+Resistant
+ 
+Voicing Concerns
+ 
+Impartial
+ 
+Interested
+ 
+Engaged
+ 
+Enthusiastic
+ 
+Internal Consultant
+ 
+ 
+ 
+ 
+ 
+ 
+Interpretation 
+ 
+ 
+Left Out  The listener is not receptive to you and your proposal. 
+Have a Prospect   Listener has positive regard for you but not convinced of proposal value. 
+At Jeopardy   Listener has positive regard for the proposal but not necessarily 
+
+[…truncated…]
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~NaN scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario-based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.

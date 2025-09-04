@@ -1,0 +1,214 @@
+MODEL: gpt-4o
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
+  "screenLayout": string | {
+    "description": string,
+    "elements": Array<Record<string, any>>
+  },
+
+  "templateId": string,
+  "screenId": string,
+
+  // Structured audio + legacy mirror
+  "audio": {
+    "script": string,
+    "voiceParameters": {
+      "persona": string,
+      "gender"?: "Female" | "Male" | "Neutral" | string,
+      "pace": string,
+      "tone": string,
+      "emphasis": string
+    },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  // Short OST + optional style block
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: {
+      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+      "color"?: string, "alignment"?: string, "position"?: string,
+      "animation"?: string
+    }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+
+    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],      // HEX codes expected
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "assetId"?: string
+    },
+    "overlayElements"?: Array<{
+      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
+      "content"?: string,
+      "style"?: {
+        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+        "color"?: string, "alignment"?: string, "position"?: string,
+        "padding"?: string, "border"?: string, "animation"?: string
+      },
+      "aiGenerationDirective"?: string
+    }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  // Detailed interaction + legacy mirrors
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  // Timing per scene
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
+- Ensure **≥5 distinct interaction types** across the module.
+- Provide **≥3 branching decision points** with consequences + coaching feedback.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment**.
+- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
+- Accessibility: captions ON, alt text, keyboard path & focus order, reduced‑motion fallback.
+
+USER:
+You are designing a Brandon‑Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Communication - Table of Contents\nGlobal Notes for Development Team\t2\nIntroduction\t3\nCommunication\t3\nIntroduction\t3\nLearning Objectives\t4\nTypes of Communication\t5\nConfidential Information\t6\nTypes of Information\t6\nCommunication of Company Information\t8\nHVP Golden Rules of Communication\t10\nChallenge Point 1: Ensure Safe Communication\t13\nMedia\t13\nIssue Resolution\t16\nCommunity Relations\t17\nChallenge Point 2: Manage Media Communication\t20\nQuestion 1\t20\nQuestion 2\t21\nQuestion 4\t21\nSummary\t22\nModule Completion\t23\nGlobal Notes for Development Team\nFollow the GUI template provided (not changing), HVP branding guidelines and ensure that Alpha is not locked down (can skip through).\nThis is a bronze level, 15 minute module but needs to ensure there is enough interactivity.\nIntroduction\nPage Title\nCommunication\nType\nText and Static Image / Graphic\nNumber\n1\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nSelect your role to view the content applicable to you.\nHVP Active Learning Online (HALO)\nCommunication\nGeneral Awareness Module on the importance of communication policy and work culture\nSelect your role to view the content applicable to you.\nThere will be two entry points to the module – Employee and Contractor/Visitor.\nDesign needs to be similar to Risk Management Module (refer to the opening page of that module).\nRequest to HVP:\nAs previously done, please help us identify content that must be displayed specifically only for contractors or specifically only for the employees. We assume the rest will be the same for both.\nPage Title\nIntroduction\nType\nText and Static Image / Graphic\nNumber\n2\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nWelcome to the Communication e-learning module.\nThis module is designed to provide you with an understanding of how HVP communicates information internally and externally. You’ll familiarise yourself with the expected work culture in regards to communication activities.\nThis module will take approximately 15 minutes to complete.\nDuring and at the end of the module, you will be presented with challenge points to assist in reinforcing the learning.\nWelcome to the Communication e-learning module.\nUnderstanding of HVP Communication Policies and Procedures.\nEstimated module duration: 15 minutes\nChallenge points to assist in reinforcing the learning\nSelect the Next arrow to continue.\nDesign needs to be similar to Risk Management Module (refer to slide 2 of that module)\nBuild a simple animation with full screen images and onscreen text in sync with the audio.\nPage Title\nLearning Objectives\nType\nText and Static Image/ Graphic\nNumber\n3\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nBy the end of this module, you will be able to:\nUnderstand HVP’s confidentiality expectations\nBe familiar with HVP’s communications policies and know where to find them\nUnderstand the importance of community relations and its impact on HVP operations\nBy the end of this module, you will be able to:\nUnderstand HVP’s confidentiality expectations\nBe familiar with HVP’s communications policies and know where to find them\nUnderstand the importance of community relations and its impact on HVP operations\nDesign needs to be similar to Risk Management Module (refer to slide 4 of that module)\nBuild a simple animation with images and onscreen text being displayed in sync with the audio.\nImage 1 - https://learningfactor.egnyte.com/dl/CFUmx8DlJP\nImage 2 –\nhttps://learningfactor.egnyte.com/dl/iVzGtcAdmc\nImage 3 –\nhttps://learningfactor.egnyte.com/dl/Bpg5q4ywzB\nPage Title\nTypes of Communication\nType\nText and Static Image / Interactive Graphic\nNumber\n4\nScreen Layout\nInstruction\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\n4.\nAt HVP, we expect your active and respectful participation in all our communications, in line with our mission, vision and value statement.\nWe expect your active and respectful participation in all our communications\nmission, vision and value statement.\nThis is a simple text and image slide.\nHave the text first sentence appear against a background image  - https://learningfactor.egnyte.com/dl/WTYclSqJO5\nThen blur the image and have mission, vision and value statement appear in 3 circles similar to ID: 470207114\nThere are four main types of communication:\nVerbal\nNon-verbal\nWritten\nVisual\nClick each type to learn more.\nVerbal – Talking to someone in person, on the phone; or giving a speech.\nNon-verbal – Communication can also be non- verbal, giving importance to your body language and appearance.\nWritten – Using written words to communicate in a text, email, or social media post\nVisual – This is communication through images such as logos, animations, and illustrations.\nFade out text and other infographic as this infographic appears with 4 clickable tabs in sync with the audio.\nAs learner clicks each number, the corresponding text appears\nSuggested infographic ID: 462315421\nClick each type to learn more.\nPage Title\nConfidential Information\nType\nText and Static Image / Graphic\nNumber\n5\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nWhen you are communicating, it is important to be mindful of the information you are providing. You need to consider if anything you are communicating is considered Confidential or Protected information.\nConfidential information is valuable.\nIt belongs to HVP as a company (or a third party), not us as individuals.\nWe need to keep it safe and secure.\nConfidential or Protected information.\nConfidential information is valuable.\nIt belongs to HVP as a company (or a third party), not us as individuals\nWe need to keep it safe and secure.\nBuild a simple animation with images and onscreen text being displayed in sync with the audio.\nBlink in Confidential and Protected.\nThen have the 3 bullet points (similar to looking after you down the bottom with lines between)\nPage Title\nTypes of Information\nType\nText and Static Image / Graphic\nNumber\n6\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\n5.\nWhatever your role at HVP, you will deal with confidential information on a day to day basis.\nThis includes:\ninformation about trees\nHow to grow them\nHow much they’re worth\nWhere they’re located\nHow to best harvest them, haul them or sell them\nInformation about People\nOur Employees, contractors and clients\nInformation about HVP Operations including our  systems and processes\nThese types of information must be kept confidential.\nThis includes information about\nTrees\nPeople\nHVP Operations\nThis is a simple text and graphic slide.\nShow a document icon with confidential water mark. Blink it till the first paragraph completes reading. Then, fade out and show the 3 bullet points appear on a new image background in sync with the audio.\nImage 1 - https://learningfactor.egnyte.com/dl/47Ltx78tFQ\nImage 2 –\nhttps://learningfactor.egnyte.com/dl/mClItQoeKG\nImage 3 –\nhttps://learningfactor.egnyte.com/dl/JwD03WtKKn\nThen have the last paragraph appear in sync with the audio.\nYou should:\nAvoid using or disclosing any confidential information, other than for carrying out duties for HVP;\nAvoid using any confidential information for the benefit of any individual, including anything for your own personal benefit\nNever disclose confidential information outside HVP even after you leave HVP; and\nUnderstand that all confidential information is solely and exclusively the property of HVP\nDo not use or disclose confidential information\nDo not use confidential information for anyone’s personal benefit\nDo not disclose confidential information outside HVP\nRemember all confidential information is solely and exclusively the property of HVP\nFade out OST and blur out image and have 4 circles show (
+
+[…truncated…]
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection, Interactive Video
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Ping
+Module Type: eLearning
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: General staff
+Tone: Professional, encouraging
+Output Language: English (UK)
+Organisation: Not specified
+Learning Outcomes (desired): Author to propose 3–5 outcomes aligned to the brief.
+Instructional Purpose: Not specified
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: None provided
+Colours: Default
+Fonts: Default
+Company Images (binary uploaded or URLs):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+hello world
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~20 min).
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Include **captions ON** by default, keyboard path hints and focus order.
+- Use **UK English** throughout.
+- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
+
+SPECIFICATION TEMPLATES (adapt as needed):
+- visual.visualGenerationBrief must include:
+  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
+- overlayElements[]:
+  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
+- audio:
+  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
+- interactionDetails:
+  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
+- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
+- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.

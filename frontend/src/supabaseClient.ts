@@ -1,6 +1,29 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+// ✅ Environment variables expected: VITE\_SUPABASE\_URL and VITE\_SUPABASE\_ANON
+const supabaseUrl: string | undefined = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey: string | undefined = import.meta.env.VITE_SUPABASE_ANON;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+let supabase: SupabaseClient;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+console.error(
+'❌ Supabase URL or Anon Key missing. Check your .env files: VITE\_SUPABASE\_URL and VITE\_SUPABASE\_ANON.'
+);
+throw new Error('Supabase client cannot be initialized without URL and Anon key.');
+}
+
+try {
+supabase = createClient(supabaseUrl, supabaseAnonKey, {
+auth: {
+persistSession: true,
+autoRefreshToken: true,
+},
+});
+console.log('✅ Supabase client initialized');
+} catch (error) {
+console.error('Error initializing Supabase client in supabaseClient.ts:', error);
+throw error;
+}
+
+export default supabase;

@@ -1,0 +1,541 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
+  "screenLayout": string | {
+    "description": string,
+    "elements": Array<Record<string, any>>
+  },
+
+  "templateId": string,
+  "screenId": string,
+
+  // Structured audio + legacy mirror
+  "audio": {
+    "script": string,
+    "voiceParameters": {
+      "persona": string,
+      "gender"?: "Female" | "Male" | "Neutral" | string,
+      "pace": string,
+      "tone": string,
+      "emphasis": string
+    },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  // Short OST + optional style block
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: {
+      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+      "color"?: string, "alignment"?: string, "position"?: string,
+      "animation"?: string
+    }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+
+    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],      // HEX codes expected
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "assetId"?: string
+    },
+    "overlayElements"?: Array<{
+      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
+      "content"?: string,
+      "style"?: {
+        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+        "color"?: string, "alignment"?: string, "position"?: string,
+        "padding"?: string, "border"?: string, "animation"?: string
+      },
+      "aiGenerationDirective"?: string
+    }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  // Detailed interaction + legacy mirrors
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
+- Ensure **≥5 distinct interaction types** across the module.
+- Provide **≥3 branching decision points** with consequences + coaching feedback.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment**.
+- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
+- Accessibility: captions ON, alt text, keyboard path & focus order, reduced-motion fallback.
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG – Storyboards) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "know your product\nStoryboard Revision History\nDate\nTask\nBy\nVersion\n08/06/2017\nSB Development\nVrushalee\n1.00\n08/08/2017\nProofreading Review\nMandar\n1.10\n09/08/2017\nProofreading Review Fixes\nVrushalee\n1.20\nGlobal notes to developers:\nPlease update the navigation instruction on the GUI as follows: select here to continue.\nAll images on content pages are hyperlinked to the source folder of the Subaru drop box or Shutterstock page.\nThe input PPT is parked here: trunk\\Client_Inputs\\PHASE 2 - IN DEALER\\PHASE 2 - IN DEALER. You may need to refer to it to source some images for direct integration in the module.\nTable of Contents\n---\t3\n---\t5\n---\t7\n---\t8\n1) start here\t9\nmodule objectives\t9\n2) what does the customer value?\t10\ncustomer pain points\t10\nlistening to your customers\t12\nWhat our customers are telling us\t14\n2) product knowledge: building your tool kit\t16\nbe the expert\t16\nchallenging traditional thought patterns\t18\n3) relevant and relatable product presentations\t21\nfeature advantage benefit\t21\npresenting features\t24\n4) the ultimate Subaru do test drive\t25\nbest practices\t25\n6) summary\t27\n4 essential keys to successful test drives\t27\nthank you\t28\nbefore you exit\t29\nSub-heading\n---\nType\nDestination\nNumber\np01\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nFade in the background music. As the VO begins, fade it out partially.\nwelcome-home_fy7v7UB_.mp3\njust-a-smile_fkPjarBO.mp3\nsleeping-peacefully_GJkBQ8ru.mp3\nInstead of the stock music, we can also use the standard Subaru music if the audio file is available.\nAre you ready for a trip with Subaru? Come, journey with us.\nReady for a trip?\n… do journey with us.\nShow the text in big font size on a clear screen.\nReplace the 1st text with the 2nd text.\nPicture this…Cruising in your Subaru, free as a bird with endless destinations ahead, roads to travel, places to be and loved ones to see.\nWith Subaru, you can ‘journey with us’ and follow the stars to wherever they may lead.\n---\nReplace the previous with the following images one by one, as the VO continues.\n‘Journey with us’ focuses on the pure enjoyment of being with Subaru, to join us on a journey where Subaru enables you to experience different lifestyles, countless destinations and pure freedom as a customer.\nDifferent lifestyle\nCountless destinations\nPure freedom\nShow the following destination-specific image as background with the ‘do journey with us’ tagline.\nPh1_Headline_screen_destination1_img.JPEG Source: trunk\\Client_Inputs\\Design\\Graphic_Assets\nShow OST in synch with audio.\nAuto transition to the next screen.\nSub-heading\n---\nType\nSubaru do academy\nNumber\np02\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nTo offer this unique experience to Subaru customers, you must be well equipped. And that’s why the Subaru do academy brings this module to you as a part of the customer experience expert pathway.\nCore Pathway\nProduct Genius Pathway\nCEX Expert Pathway\nShow the following layout. Highlight the CEX Expert Pathway’ in synch with audio.\nHere are the destinations within the pathway. Each destination has a number of modules to work through.\ndestination #1\ndigital\nthe digital ecosystem\nsocial media and online reviews\ndestination #2\nin dealer\nknow your product\nin dealer buying experience\nunderstanding the customer lifecycle\ndestination #3\naftersales\nthe aftersales experience – part 1\nthe aftersales experience – part 2\naftersales sales skills\ndestination #4\nbehaviour\ninfluence and negotiation\nemotional intelligence\nconflict resolution\nhigh-level communication\nIf for the Aftersales audience, show all four destinations (digital, in dealer afterSales and behaviour) in the set layout.\nIf for the Showroom audience, show three destinations (digital, in dealer and behaviour) in the set layout.\nUse the following text for the third destination title: destination #3\nAuto transition to the next screen.\nSub-heading\n---\nType\ncourse launch\nNumber\np03\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nThis is the first module in destination two.\ndestination #2\nknow your product\nGet Started\nShow the following module-specific image as background.\nPh1Mod1_Landing_screen_img.JPEG\nSource: trunk\\Client_Inputs\\Design\\Graphic_Assets\nShow the clickable button to launch the module.\nSub-heading\n---\nType\nInteractive – menu\nNumber\np04\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\n---\nknow your product\nmain menu\nContinue the journey with us and select the next topic to explore.\n1) start here\n2) what does the customer value?\n3) product knowledge: building your tool kit\n4) relevant and relatable product presentations\n5) the ultimate test drive\n7) summary\nShow the following module-specific image as background. Plot the topics per the set design.\nPh1Mod1_Menu_img.JPEG\nSource: trunk\\Client_Inputs\\Design\\Graphic_Assets\nSelecting each topic should take the learner to the pages related to it.\n1) start here\nSub-heading\nmodule objectives\nType\nText and image\nNumber\np05\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nThis module will help you deliver the best-in-class showroom experience to our customers by building solid product knowledge base and delivering presentations tailored for their specific needs.\nUnderstand the importance of well rounded product knowledge\nKnow how to demonstrate value to the customer as per their requirements\nDeliver relevant and relatable product presentations\nUnderstand best practice for test drives and product interactions\n2) what does the customer value?\nSub-heading\ncustomer pain points\nType\nSimple animation\nNumber\np06\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nWhenever a customer walks into a showroom, they seek accurate and timely guidance depending on their requirements, and they want a trustworthy advisor who gives them a fair deal.\n ---\nShow the ‘customer pain point’ graphic (reuse from ‘the digital ecosystem’ module).\nHighlight the ‘The Showroom Experience’, fade out the rest of the two parts. Populate the test associated with this point.\nAnd last but not the least, they wish to feel valued as customers.\n---\nHighlight the last text from the previous list.\nActive listening plays a key role in meeting these expectations.\nActive listening\nTransition to show the quote page layout. Show the text in the quote area.\nDo you think you listen to your customers from the viewpoint of understanding them?\n“Most people do not listen with the intent to understand; they listen with the intent to reply.”\nStephen R. Covey – Author, The 7 Habits of Highly Effective People: Powerful Lessons in Personal Change\nReplace the text with this quote text.\n\\\nSub-heading\nlistening to your customers\nType\nSimple animation\nNumber\np07\nScreen Layout\nEvent\nAudio\nOn-Screen Text (OST)\nInternal Development Notes\nActive listening is an essential skill for all customer-facing staff. It’s difficult to master this skill, but you surely can develop it with practice. You must take time to do so!\nEssential skill for customer-facing staff\nTake time and develop this skill.\nShow the first text near the sub-heading.\nShow the second test using typography.\nRemember the key point—active listening goes beyond just what you hear and process; it includes your non-verbal cues, too. Maintaining eye contact, using warm gestures and nodding during the conversation as well as repeating key points of what the customer says shows how much attention you’re paying and how much information you’ve absorbed.\nMaintaining eye contact\nUsing warm gestures (e.g. smiles)\nNodding and saying ‘yes’ on landed points\nProviding feedback and repeating key points\nFade out previous.\nGiven her
+
+[…truncated…]
+--- END CONTEXT ---
+
+--- INTERACTION BLUEPRINTS (RAG – Chunks) ---
+No chunk-level RAG available.
+--- END BLUEPRINTS ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection, Interactive Video
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Adapting Your Style
+Module Type: Soft Skills & Leadership
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Managers
+Tone: Professional & Clear
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): Recognise your behavioural tendencies and how they affect others | Identify respect | appreciate | and value individual differences | Develop strategies for working together to increase productivity | Enhance your effectiveness in completing tasks by improving your relationships with others
+Instructional Purpose: Not specified
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Confirmed Brand Color Summary for Learno: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Company Images (binary uploaded or URLs):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+Adapting Your Style
+Course Objectives
+Ù Recognise your behavioural tendencies and how they
+affect others
+Ù Identify respect, appreciate, and value individual
+differences
+Ù Develop strategies for working together to increase
+productivity
+Ù Enhance your effectiveness in completing tasks by
+improving your relationships with others
+“I will go anywhere, provided it be forward.”
+— David Livingstone
+Self Awareness
+“Know thyself. It then follows as the night the day,
+thou canst not then be false to any man.”
+– William Shakespeare
+Self Concept
+Ù Your image of who you
+are, a collation of the
+pictures, perceptions and
+ideas you have about
+yourself
+Causes of Inaccuracies in our Self Concept
+Ù Old, obsolete information
+Ù Overly critical views
+Ù Myths of perfection
+Ù We do not make good ‘carbon
+copies’
+Factors in Determining Whether to Self Disclose
+Ù Your goals
+Ù Respect for receiver
+Ù Amount
+Ù Topic
+Ù Breadth
+Ù Depth
+Ù Timing
+Ù Verbal/nonverbal messages
+Ù Positivity/negativity
+Ù Target recipient
+Ù Social context (what occasions
+with what rules?)
+Who Are You?
+Ù What do the suggestions you
+make tell you about who you
+are?
+Elements of Trust
+Ù Openness
+Ù Credibility
+Ù Dependability
+Ù Predictability
+Ù Valuing the common good
+Ù Emotional safety
+Ù Familiarity/similarity
+Rapport
+Ù When the differences
+between you and another
+person are minimised, and
+the similarities are
+enhanced
+Behaviour Is…
+Ù Observable
+Ù Situationally-based
+Ù Flexible
+Ù Dynamic
+Ù Based on thoughts and
+beliefs
+Marston’s Model: Self
+Perceives self as more powerful than the environment
+D i
+C
+S
+Perceives self as less powerful than the environment
+Marston’s Model: Environment
+D i
+Perceives an
+unfavourable
+environment
+Perceives a
+favourable
+environment
+C
+S
+Marston’s Model Simplified
+High D
+Ù Sees an unfavourable
+environment that they
+want to overcome
+Ù Tries to change, fix, or
+control things
+High i
+Ù Sees a favourable
+environment in which they
+can influence others
+Ù Tries to persuade,
+promote, or influence
+others
+High S
+Ù Sees a favourable environment
+that they want to maintain
+Ù Tries to be cooperative,
+supportive, and agreeable
+while keeping things stable
+High C
+Ù Sees an unfavourable
+environment that they do not
+want to try to change
+Ù Tries to work within established
+rules, guidelines, and
+procedures to ensure accuracy
+and quality
+Direct, Dominant, Decisive
+Direct, Dominant, Decisive
+Shapes the environment by overcoming opposition to
+accomplish results
+Ù Getting immediate results
+Ù Causing action
+Ù Accepting challenges
+Ù Making quick decisions
+Ù Questioning the status quo
+Ù Taking authority
+Ù Managing trouble
+Ù Solving problems
+D Preferred Environment
+Ù Power and authority
+Ù Prestige and challenge
+Ù Direct answers
+Ù A wide scope of operations
+Ù Opportunities for individual
+accomplishment
+Ù Opportunities for
+advancement
+Ù Freedom from controls and
+supervision
+Ù Many new and varied
+activities
+Influencing, Inspiring
+Influencing, Inspiring
+Shapes the environment by influencing or persuading
+others.
+Ù Contacting people
+Ù Making a good impression
+Ù Being articulate
+Ù Creating a motivational
+environment
+Ù Entertaining people
+Ù Being optimistic
+Ù Participating in a group
+i Preferred Environment
+Ù Popularity, social recognition
+Ù Public recognition of ability
+Ù Freedom of expression
+Ù Group activities outside of job
+Ù Freedom from control and detail
+Ù Coaching and counselling
+Ù Favourable working conditions
+Steadiness, Stable, Secure
+Steadiness, Stable, Secure
+Cooperates with others within existing circumstances
+to carry out tasks
+Ù Demonstrating patience
+Ù Showing loyalty
+Ù Helping others
+Ù Performing in a
+consistent manner
+Ù Being a good listener
+Ù Developing specialised
+skills
+Ù Creating a stable work
+environment
+S Preferred Environment
+Ù Maintenance of status quo
+Ù Predictable routines
+Ù Credit for work accomplished
+Ù Minimal work infringement on home life
+Ù Sincere appreciation
+Ù Identification with a group
+Ù Minimal conflict
+Correct, Conscientious, Careful
+Correct, Conscientious, Careful
+Works conscientiously within existing circumstances
+to ensure quality
+Ù Concentrating on
+key details
+Ù Being diplomatic
+Ù Checking for accuracy
+Ù Adhering to key directives
+and standards
+Ù Thinking analytically
+Ù Using indirect
+approaches to conflict
+Ù Using a systematic
+approach to situations
+C Preferred Environment
+Ù Control of those factors that affect their performance
+Ù Clearly defined performance expectations
+Ù Values on quality and accuracy
+Ù A reserved, business-like atmosphere
+Ù Recognition for specific skills and accomplishments
+Activity
+Ù How you are at your best?
+Ù How you are at your worst?
+Ù What is an animal mascot that typifies the essence of
+your D, i, S or C behaviour?
+Ù What is a brief slogan, theme or jingle (or draw a flag)
+that represents your primary behaviour type?
+Basic DiSC Concepts
+Ù Similar styles tend to be compatible socially
+Ù Work task effectiveness is strengthened by mixing
+different styles
+Ù Mixing different styles may result in interpersonal
+conflicts
+Ù We can effectively work together with all styles –
+provided that certain conditions exist:
+a. Mutual respect
+b. Mutual trust
+c. Willingness to adapt
+Communicating with D
+Do:
+Ù Be brief, direct, and to the point
+Ù Remember they desire results
+Ù Answer “What”, not “How”
+Ù Focus on task, cut small talk
+Ù Identify opportunities/challenges
+Communicating with D
+Don’t:
+Ù Ramble
+Ù Repeat yourself
+Ù Waste time
+Ù Make statements without support
+Communicating with i
+Do:
+Ù Allow social time
+Ù Give them opportunity to talk
+Ù Show excitement
+Ù Involve brainstorming/creativity
+Ù Ask feeling/opinion questions
+Ù Help transfer talk to action
+Communicating with i
+Don’t:
+Ù Skip introductions
+Ù Do all the talking
+Ù Give lots of details
+Ù Answer “Who”, not “What” or “How”
+Communicating with S
+Do:
+Ù Go slow and easy/be patient
+Ù Earn trust
+Ù Show genuine interest
+Ù Draw out their opinion
+Ù Provide reassurance/show benefit
+Ù Answer all questions
+Communicating with S
+Don’t:
+Ù Rush decision
+Ù Be pushy, aggressive, demanding or confrontational
+Ù Be vague/general
+Communicating with C
+Do:
+Ù Prepare in advance
+Ù Use facts/be specific
+Ù Address pros and cons
+Ù Use logical/organised approach
+Ù Be patient, persistent, and diplomatic
+Communicating with C
+Don’t:
+Ù Answer questions vaguely/casually
+Ù Socialise
+Ù Rush
+Ù Forget documentation
+Adaptability
+Ù The will and the skill to engage in a range of behaviours
+not necessarily characteristic of your style in response to
+dealing effectively with the requirements of a situation or
+relationship
+What is Adaptability?
+Ù Managing relationship tension throughout the relationship
+process
+Ù Learning from each experience and improving
+Creating Comfort in Relationships
+Higher
+Individual
+Tension
+Individual
+Discomfort
+Zone
+Individual
+Comfort
+Zone
+Lower
+Lower Your Adaptability Higher
+Key Points about Adaptability
+Ù We think we are more adaptable than we really are
+Ù None of us has “perfect” adaptability
+Ù Adaptability is a tool
+Ù Adaptability is situational
+Improving Adaptability
+If you are High “D” you can:
+Ù Reduce your emphasis on controlling people and
+conditions
+Ù Be more patient
+Ù Be more accepting and open to others
+Ù Listen more
+Improving Adaptability
+If you are High “i” you can:
+Ù Reduce your emphasis on approval from others
+Ù Be open to facts and data
+Ù Be more prepared and organised
+Ù Listen more
+Improving Adaptability
+If you are a High “S” you can:
+Ù Reduce your emphasis on resistance to new ideas and
+opportunities
+Ù Be more direct with your opinion
+Ù Be quicker to adapt
+Improving Adaptability
+If you are High “C” you can:
+Ù Reduce your emphasis on perfectionism
+Ù Be more flexible in solving problems
+Ù Be more open to the views of others
+Summary
+We are most effective when we:
+Ù Understand our own behaviour
+Ù Understand the behaviour of others
+Ù Assess the needs of the situation
+Ù Adapt our behaviour appropriately
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~20 min).
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Include **captions ON** by default, keyboard path hints and focus order.
+- Use **UK English** throughout.
+- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
+
+SPECIFICATION TEMPLATES (adapt as needed):
+- visual.visualGenerationBrief must include:
+  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
+- overlayElements[]:
+  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
+- audio:
+  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
+- interactionDetails:
+  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
+- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
+- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.

@@ -1,0 +1,582 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award‑winning eLearning design director producing build‑ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON‑NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On‑screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+USER:
+You are designing a Brandon‑Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+Scene 447: Scene 447
+Paramedics should be adaptable and responsive to cultural differences in their approach to care. They should be willing to modify their practices or procedures, whenever possible and safe, to align with patients’ cultural preferences and needs.
+
+Scene 448: Scene 448
+Paramedics adapt their approach to care based on cultural differences. For instance, they may modify treatment plans to accommodate cultural practices. If a patient prefers a traditional herbal remedy alongside conventional medicine, paramedics can work collaboratively to ensure the patient's safety while respecting their cultural beliefs.​
+
+Scene 449: Click to hear audio example for Flexibility and Adaptability
+Click to hear audio example for Flexibility and Adaptability
+
+Scene 450: Cross-Cultural Communication
+Cross-Cultural Communication
+
+Scene 451: 7.
+7.
+
+Scene 452: Scene 452
+Effective Cross-Cultural Communication skills are vital for cultural sensitivity. Paramedics should listen actively, ask open-ended questions, and be attentive to non-verbal cues. They should avoid jargon and use plain language, ensuring that patients understand the information being conveyed.
+
+Scene 453: Scene 453
+Paramedics employ effective communication skills across cultures. They may use visual aids, gestures, or cultural references to explain medical procedures or conditions when language barriers exist. They actively listen and allow patients to ask questions and express their concerns.​
+
+Scene 454: Click to hear audio example for Cross-Cultural Communication
+Click to hear audio example for Cross-Cultural Communication
+
+Scene 455: Personalised Care
+Personalised Care
+
+Scene 456: 8.
+8.
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+Scene 737: So it’s important that their requirements are fulfilled in time.
+So it’s important that their requirements are fulfilled in time.
+
+Scene 738: Attend to them in time.
+Attend to them in time.
+
+Scene 739: Show text.
+Show text.
+
+Scene 740: Look Smart
+Look Smart
+
+Scene 741: 2.1
+2.1
+
+Scene 742: Scene 742
+You will be our face to the residents, clients and customers of Anglicare - whatever role you’re in.
+
+Scene 743: You are Anglicare’s face to residents, clients and customers
+You are Anglicare’s face to residents, clients and customers
+
+Scene 744: Fade in text.
+Fade in text.
+
+Scene 745: 435584389
+435584389
+
+Scene 746: 2.2
+2.2
+
+Scene 747: Your appearance and actions gives the direct impression of Anglicare and you.
+Your appearance and actions gives the direct impression of Anglicare and you.
+
+Scene 748: Your appearance and actions are a direct impression of Anglicare and you
+Your appearance and actions are a direct impression of Anglicare and you
+
+Scene 749: Fade in the text.
+Fade in the text.
+
+Scene 750: 2.3
+2.3
+
+Scene 751: Scene 751
+Some of you will be required to wear our uniform. Talk to your manager how to get it and when to wear it.
+
+Scene 752: Wear your uniform when required
+Wear your uniform when required
+
+Scene 753: Fade in the text.
+Fade in the text.
+
+Scene 754: Be a Team Player
+Be a Team Player
+
+Scene 755: 3.1
+3.1
+
+Scene 756: No matter where you work, you will always be part of a team.
+No matter where you work, you will always be part of a team.
+
+Scene 757: You will work with a team
+You will work with a team
+
+Scene 758: Show text and image..
+Show text and image..
+
+Scene 759: Scene 759
+Path: \trunk\Client_Inputs\UpdatedContent_July2017\04 What we do\Partnerships\Disaster Recovery images
+--- END OF EXAMPLE 2 ---
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~NaN (±2)
+- Minimum interactive scenes: 7
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag‑drop). Place a KC every **3–5 scenes**.
+- Provide **option‑level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Adapting Your Style)
+Module Type: Soft Skills & Leadership
+Complexity Level: Level 3
+Target Duration (mins): NaN
+Audience: Managers
+Tone: Inspirational & Uplifting
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): Recognise your behavioural tendencies and how they affect others | Identify respect | appreciate | and value individual differences | Develop strategies for working together to increase productivity | Enhance your effectiveness in completing tasks by improving your relationships with others
+Instructional Purpose: Not specified
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Screen Type: Scenario
+Interaction Style: Click-to-Reveal
+Additional Notes: None
+
+--- SOURCE CONTENT (verbatim snippets allowed) ---
+
+
+--- CONTENT FROM FILE: Adapting Your Style_PowerPoint_v110922  -  Compatibility Mode.pdf ---
+
+
+
+Adapting Your Style
+
+Course Objectives
+ÙRecognise your behavioural tendencies and how they 
+affect others
+ÙIdentify respect, appreciate, and value individual 
+differences
+ÙDevelop strategies for working together to increase 
+productivity
+ÙEnhance your effectiveness in completing tasks by 
+improving your relationships with others
+
+“I will go anywhere, provided it be forward.”
+— David Livingstone
+
+Self Awareness
+“Know thyself.  It then follows as the night the day, 
+thou canst not then be false to any man.”
+–William Shakespeare
+
+Self Concept
+ÙYour image of who you 
+are, a collation of the 
+pictures, perceptions and 
+ideas you have about 
+yourself 
+
+Causes of Inaccuracies in our Self Concept
+ÙOld, obsolete information
+ÙOverly critical views
+ÙMyths of perfection
+ÙWe do not make good ‘carbon 
+copies’
+
+Factors in Determining Whether to Self Disclose
+ÙYo u r   g o a l s
+ÙRespect for receiver 
+ÙAmount
+ÙTo p i c
+ÙBreadth
+ÙDepth
+ÙTiming
+ÙVerbal/nonverbal messages
+ÙPositivity/negativity
+ÙTa r g e t   r e c i p i e n t
+ÙSocial context (what occasions 
+with what rules?)
+
+Who Are You?
+ÙWhat do the suggestions you 
+make tell you about who you 
+are? 
+
+Elements of Trust
+ÙOpenness
+ÙCredibility
+ÙDependability
+ÙPredictability
+ÙValuing the common good
+ÙEmotional safety
+ÙFamiliarity/similarity
+
+Rapport
+ÙWhen the differences 
+between you and another 
+person are minimised, and 
+the similarities are
+enhanced 
+
+Behaviour Is...
+ÙObservable
+ÙSituationally-based
+ÙFlexible
+ÙDynamic
+ÙBased on thoughts and
+beliefs
+
+Marston’s Model: Self
+Perceives self as more powerful than the environment
+Di
+S
+C
+Perceives self as less powerful than the environment
+
+Marston’s Model: Environment
+Di
+SC
+Perceives an 
+unfavourable 
+environment
+Perceives a 
+favourable 
+environment  
+
+Marston’s Model Simplified
+
+High D
+ÙSees an unfavourable 
+environment that they 
+want to overcome
+ÙTries to change, fix, or 
+control things
+
+High i
+ÙSees a favourable 
+environment in which they 
+can influence others
+ÙTries to persuade, 
+promote, or influence 
+others
+
+High S
+ÙSees a favourable environment 
+that they want to maintain
+ÙTries to be cooperative, 
+supportive, and agreeable 
+while keeping things stable
+
+High C
+ÙSees an unfavourable 
+environment that they do not 
+want to try to change
+ÙTries to work within established 
+rules, guidelines, and 
+procedures to ensure accuracy 
+and quality
+
+Direct, Dominant, Decisive
+
+Direct, Dominant, Decisive
+Shapes the environment by overcoming opposition to 
+accomplish results
+ÙGetting immediate results
+ÙCausing action
+ÙAccepting challenges
+ÙMaking quick decisions
+ÙQuestioning the status quo
+ÙTa k i n g   a u t h o r i t y
+ÙManaging trouble
+ÙSolving problems
+
+D Preferred Environment
+ÙPower and authority
+ÙPrestige and challenge
+ÙDirect answers
+ÙA wide scope of operations
+ÙOpportunities for individual 
+accomplishment
+ÙOpportunities for 
+advancement
+ÙFreedom from controls and 
+supervision
+ÙMany new and varied 
+activities
+
+Influencing, Inspiring
+
+Influencing, Inspiring
+Shapes the environment by influencing or persuading 
+others.
+ÙContacting people
+ÙMaking a good impression
+ÙBeing articulate
+ÙCreating a motivational 
+environment
+ÙEntertaining people
+ÙBeing optimistic
+ÙParticipating in a group
+
+i Preferred Environment
+ÙPopularity, social recognition
+ÙPublic recognition of ability
+ÙFreedom of expression
+ÙGroup activities outside of job
+ÙFreedom from control and detail
+ÙCoaching and counselling
+ÙFavourable working conditions
+
+Steadiness, Stable, Secure
+
+Steadiness, Stable, Secure
+Cooperates with others within existing circumstances 
+to carry out tasks
+ÙDemonstrating patience
+ÙShowing loyalty
+ÙHelping others
+ÙPerforming in a 
+consistent manner
+ÙBeing a good listener
+ÙDeveloping specialised 
+skills
+ÙCreating a stable work 
+environment
+
+S Preferred Environment
+ÙMaintenance of status quo
+ÙPredictable routines
+ÙCredit for work accomplished
+ÙMinimal work infringement on home life
+ÙSincere appreciation
+ÙIdentification with a group
+ÙMinimal conflict
+
+Correct, Conscientious, Careful
+
+Correct, Conscientious, Careful
+Works conscientiously within existing circumstances 
+to ensure quality
+ÙConcentrating on 
+key details
+ÙBeing diplomatic
+ÙChecking for accuracy
+ÙAdhering to key directives 
+and standards
+ÙThinking analytically
+ÙUsing indirect 
+approaches to conflict
+ÙUsing a systematic 
+approach to situations
+
+C Preferred Environment
+ÙControl of those factors that affect their performance
+ÙClearly defined performance expectations
+ÙValues on quality and accuracy
+ÙA reserved, business-like atmosphere
+ÙRecognition for specific skills and accomplishments
+
+Activity
+ÙHow you are at your best?
+ÙHow you are at your worst?
+ÙWhat is an animal mascot that typifies the essence of 
+your D, i, S or C behaviour?
+ÙWhat is a brief slogan, theme or jingle (or draw a flag) 
+that represents your primary behaviour type?
+
+Basic DiSC Concepts
+ÙSimilar styles tend to be compatible socially
+ÙWork task effectiveness is strengthened by mixing 
+different styles
+ÙMixing different styles may result in interpersonal 
+conflicts
+ÙWe can effectively work together with all styles – 
+provided that certain conditions exist:
+ a. Mutual respect
+ b. Mutual trust
+ c. Willingness to adapt
+
+Communicating with D
+Do:
+ÙBe brief, direct, and to the point
+ÙRemember they desire results
+ÙAnswer “What”, not “How”
+ÙFocus on task, cut small talk
+ÙIdentify opportunities/challenges
+
+Communicating with D
+Don’t:
+ÙRamble
+ÙRepeat yourself
+ÙWaste time
+ÙMake statements without support
+
+Communicating with i
+Do:
+ÙAllow social time
+ÙGive them opportunity to talk
+ÙShow excitement
+ÙInvolve brainstorming/creativity
+ÙAsk feeling/opinion questions
+ÙHelp transfer talk to action
+
+Communicating with i
+Don’t:
+ÙSkip introductions
+ÙDo all the talking
+ÙGive lots of details
+ÙAnswer “Who”, not “What” or “How”
+
+Communicating with S
+Do:
+ÙGo slow and easy/be patient
+ÙEarn trust
+ÙShow genuine interest
+ÙDraw out their opinion
+ÙProvide reassurance/show benefit
+ÙAnswer all questions
+
+Communicating with S
+Don’t:
+ÙRush decision
+ÙBe pushy, aggressive, demanding or confrontational
+ÙBe vague/general
+
+Communicating with C
+Do:
+ÙPrepare in advance
+ÙUse facts/be specific
+ÙAddress pros and cons
+ÙUse logical/organised approach
+ÙBe patient, persistent, and diplomatic
+
+Communicating with C
+Don’t:
+ÙAnswer questions vaguely/casually
+ÙSocialise
+ÙRush
+ÙForget documentation
+
+Adaptability
+ÙThe will and the skill to engage in a range of behaviours 
+not necessarily characteristic of your style in response to 
+dealing effectively with the requirements of a situation or 
+relationship
+
+What is Adaptability?
+ÙManaging relationship tension throughout the relationship 
+process
+ÙLearning from each experience and improving
+
+Creating Comfort in Relationships
+Individual
+Discomfort
+Zone
+Individual
+Comfort
+Zone
+Individual
+Te n s i o n
+Lower
+Higher
+LowerYo u r  A d a p t a b i l i t yHigher
+
+Key Points about Adaptability
+ÙWe think we are more adaptable than we really are
+ÙNone of us has “perfect” adaptability
+ÙAdaptability is a tool
+ÙAdaptability is situational
+
+Improving Adaptability
+If you are High “D” you can:
+ÙReduce your emphasis on controlling people and 
+conditions 
+ÙBe more patient
+ÙBe more accepting and open to others 
+ÙListen more
+
+Improving Adaptability
+If you are High “i” you can:
+ÙReduce your emphasis on approval from others
+ÙBe open to facts and data
+ÙBe more prepared and organised 
+ÙListen more
+
+Improving Adaptability
+If you are a High “S” you can:
+ÙReduce your emphasis on resistance to new ideas and 
+opportunities 
+ÙBe more direct with your opinion
+ÙBe quicker to adapt 
+
+Improving Adaptability
+If you are High “C” you can:
+ÙReduce your emphasis on perfectionism 
+ÙBe more flexible in solving problems 
+ÙBe more open to the views of others
+
+Summary
+We are most effective when we:
+ÙUnderstand our own behaviour
+ÙUnderstand the behaviour of others
+ÙAssess the needs of the situation
+ÙAdapt our behaviour appropriately
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~NaN scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario‑based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.

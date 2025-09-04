@@ -1,0 +1,320 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
+  "screenLayout": string | {
+    "description": string,
+    "elements": Array<Record<string, any>>
+  },
+
+  "templateId": string,
+  "screenId": string,
+
+  // Structured audio + legacy mirror
+  "audio": {
+    "script": string,
+    "voiceParameters": {
+      "persona": string,
+      "gender"?: "Female" | "Male" | "Neutral" | string,
+      "pace": string,
+      "tone": string,
+      "emphasis": string
+    },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  // Short OST + optional style block
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: {
+      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+      "color"?: string, "alignment"?: string, "position"?: string,
+      "animation"?: string
+    }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+
+    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],      // HEX codes expected
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "assetId"?: string
+    },
+    "overlayElements"?: Array<{
+      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
+      "content"?: string,
+      "style"?: {
+        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+        "color"?: string, "alignment"?: string, "position"?: string,
+        "padding"?: string, "border"?: string, "animation"?: string
+      },
+      "aiGenerationDirective"?: string
+    }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  // Detailed interaction + legacy mirrors
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
+- Ensure **≥5 distinct interaction types** across the module.
+- Provide **≥3 branching decision points** with consequences + coaching feedback.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment**.
+- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
+- Accessibility: captions ON, alt text, keyboard path & focus order, reduced‑motion fallback.
+
+USER:
+You are designing a Brandon‑Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Client: The Learning Factor (NSW Ambulance)\nDocument: Storyboard for Discussing Serious News\nVersion History:\nVersion No.\nEdited By\nDate\nRemarks\n001\nSheetal Mehta\n14th December, 2023\nSB Creation\n002\nAnjuman Deodhar\n15th December, 2023\nSB review\nNotes to Developers:\nPlease refer to Discussing Serious News.pptx for slide 2, 3, 17, 18 and 33 images.\nPlease refer to https://www.digital.nsw.gov.au/delivery/digital-service-toolkit for Design Standards.\nPlease refer to \\\\192.168.1.88\\01_e-learning\\Learning_Factor\\02_NSW_Ambulance\\01_source\\01_client_input\\03_Images for images without stock ids.\nIMP: This is a very serious topic, so please use graphics/icons and images that are in keeping with the topic being taught.\nTopic\nDiscussing Serious News\nScreen type\nText only\nScreen Title\n<Splash Screen>\nScreen label\n001\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nNA\nIMP: DO NOT use the word Welcome. Only use the Topic title Discussing Serious News\nas OST seen in white font\nTopic\nDiscussing Serious News\nScreen type\nStatic\nScreen Title\nAcknowledgement to Country\nScreen label\n002\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nNSW Ambulance acknowledges and pays our deepest respect to the past, present, and future Traditional Custodians and Elders of the many lands on which we work and live, and the continuation of cultural, spiritual, and educational practices of Aboriginal and/or Torres Strait Islander peoples.\nNSW Ambulance acknowledges and pays our deepest respect to the past, present, and future Traditional Custodians and Elders of the many lands on which we work and live, and the continuation of cultural, spiritual, and educational practices of Aboriginal and/or Torres Strait Islander peoples.\nDisplay above image from ‘Discussing Serious News.pptx slide 2’ on the right side with OST in sync with VO on the left.\nTopic\nDiscussing Serious News\nScreen type\nStatic\nScreen Title\nReminder: Look after yourself…\nScreen label\n003\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nThere are many issues discussed in this learning guide related to serious illness, dying, end-of-life care, and death, as well as the impact on families, caregivers, and communities.\nIt can be upsetting to reflect on and learn about these issues.\nThere are many issues discussed in this learning guide related to serious illness, dying, end-of-life care, and death, as well as the impact on families, caregivers, and communities.\nIt can be upsetting to reflect on and learn about these issues.\nDisplay above image from ‘Discussing Serious News.pptx slide 3’ on the right side with OST in sync with VO on the left.\nTopic\nDiscussing Serious News\nScreen type\nText and image\nScreen Title\nIntroduction\nScreen label\n004\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nAs a paramedic, you have an important role in supporting people who are living with life-limiting illness and those at the end of life. To support high-quality care delivery, paramedics need to develop an understanding of the philosophy and practice of palliative care and the role that you have in providing palliative care.\nImportant role of Paramedics\nSupport people who are living with life-limiting illness and those at the end of life\n Support high-quality care delivery\nDevelop an understanding of the philosophy and practice of palliative care\nUnderstand your role in providing palliative care\nDisplay OST in sync with VO.\n2.\nAn essential area of focus when providing high quality care in the context of end of life and palliative care includes effective communication with patients and families.\nAn essential area of focus includes effective communication with patients and families.\nRetain the image and fade out OST.\nDisplay OST in sync with VO.\nTopic\nDiscussing Serious News\nScreen type\nText and image\nScreen Title\nLearning Objectives\nScreen label\n005\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nAt the end of this module, you should be able to:\nIdentify the barriers that can lead to ineffective communication\nDescribe the importance of empathy and empowerment\nIdentify the key points of communication and how nonverbal communication along with the importance of cultural influences can shape culturally safe and responsive communication\nOutline the SPIKES framework and how it can assist in discussing serious news\nShutterstock ID: 2218316467\nTopic\nDiscussing Serious News\nScreen type\nText and image\nScreen Title\nEffective Communication\nScreen label\n006\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nCommunicating well is an essential skill for helping a patient and their family deal with the effects of life-limiting illness and end-of-life concerns.\nCommunicating well is an essential skill for helping a patient and their family deal with the effects of life-limiting illness and end-of-life concerns.\nShow image of paramedics conversing with patients.\n(Image to be provided by the client)\nDisplay OST in sync with VO with above image as background.\n2.\nMost people want specific, honest information about their prognosis, symptom management and treatment options. This will help them with making decisions and establishing realistic goals of care.\nMost people want specific, honest information about their prognosis, symptom management and treatment options\nIt helps them make decisions and establish realistic goals of care\nRetain the image and fade out previous OST.\nDisplay OST in sync with VO.\n3.\nThere are a range of barriers to effective communication that exist in healthcare across all professional groups, including:\nMembers of the healthcare team using a practitioner-centred communication style (eg, question and answer) rather than a patient and family-centred style (eg, active listening, conversational)\nUse of medical terminology and jargon that the patient and family are not familiar with\nLanguage issues or lack of use of interpreters\nPatients and family barriers to effective communication due to\nMisunderstanding of health problems or diagnoses, illness and dying\nMistrust of healthcare services due to negative past experiences\nCultural and spiritual values and beliefs influencing responses and interactions with the healthcare team.\nBarriers to effective communication\nMembers of the healthcare team\nUsing a practitioner-centred communication style rather than a patient and family-centred style\nUse of medical terminology and jargon\nHave language issues or lack of use of interpreters\nPatients and Family\nMisunderstand health problems or diagnoses, illness and dying\nMistrust healthcare services due to negative past experiences\nCultural and spiritual values and beliefs influencing responses and interactions with the healthcare team\nShow image of paramedics conversing with patients.\n(Image to be provided by the client)\nDisplay OST in two columns in sync with VO.\nTopic\nDiscussing Serious News\nScreen type\nText and image\nScreen Title\nKey strategies that can help improve communication\nScreen label\n007\nNo.\nAudio/VO\nOST\nVisuals and Development instructions\n1.\nParamedics are naturally strong communicators.\nParamedics are naturally strong communicators.\nDisplay OST in sync with VO with above image as background.\n2.\nHowever, conversations about serious illness, palliative care, dying and death are often difficult, and can require different styles and approaches.\nConversations about serious illness, palliative care, dying and death are often difficult, and can require different styles and approaches\nRetain the above image and the OST.\nDisplay the OST in sync with VO.\n3.\nThere are some key strategies that can help improve communication and support the patient and their family to make decisions, even during emergency situations.\nKey strategies\nImprove communication\nSupport the patient and their famil
+
+[…truncated…]
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection, Interactive Video
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Dealing with Difficult People
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Employees, Sales, Marketing, Managers
+Tone: Supportive & Encouraging
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): 4 Learning Outcomes for Dealing with Difficult People Training | By the end of this training | participants will be able to: | 1 | Identify Key Archetypes and Manage Personal Reactions | Participants will be able to Identify and categorize common types of difficult behaviour (e | g | The Aggressor | The Complainer | The Know-It-All) | They will also learn to Apply foundational self-management techniques to control their emotional responses | depersonalise interactions | and maintain professional composure in challenging situations | 2 | Apply Core Communication Tools to De-escalate Conflict | Participants will be able to Demonstrate the use of universal communication strategies to navigate tense conversations | This includes using active listening to validate others' feelings | framing feedback with assertive "I" statements to prevent defensiveness | and setting clear | enforceable boundaries to protect their time and well-being | 3 | Develop Tailored Strategies for Specific Behaviours | Participants will be able to Analyze a difficult situation and Select the most appropriate strategic approach based on the specific behavioural archetype they are facing | They will learn to adapt their communication style to effectively counter aggression | redirect negativity | and surface hidden hostility in a non-confrontational manner | 4 | Construct a Long-Term Plan for Resolution and Well-being | Participants will be able to Create a sustainable | long-term action plan for managing persistent difficult interactions | This includes implementing a system for objective documentation | identifying when and how to seek support | and understanding the criteria for escalating a situation to management or HR
+Instructional Purpose: Soft Skills Development
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: Adhere to modern, clean design principles.
+Colours: Primary Colours Maastricht Blue Hex: #001E41 RGB: (0, 30, 65) Pantone: 282 C  amp.dev +2 schemecolor.com +2 pickcolorcode.com +2 dafont.com +2 nickverbene.com +2 brandgradients.com +2 Maya Blue Hex: #5BCBF5 RGB: (91, 203, 245) Pantone: 305 C  amp.com.au +3 pickcolorcode.com +3 schemecolor.com +3 nickverbene.com +2 schemecolor.com +2 pickcolorcode.com +2 Picton Blue Hex: #31B2E7 RGB: (49, 178, 231) Pantone: 298 C  pickcolorcode.com +1 schemecolor.com +1 australianmade.com.au +6 schemecolor.com +6
+
+[…truncated…]
+Fonts: Font: Poppins Bold Colour: #20202A Sizes: H1: 36 px H2: 28 px H3: 22 px H4: 18 px H5: 16 px H6: 14 px  amp.dev +4 amp.dev +4 nickverbene.com +4 Body Text Font: Noto Sans Regular Colour: #48525C Sizes: Large: 16 px Medium: 14 px  nickverbene.com +2 amp.dev +2 pickcolorcode.com +2 Monospace Text Font: Fira Mono Colour: #000000 Size: 14 px  nickverbene.com +4 amp.dev +4 ampol.com.au +4 pickcolorcode.com +2 schemecolor.com +2 amp.dev +2
+Company Images (binary uploaded or URLs):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+Of course. Here is a comprehensive 4-page guide on dealing with difficult people, designed to be practical, structured, and easy to follow.
+
+Page 1 of 4: The Foundation – Understanding and Self-Management
+Introduction: The Inevitable Challenge
+We all encounter them—in the workplace, in our families, and in our social circles. "Difficult people" are an inevitable part of life. Their behaviour can range from mildly irritating to overtly hostile, causing stress, frustration, and emotional exhaustion. The most crucial thing to understand is that "difficult" is often a label for a behaviour, not the entire person. The key to successfully navigating these interactions is not to change them, but to manage your own reactions and strategically alter the dynamic. This guide provides the principles and tools to do just that.
+
+The First Principle: You Are in Control (of Yourself)
+The foundation of dealing with any difficult situation is mastering your own emotional response. When confronted with negativity, aggression, or manipulation, our instinctive "fight or flight" response can take over. The goal is to move from a reactive state to a proactive one.
+
+Practice Mindfulness and Pausing: Before you speak or act, take a deliberate pause. Inhale deeply for four counts, hold for four, and exhale for six. This simple act of mindful breathing interrupts the adrenaline surge, giving your rational brain a chance to catch up. It creates a crucial buffer between the stimulus (their behaviour) and your response.
+Don't Take it Personally: Difficult behaviour is almost always a reflection of the other person's own issues, insecurities, fears, or poor communication skills. Their anger, criticism, or negativity is their emotional baggage, not a true or accurate assessment of your worth. By depersonalising the interaction, you can observe their behaviour more objectively instead of absorbing it. Ask yourself: "What might be driving this behaviour?" This shifts your mindset from victim to observer.
+Recognise and Manage Your Triggers: What specific behaviours push your buttons? Is it condescension? Unsolicited advice? Passive aggression? By identifying your own emotional triggers, you can prepare for them. When you know a particular person is likely to exhibit a triggering behaviour, you can mentally rehearse your calm, planned response instead of being caught off guard.
+Identifying the Archetypes: Understanding Who You're Dealing With
+While every individual is unique, difficult behaviours often fall into recognisable patterns or archetypes. Recognising the pattern helps you anticipate behaviour and choose the most effective strategy.
+
+The Aggressor (The Tank/The Bully): Confrontational, aggressive, and often uses intimidation to get their way. They may shout, make accusations, or use their physical presence to dominate. Their goal is to win at all costs.
+The Complainer (The Victim/The Whiner): Constantly finds fault and feels powerless. They see problems everywhere but rarely seek solutions, preferring to dwell on the negative. They can drain the energy from a room and foster a sense of hopelessness.
+The Know-It-All (The Expert): Needs to be right and will often correct, condescend, or lecture others. They may have genuine expertise but deliver it in a way that dismisses others' contributions. They fear being seen as incompetent.
+The Passive-Aggressive (The Sniper): Expresses their anger or frustration indirectly through sarcasm, subtle insults, procrastination, or the "silent treatment." They avoid direct conflict, making their hostility difficult to address head-on.
+The Silent/Unresponsive (The Clam): Shuts down completely when faced with a question or conflict. Their silence is a tool, whether intentional or not, that stonewalls communication and creates frustration.
+The People-Pleaser (The "Yes" Person): Overly agreeable and promises more than they can deliver to avoid conflict. While seemingly easy to deal with, their inability to say "no" leads to missed deadlines, poor quality work, and broken promises.
+Page 2 of 4: The Universal Toolkit – Core Communication Strategies
+Regardless of the type of difficult person you are facing, a core set of communication skills can de-escalate tension, foster understanding, and help you maintain control of the situation. These tools form the backbone of your strategy.
+
+Strategy 1: Active and Reflective Listening
+Often, difficult people are driven by a feeling of not being heard or understood. Active listening is a powerful de-escalation tool because it validates their feelings without necessarily agreeing with their facts or demands.
+
+How it Works: Give the person your full attention. Put away your phone, make eye contact, and lean in slightly. Don't interrupt or formulate your rebuttal while they are speaking.
+Key Techniques:
+Paraphrasing: Restate what they said in your own words to confirm you understand. Start with phrases like, "So, if I'm hearing you correctly, you're feeling..." or "It sounds like your main concern is..." This shows you are engaged and helps clarify their point.
+Asking Clarifying Questions: Use open-ended questions (who, what, where, when, how) to get more information. For example, "Can you walk me through what happened?" This moves the conversation from emotional accusations to factual details.
+Acknowledging Emotions: Validate their feelings, even if you don't agree with the reason for them. Simple phrases like, "I can see why you're so frustrated," or "That does sound like a very difficult situation," can significantly lower their emotional intensity.
+Strategy 2: The Power of "I" Statements
+When you need to express your own point of view or address a problematic behaviour, the way you frame your language is critical. "You" statements are inherently accusatory and immediately put the other person on the defensive. "I" statements, on the other hand, express your perspective without assigning blame.
+
+The "You" Statement (Avoid): "You are always so negative and you're bringing the whole team down." (This is an attack.)
+The "I" Statement (Use): "When I hear repeated negative comments about the project, I feel concerned because I worry it might impact our team's morale." (This focuses on your feeling and the tangible impact.)
+A simple formula for an effective "I" statement:
+"When [the specific, objective behaviour occurs], I feel [your emotion] because [the concrete impact it has on you/the situation]."
+
+Strategy 3: Setting and Enforcing Boundaries
+Boundaries are the clear limits you set on what you will and will not accept from others. They are essential for protecting your mental and emotional well-being. A boundary is not a threat; it is a calm declaration of what you will do to protect yourself.
+
+Be Clear and Specific: Vague boundaries are easy to ignore. Instead of "Don't be disrespectful," try "I will not continue this conversation if you are raising your voice. If you continue to shout, I am going to walk away and we can talk later when we are both calm."
+State the Consequence: A boundary without a consequence is merely a request. The consequence is not a punishment for them, but a protective action for you.
+"If you continue to make sarcastic comments about my work in team meetings, I will address it directly at that moment."
+"I am happy to help, but I cannot take on last-minute requests. I need at least 48 hours' notice to add something to my workload."
+Follow Through Consistently: This is the most important step. If you state a boundary and then let the person cross it without enforcing the consequence, you teach them that your words are meaningless. Consistency is key to being taken seriously.
+Page 3 of 4: Tailoring Your Approach – Strategies for Common Archetypes
+Once you have your universal toolkit, you can tailor your approach based on the specific type of difficult behaviour you are facing. Here are practical strategies for the archetypes identified on Page 1.
+
+Dealing with The Aggressor (The Tank/The Bully)
+The goal is to stand your ground respectfully without escalating the conflict into a full-blown war.
+
+Stay Calm and Hold Your Ground: Do not fight back with equal aggression. Maintain a neutral tone and calm body language. Let them vent for a moment (as long as it isn't abusive).
+Interrupt and Re-Direct: If they are on a tirade, you may need to interrupt them. Say their name firmly and calmly: "John... John." Once you have their attention, say, "I hear your point, but shouting is not productive."
+State Your Position Clearly: Use concise, factual statements. Avoid emotional language. For example, "The deadline we agreed upon was Friday. The report needs to be delivered."
+Disengage if Necessary: If the behaviour becomes abusive, state your boundary and leave. "I will not be spoken to this way. We can resume this conversation when you are ready to be professional."
+Dealing with The Complainer (The Victim/The Whiner)</h4>
+The goal is to listen empathetically but shift the conversation from problems to solutions, without getting trapped in their cycle of negativity.
+
+Listen and Acknowledge: Start by validating their frustration. "It sounds like you've had a really tough morning."
+Don't Agree or Disagree: Don't get pulled into their reality. Remain a neutral sounding board.
+Pivot to Problem-Solving: Gently shift the focus. After they've vented, ask a solution-oriented question: "So, what do you plan to do about it?" or "What would be an ideal outcome for you?" This hands the responsibility back to them. If they resist, you can end the conversation politely: "I hope you're able to find a solution."
+Dealing with The Know-It-All (The Expert)</h4>
+The goal is to respect their knowledge (real or perceived) while ensuring your own ideas are heard and considered.
+
+Do Your Homework: Be prepared with facts, data, and well-reasoned arguments.
+Acknowledge Their Point of View: Start by validating their contribution. "That's an interesting point, and I appreciate you bringing it up."
+Use "We" and Inclusive Language: Frame your suggestions as additions, not contradictions. "Building on what you've said, what if we also considered...?"
+Ask Probing Questions: Gently challenge their assertions with questions that force them to think more deeply. "That's a good plan. How would we handle it if X scenario occurred?"
+Dealing with The Passive-Aggressive (The Sniper)</h4>
+The goal is to bring the hidden hostility out into the open in a calm, non-confrontational way.
+
+Call Out the Behaviour (Gently): When they make a sarcastic comment, ask for clarification with a neutral tone. "When you said 'Good luck getting that approved,' what did you mean by that?" This forces them to either own their comment or back down.
+Focus on the Impact: Use "I" statements to address the discrepancy between their words and actions. "I noticed you said you were fine with the decision, but I'm sensing some hesitation. Is there something we should talk about?"
+Address the Underlying Issue: Try to get to the root of the problem. "It seems like you're not happy with the new process. Let's talk about what's not working for you."
+Page 4 of 4: Long-Term Well-being and Knowing When to Escalate
+Successfully dealing with difficult people isn't just about single interactions; it's about creating a sustainable, long-term strategy that protects your career, relationships, and mental health.
+
+The Importance of Documentation
+In professional settings, or in any situation where behaviour is consistently problematic, documentation is your best defence. It moves the issue from a "he said, she said" scenario to a factual record.
+
+What to Document: Keep a private log (digital or physical). For each incident, record:
+Date and Time: When it happened.
+Location: Where it happened.
+People Involved: Who was present or witnessed the event.
+Specific Behaviour: Describe what happened as objectively as possible. Use direct quotes if you can. Avoid emotional language or interpretations (e.g., "He was angry"). Instead, write "He slammed his fist on the table and said in a raised voice, 'This is unacceptable!'"
+Impact: How did it affect you, your work, or the team? ("This caused a 2-hour delay in the project.")
+Building a Support System
+You do not have to handle this alone. Isolating yourself can magnify the stress and make you feel powerless.
+
+Seek Trusted Allies: Talk to a trusted mentor, colleague, friend, or family member. An outside perspective can help you see the situation more clearly and validate your feelings.
+Utilise Formal Resources (at work): Your manager, Human Resources (HR), or a union representative can be valuable resources. They are trained to handle these issues and can advise you on company policy and formal resolution options.
+Knowing When to Escalate or Disengage
+Not all situations can be resolved with communication techniques alone. You must be able to recognise when a line has been crossed and further action is required.
+
+Red Flags for Escalation:
+The behaviour constitutes harassment, discrimination, or bullying.
+It is significantly impacting your ability to do your job or your mental/physical health.
+You have tried direct communication and setting boundaries, but the behaviour continues or worsens.
+The behaviour violates company policy or legal standards.
+How to Escalate: Present your documentation to your manager or HR. State the facts calmly and professionally, explain the impact, and describe the steps you have already taken to resolve it. Be clear about the outcome you are seeking (e.g., mediation, a formal warning for the individual, a change in team structure).
+The Final Option: Disengagement: In some cases, particularly in personal relationships or toxic work environments with no hope of change, the only winning move is to walk away. Recognising that you cannot fix the person or the situation, and choosing to remove yourself, is not a failure—it is an ultimate act of self-preservation.
+Conclusion: An Empowering Choice
+Dealing with difficult people is a skill, not a gift. By understanding the dynamics at play, mastering your own reactions, and applying a toolkit of proven strategies, you can transform these challenging interactions. You can protect your peace, maintain your professionalism, and reclaim your power. Remember, you cannot control others, but you can always control your own response, and that is where your strength lies.
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~20 min).
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Include **captions ON** by default, keyboard path hints and focus order.
+- Use **UK English** throughout.
+- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
+
+SPECIFICATION TEMPLATES (adapt as needed):
+- visual.visualGenerationBrief must include:
+  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
+- overlayElements[]:
+  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
+- audio:
+  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
+- interactionDetails:
+  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
+- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
+- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.

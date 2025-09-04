@@ -50,7 +50,6 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
 
     fs.unlinkSync(filePath);
     res.json({ content: extractedText });
-
   } catch (err) {
     console.error('File processing error:', err);
     res.status(500).json({ error: 'Failed to process file' });

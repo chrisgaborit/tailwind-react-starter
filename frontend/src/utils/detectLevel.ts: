@@ -1,0 +1,48 @@
+// frontend/src/utils/detectLevel.ts
+export type DetectedLevel = 'Level 1: Passive' | 'Level 2: Limited Interactivity' | 'Level 3: Complex Interactivity';
+
+export function detectLevel(storyboard: any): {
+  level: DetectedLevel;
+  metrics: { scenes: number; interactions: number; knowledgeChecks: number; branching: number; complex: number; simple: number };
+  reasons: string[];
+} {
+  const scenes = Array.isArray(storyboard?.scenes) ? storyboard.scenes : [];
+  const lc = (s?: string) => String(s || '').toLowerCase();
+
+  const SIMPLE = ['none','click-to-reveal','click to reveal','reveal','reflection','short answer','hotspot (simple)','hotspot','button','carousel'];
+  const COMPLEX = ['drag-and-drop','drag & drop','drag drop','simulation','branching','scenario-based','simulated conversation','role-play','multi-step','guided practice'];
+  const KC = ['mcq','mrq','knowledge check','quiz','question','true/false','multiple choice'];
+
+  let interactions = 0, knowledgeChecks = 0, branching = 0, complex = 0, simple = 0;
+
+  for (const s of scenes) {
+    const type = lc(s?.interactionType);
+    const desc = lc(s?.interactionDescription);
+
+    if (type || desc) interactions++;
+
+    const blob = `${type} ${desc}`;
+    if (KC.some(k => blob.includes(k))) knowledgeChecks++;
+    if (blob.includes('branch')) branching++;
+    if (COMPLEX.some(k => blob.includes(k))) complex++;
+    if (SIMPLE.some(k => type.includes(k))) simple++;
+  }
+
+  let level: DetectedLevel = 'Level 1: Passive';
+  const reasons: string[] = [];
+
+  if (branching > 0) {
+    level = 'Level 3: Complex Interactivity';
+    reasons.push(`Branching detected (${branching}).`);
+  } else if (interactions >= 5 && complex >= 1 && knowledgeChecks >= 4) {
+    level = 'Level 3: Complex Interactivity';
+    reasons.push(`High interactivity (${interactions}), complex (${complex}), KCs (${knowledgeChecks}).`);
+  } else if (interactions >= 3 && interactions <= 6 && knowledgeChecks >= 2) {
+    level = 'Level 2: Limited Interactivity';
+    reasons.push(`Moderate interactivity (${interactions}) with KCs (${knowledgeChecks}).`);
+  } else {
+    reasons.push(`Low/simple interactivity (${interactions}, simple=${simple}), no branching, limited checks (${knowledgeChecks}).`);
+  }
+
+  return { level, metrics: { scenes: scenes.length, interactions, knowledgeChecks, branching, complex, simple }, reasons };
+}

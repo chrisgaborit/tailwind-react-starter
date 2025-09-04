@@ -7,9 +7,14 @@
 @tailwind utilities;
 
 /* 
-  ✅ Your custom base styles and component classes.
+  ✅ Custom base styles and overrides
 */
 @layer base {
+  /* Make 20px the inherited default everywhere */
+  html {
+    font-size: var(--font-size-base, 20px) !important;
+  }
+
   :root {
     font-family: 'Inter', sans-serif;
     color-scheme: dark;
@@ -19,33 +24,42 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    /* ✅ Design tokens */
+    --font-size-base: 20px;
+    --radius-card: 1rem;
+    --ring: #0387E6;
+    --ring-soft: rgba(3, 135, 230, 0.6);
   }
   
   body {
-    @apply bg-brandDark text-white m-0 min-h-screen flex justify-center items-start pt-12 px-4 font-body;
+    @apply bg-brandDark text-white text-base m-0 min-h-screen flex justify-center items-start pt-12 px-4 font-body;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-brilliantBlue;
-  }
-  
+  /* Headings scale proportionally */
+  h1 { @apply text-4xl font-heading text-brilliantBlue; }
+  h2 { @apply text-3xl font-heading text-brilliantBlue; }
+  h3 { @apply text-2xl font-heading text-brilliantBlue; }
+  h4 { @apply text-xl font-heading text-brilliantBlue; }
+  h5, h6 { @apply text-lg font-heading text-brilliantBlue; }
+
+  /* Form controls */
   input,
   textarea,
   select {
-    @apply bg-brandField text-white border border-brandGray rounded-md p-3 w-full h-14;
+    @apply bg-brandField text-white border border-brandGray rounded-md p-3 w-full h-14 text-base;
   }
 
-  textarea {
-    @apply min-h-[120px];
-  }
+  textarea { @apply min-h-[120px]; }
 
   input::placeholder,
   textarea::placeholder {
     @apply text-gray-400;
   }
 
+  /* Buttons */
   button {
-    @apply bg-brilliantBlue text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 ease-in-out;
+    @apply bg-brilliantBlue text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 ease-in-out text-base;
   }
 
   button:hover {
@@ -54,25 +68,21 @@
   
   button:focus,
   button:focus-visible {
-    outline: 2px solid #0387E6;
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
+  /* Links */
   a {
-    @apply text-brilliantBlue underline;
+    @apply text-brilliantBlue underline text-base;
   }
   a:hover {
     @apply text-blue-400;
   }
 
   /* Scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #2c2c2e;
-  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #2c2c2e; }
   ::-webkit-scrollbar-thumb {
     background-color: #555;
     border-radius: 6px;
@@ -81,5 +91,32 @@
   * {
     scrollbar-width: thin;
     scrollbar-color: #555 #2c2c2e;
+  }
+}
+
+/* ✅ PDF Export Helpers (for html2pdf.js) */
+.pdf-pagebreak {
+  break-after: page;
+  page-break-after: always;
+}
+
+.pdf-avoid-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+[data-html2canvas-ignore="true"] {
+  display: none !important;
+}
+
+/* ✅ Ensure backgrounds and colors print faithfully */
+@media print {
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Optional: smaller print size for paper */
+  html {
+    font-size: 14px !important;
   }
 }

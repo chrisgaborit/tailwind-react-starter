@@ -1,69 +1,43 @@
-export enum ModuleType {
-  Compliance = 'Compliance',
-  ProductTraining = 'Product Training',
-  Onboarding = 'Onboarding',
-  Sales = 'Sales',
-  Leadership = 'Leadership',
-  SoftSkills = 'Soft Skills',
-  Systems = 'Systems or Technical Training',
-  Behavioural = 'Soft Skills or Behavioural'
-}
+// backend/src/types/storyboardTypes.ts
+export type IDMethod =
+  | "ADDIE"
+  | "SAM"
+  | "MERRILL"
+  | "GAGNE"
+  | "BACKWARD"
+  | "BLOOM";
 
-export enum ModuleLevel {
-  Level1 = 'Level 1',
-  Level2 = 'Level 2',
-  Level3 = 'Level 3',
-  Level4 = 'Level 4'
-}
+export type ADDIEPhase = "A" | "D1" | "D2" | "I" | "E"; // D1=Design, D2=Development
+export type SAMPhase = "Prepare" | "Iterate" | "Implement";
+export type MerrillPhase = "Activation" | "Demonstration" | "Application" | "Integration";
+export type GagneEvent =
+  | "GainAttention" | "InformObjectives" | "StimulateRecall" | "PresentContent"
+  | "ProvideGuidance" | "ElicitPerformance" | "ProvideFeedback"
+  | "AssessPerformance" | "EnhanceRetentionTransfer";
+export type BackwardStage = "IdentifyResults" | "DetermineEvidence" | "PlanLearning";
+export type BloomLevel = "Remember" | "Understand" | "Apply" | "Analyze" | "Evaluate" | "Create";
 
-export enum Tone {
-  Formal = 'Formal',
-  Friendly = 'Friendly',
-  Inspiring = 'Inspiring',
-  Conversational = 'Conversational',
-  Confident = 'Confident & Persuasive',
-  Instructional = 'Direct & Instructional',
-  Reflective = 'Reflective & Story-Driven',
-  Strategic = 'Empowering & Strategic'
-}
-
-export enum SupportedLanguage {
-  English = 'English',
-  Spanish = 'Spanish',
-  French = 'French',
-  German = 'German',
-  Arabic = 'Arabic',
-  Hindi = 'Hindi',
-  Japanese = 'Japanese',
-  Indonesian = 'Indonesian',
-  ChineseSimplified = 'Chinese (Simplified)'
-}
-
-export interface StoryboardFormData {
-  moduleName: string;
-  moduleType: ModuleType;
-  complexityLevel: string; // Changed from enum to allow frontend string binding
-  tone: string;
-  outputLanguage: string;
-  organisationName: string;
-  targetAudience: string;
-  duration: string;
-  brandGuidelines: string;
-  fonts: string;
-  colours: string;
-  logoUrl: string;
-  learningOutcomes: string;
-  content: string;
+export interface InstructionalTag {
+  method: IDMethod;
+  addie?: { phase: ADDIEPhase };
+  sam?: { phase: SAMPhase };
+  merrill?: { phase: MerrillPhase };
+  gagne?: { event: GagneEvent };
+  backward?: { stage: BackwardStage };
+  bloom?: { level: BloomLevel };
 }
 
 export interface StoryboardScene {
-  sceneNumber: string;
-  title?: string;
-  objectivesCovered?: string;
-  visual?: string;
-  narration?: string;
-  onScreenText?: string;
-  userInstructions?: string;
-  interactions?: string;
-  accessibilityNotes?: string;
+  sceneNumber: number;
+  pageTitle: string;
+  // ... your existing fields ...
+  imagePrompt?: string;
+  instructionalTag?: InstructionalTag;   // <— NEW
+}
+
+export interface StoryboardModule {
+  moduleName: string;
+  // ... existing fields ...
+  idMethod?: IDMethod;                   // <— NEW: selected by user
+  frameworkSummary?: Record<string, any>; // <— optional auto summary
 }

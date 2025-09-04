@@ -1,0 +1,529 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director producing build-ready storyboards in **UK English** that meet **Brandon Hall / LearnX** standards.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences, no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-screen text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for each visual; **captions ON** by default; provide keyboard path hints.
+- Developer Notes: explicit logic (branching/retries), **completion rule**, and **xAPI** verb/statement hints.
+
+STRICT FIRST FOUR (must exist and be first, in this exact order):
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "screenLayout": string,
+  "templateId": string,
+  "screenId": string,
+  "narrationScript": string,
+  "onScreenText": string,
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+  "developerNotes": string,
+  "accessibilityNotes": string
+}
+
+Brandon Hall Standard Enforcement:
+- **Align total scene count** to the *target scenes* provided in the user brief (±2), rather than any fixed number per level.
+- Ensure **≥5 distinct interaction types** across the module (e.g., click-to-reveal, drag & drop, scenario/branching, role play, quiz, simulation).
+- Include at least **3 branching decision points** showing consequences with coaching feedback.
+- Insert a **knowledge check every 3–5 scenes** (varied formats).
+- End with a **capstone branching scenario** and an **action plan / commitment**.
+- Every scene must include: concise narration, ≤70w on-screen text (not a VO duplicate), concrete visual prompt + alt text, interaction (if applicable), developer notes (logic, completion rule, xAPI).
+- Accessibility: captions ON, alt text, keyboard path hints and focus order guidance.
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Pre-Session Responsibilities\n45 minutes prior to delivery\nArrive at the broadcast venue.\nVerify the following:\nTechnical support staff members (Elluminate & client) are standing by.\nThe training database (if required) is available and the data has been refreshed since the previous session.\nYou have the session participant list (roll) (register).\nYou have the online resources link for participant handout downloads.\nYou have the post-training survey link.\n30 minutes prior to delivery\nJoin the session room\nRun the audio wizard.\nLoad the session plan and activated it.\nSetup break-out rooms and load instructions into each.\nModify the ‘Welcome’ slide to show the actual session start time.\nModify the ‘Your trainer’ slide to include your photo and name.\n25 minutes prior to delivery\nGo to the toilet.\nFill up your water bottle.\nSwitch your telephones to silent mode. If your desk phone has no silent capabilities, turn it off.\nHang/display/wear your‘Do Not Disturb’ sign.\n15 minutes prior to delivery\nBroadcast the ‘Welcome’ slide.\nCommence the regular countdown ‘sound checks’ to welcome recently joined participants. Remind them of the start time and to complete the Audio Setup Wizard if they haven’t already done so.\nChat with early participants.\n2 minutes prior to delivery\nBroadcast the ‘Audio setup’ slide.\nContinue the regular countdown ‘sound checks’ to welcome recently joined participants.\nVirtual Classroom Capabilities Featured in this Session\nApplication Sharing\nX\nBreakout Rooms\nX\nChat\nX\nEmoticons\nX\nInteractive Whiteboard\nX\nSimultaneous Speakers\nX\nPolls\nX\nSession Recording\nQuizzes\nX\nWeb Tour\nList of Polls (with links if prepared)\nPoll one\nPoll two\nPoll three\nPoll four\nPoll five\nPoll six\nList to Handouts\nHandout one\nHandout two\nhandout three\nWorkplace Assignment(s)\nDetails of the assignment(s) go here. Include any special requirements.\nUseful Contacts\nThe Learning Factor\nVicki Kossoff:\t02 8211 0440\nChris Gaborit:\t02 8211 0440\nVirtual Classroom Technical Help\nContact name and phone number\nContact name and phone number\nSubject Matter Experts\nContact name and phone number\nContact name and phone number\nContact name and phone number\nProject Training Coordinator\nContact name and phone number\nRow Number\nDuration\nTime Segment\nLearning Content\nMethod\nGraphic orThumbnail\nTalk Track\nInteraction\nIntended Response\nResponse Method\nPlan B\nPre-session\nThis is the standard pre-session segment. Fifteen minutes prior to the scheduled session start time, participants will be able to access the classroom.\n1\n13 min\n-2 min\nDisplay the Welcome slide on the WBD.\nEvery minute or so welcome  any new participants to the session, remind them of the official start time\nNote: Commence an audio ‘countdown’ 5 minutes prior to start and repeat approximately every 30 seconds.\n“Thanks for joining. We’re just getting settled in and we’ll officially begin at <insert start time>.\nWhilst you are waiting, if you haven’t already done so, take a moment to run the Audio Setup Wizard to configure your headphone and microphone settings.”\n2\n1 min\n-1 min\nHave participants close all non essential applications.\nDisplay the Reminder slide on the WBD.\n“All right everyone, let’s get started.\nAs usual we will be using a significant number of system resources today, so to minimise the impact on the network and your local PC, please close all applications other than the virtual classroom.\nGo ahead and save anything that you were working on. Then please close all programs except this one.”\n3\n1 min\n-1 min\nPerform a housekeeping check of the audio.\nDisplay on the WBD:\nIs everyone ready?\n“Before we get underway, I’d like to make sure that everyone’s audio is working.\nIf you can hear me, please click the green tick on the toolbar now.”\nClick the appropriate Yes/No icon on the toolbar to register a polling result.\nMostly Ticks and a few Crosses.\nYes/No poll\nAudio Resolutions:\nchat privately\ntake into a breakout room\ncall them\nOpening\nThis is the standard opening to be used for all sessions with obvious inclusion of course specific ‘Purpose and Topics’, ‘Prerequisites’, ‘Learning Outcomes’ and ‘Key Changes’ segments\n4\n1 min\n1 min\nOpening Segment: introduces you as the presenter\nDisplay on WBD:‘Your presenter’\n“Hello and welcome everyone, my name is [insert your name] and I’ll be your presenter and tour guide today.\nIn this session we will cover a range of topics relating to The Art of Coaching.”\n5\n1 min\n2 min\nPrerequisites\nDisplay on WBD ‘Prerequisites’\nRead and highlight the prerequisites and make sure that any ‘show stoppers’ are highlighted\nHave the participants use the voting buttons to indicate whether they satisfy the prerequisites.\nHave your co-moderator invite any participant that fails to meet the prerequisites into a breakout room, where they can ascertain whether the participant can continue with the course.\n“Before we begin, please take a look at the course prerequisites.\nIf you meet these requirements, please click on the green tick. If you do not meet these requirements, please click on the red cross.\nI will ask my co-moderator [insert name] to help anyone who does not meet some or all of the prerequisites for this course.”\nTicks (or crosses) in the participant window.\nMostly ticks with maybe 1 or 2 crosses\nVoting buttons\nIf cross selected, use chat to determine if the participant should remain in the session.\nIf not, arrange rescheduling.\n6\n1 min\n3 min\nOrientation to virtual classroom via instructor led navigation around the various panels on the screen and their usage.\nDisplay on WBD:‘Elluminate Basics’\n“At this time I’d like to remind you that today’s session is being recorded.\nAfter the session is done, I’ll send each of you an email containing a link to the recording.”\n7\n1 min\n4 min\nDisplay on WBD:‘Regional NSW’’\nMention some of the areas as they are being highlighted by the participants\n“Before we get underway, let’s see where everyone is joining the session from today.\nIf you are joining from a regional or country centre, select your Laser Pointer from the whiteboard tools and click on the map to place a blinking red dot showing us where you are.\nIf you are in the metropolitan area you’ll get a chance in a minute.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n8\n1 min\n5 min\nDisplay on WBD:‘Metro Area’\nLook for and mention any areas showing ‘clusters’ of participants\n“OK, now it’s time for everyone joining the session from somewhere in the Sydney metropolitan area to show us where they are.\nPlease select your Laser Pointer from the Whiteboard Tools and click on the map to show us where you are.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n9\n1 min\n6 min\nPurpose & Topics\nDisplay on WBD: Overview: The Art of Coaching\n“Now let’s look at the purpose of today’s session.\nIn this session, you will be introduced to the coaching concept.\nThe skills for coaching excellence will be identified and discussed.\nThe four steps of the coaching model will be presented.\nAfterwards, we’ll talk about the characteristics of effective feedback.\nLater, we’ll take a look at the four stages of a coaching session and how to determine if a session was successful.\nFinally, we’ll cover how to manage coaching challenges.”\n10\n1 min\n7 min\nIntroduction to Topic 1\nDisplay on WBDTopic 1\n“In Topic 1 we will examine the coaching concepts.\nWe’ll take a look at w
+
+[…truncated…]
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~30 (±2)
+- Minimum interactive scenes: 7
+- Min knowledge check items total: 3
+- Preferred types: Branching scenario, Complex drag-and-drop, Interactive video, Scenario-based MCQ
+- Max same type in a row: 1
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 1 times in a row.
+
+--- USER BRIEF ---
+Module Name: Internal Consulting Skills
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): 30
+Audience: Managers
+Tone: Professional & Clear
+Output Language: English (UK)
+Organisation: Learno
+Learning Outcomes (desired): •	Apply a variety of tools and methodologies to your consulting projects | •	Utilise communication techniques to help you lead the consulting conversation | •	Demonstrate competence using the Internal Consultant Model
+Instructional Purpose: Soft Skills Development
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: 🖼️ Imagery & Visual Style
+Element	Guideline
+Imagery	Use realistic, high-resolution photography that aligns with a modern workplace or human-centric AI theme. Prefer unsplash.com, pexels.com, or branded stock.
+Graphics	Leverage minimal, premium-quality vector icons when needed. No clip art.
+Backgrounds	Prefer gradient transitions using Bright Purple or clean Black backgrounds.
+Layout Style	Use spacious layouts with clear hierarchy, large headings, and central alignment.
+Visual Effects	Allow light glow or blur effects behind text or on buttons when it enhances readability.
+Page Numbering	Bottom-right corner in Brilliant Blue or White for contrast.
+💬 Tone and Voice
+Forward-thinking, professional, yet human
+Speak with clarity, simplicity, and authority
+Avoid buzzwords; favour real impact and results
+Every statement should feel empowering and visionary
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Company Images (use where appropriate, maintain brand fit):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+--- CONTENT FROM FILE: Cisco Consulting Skills Participant Manual v141117 2.pdf ---
+
+www.learningfactor.com.au
+CONSULTING SKILLS
+Conversations for Change
+
+2
+Copyright
+No  part  of  this  work  may  be  reproduced  in  any  form  or  by  any  electronic  ormechanical  means,
+including the use of information storage and retrieval systems, without permission in writing from the
+publisher.  Violators will be prosecuted to the fullest extent permitted by law.
+The publisher has made a sincere effort to ensure theaccuracy and quality of its program materials;
+however, no warranty, expressed or implied, is provided.  The publisher disclaims any responsibility or
+liability for any direct or indirect damages resulting from the use of the information in this manual or
+products  described  in  it.    Mention  of  any  product  or  resource  does  not  constitute  an  endorsement
+by  the  publisher  of  that  product  or  resource.    All  case  studies  and  simulations  are  intended  to  be
+fictional; any resemblance to real persons or companies is coincidental.
+The Learning Factor
+Level 31, RBS Building
+88 Phillip St
+Sydney 2088 NSW Australia
+P: +61 28999 8819
+F: +6129475 1113
+
+3
+COURSE OBJECTIVES
+Exercise: PersonalWants
+When consulting with others, what do you hope this course will help you get better with?
+Through group discussion and practice, you
+will be able to:
+Apply a variety of tools and
+methodologies to your consulting
+projects.
+Utilise communication techniques to
+help you lead the consulting
+conversation.
+Demonstrate competence using the
+Internal Consultant Model.
+
+4
+SESSIONONE
+Introduction
+
+5
+What is Internal Consulting?
+Any  time  you  try  to  influence,  change  or  improve  something,  but  have  no  direct  control  over  the
+implementation,  you  are  in  a  consulting  situation.    If  you  have  direct  control,  you  are  managing,  not
+consulting.
+The consultant’s lack of direct control and authority are what make this role challenging.
+In addition, a consultant deals with two types of change:
+1.Astructural, policy or procedural change (substance)
+2.The change in one person or people who learn something new (process)
+The  first  of  these,  a  substantive  change  to  a  system  within  the  organisation,  is  the  most  straightforward,
+though  it  faces  all  the  challenges  that  any  workplace  change  must  confront  (e.g.  teething  problems,
+tuning problems, timing problems etc).
+The  second  type,  how  people  go  about  the  process  of  making  the  changes,  is  less  predictable,  and
+often more challenging for the consultant.
+The  interpersonal  relationships  of  people  involved  on  the  project  need  careful  managing  to  ensure  that
+everyone is willing to engage, tolerate differences, learn and cooperate.
+An internal consultant works inside onepart of the organisation to help another
+part of the organisation.
+Help usually means solving a problem, enacting a change, giving advice or, in
+some cases, working on large-scale transformations.
+What makes the consultant’s job unique is that internal consultant’s work with
+people over whom they have no direct authority or control.
+(Meslin, 2007)
+
+6
+Approaches to Internal Consulting
+Directive vs. Non-DirectiveConsulting
+The degree to which an  internal consultant gets involved in the client’s actual operations and decisions
+can vary, from relatively nondirective to highly directive.  Some of these variations are outlined below.
+(Lippett & Lippett,The Consulting Process in Action, 1978)
+
+7
+Three Approaches
+Along  the  scale  of  directiveness  there  are  three  general  positions  a  consultant  may  choose  (or  be
+chosen) to take: as a pair of hands, as an expert or as a collaborator.  Each may be appropriate for
+different consulting situations.
+
+8
+Three Approaches (cont)
+1.  Pair of hands
+At the low level of directiveness, the client retains almost all of the control of the project, determining the
+problem and the solution, with the consultant implementing the solution.   The consultant is expected to
+apply  specialised  knowledge  to  implementaction  plans  toward  the  achievement  of  goals  defined  by
+the client.
+Difficulties can arise when the client’s ideas and the consultant’s expertise suggest different directions for
+the  project.  Also  the  full  scope  of  the  consultant’s  specialised  knowledgemay  be  under-used  because
+of the nature of the client’s plans and pre-conceived solutions.
+2.  Expert
+At  the  high  end  of  directiveness,  the  expert  consultant  assumes  the  majority  of  control  for  the  project.
+The  client  may  make  suggestions  but  the  consultant  advises  the  client  what  would  be  best  based  on
+their expertise.
+Advantages  of  this  approach  are  that  it  frees  line  management  up  from  involvement,  and  puts  the
+project in the hands of someone who is acknowledged as having superior expertise. Disadvantages can
+arise due to the expert’s lack of familiarity with the on-the-ground aspects of the project, and truncated
+lines of communication with those affected.
+3.  Collaborator
+This approach sits somewhere midway along the directivenessscale.  It uses both the consultant’s expert
+knowledge  and  the  client’s  knowledge  of  the  operation  and  process.  Decisions  regarding  actions  to
+take and implementation are all shared responsibilities, with equal attention given to both the technical
+issuesand the human interactions involved with this.
+This can be a more satisfying way of proceeding, with all ideas deliberated together and joint decisions
+made.    However,  it  can  be  more  time-consuming  and,  if  personalities  are  not  congenial,  subject  to
+conflict.  It  may  also  be  hard  to  determine  responsibility  and  accountability  unless  these  are  carefully
+spelled out.
+The preferred mode  of  operation for most internal consultants is the collaborative approach as it draws
+on a larger base of expertise, both theirs and the client’s, to apply to the project.
+
+9
+Understanding the Client’s Business Issues–External Conditions
+Business issues usually arise as a result of external conditions, organisational responses and the functional
+challenges  presented  by  theclient’s  specific  area/department.    Developing  your  awareness  of  these
+issues helps you to “stand in the client’s shoes” so you can better tune the advice and consulting services
+you offer them.
+External   conditionsare   industry-wide   trends   that   affect  the   organisation.   As   a   general   rule,   the
+organisation has little or no control over external conditions. They include:
+Competitive practices
+Financial conditions (e.g. inflation, recession, interest rates, exchange rates etc)
+The state of the local, regional, national and/or global economy
+Consumer demand and buying patterns
+Federal  and  state  laws  (e.g.  regulation  and  deregulation,  taxlaws,  trade  policy,  changes  in
+legislation, compliance laws etc)
+Cost and availability of materials
+Availability and qualityof labour, union activity etc.
+Exercise: An External Condition
+Identify one example of an external condition your client must respond to:
+
+10
+Understanding the Client’s Business Issues–Organisational Responses
+Organisational  responsesare  the  strategies  an  organisation  undertakes  on  an  overall  basis.    Typically,
+these strategies are in response to the external conditions the organisation is facing.
+These responses might include:
+New objectives to be more profitable or productive,or to increase sales
+Reorganisation/downsizing or mergers/acquisitions
+Centralisation or decentralisation
+Open a new channel to market (technology based etc)
+Use of work teams
+New product development or diversification
+Exercise: Organisational response
+State  one  overall  strategy  your  client  has  developed  as  an  organisational  response  to  the  external
+condition cited above:
+
+11
+Understanding the Client’s Business Issues–Functional Challenges
+Functional challengesare the third level of business issues.  They reflect the pressures faced by individuals
+and work groups within the organisation.
+For example:
+For customer service: increase customer satisfaction, reduce cost per service calls
+For sales: increase sales volume, prospect more productively
+For marketing: differentiate amongst products, devise new pricing strategies
+For IT: manage data more efficiently, upgrade communication resources
+Exercise: A functional challenge
+Describe  a  challenge  your  client  andhis/her  colleagues  are  facing  that  has  been  brought  on  by  the
+external conditions and organisational response you noted above:
+
+12
+SESSIONTWO
+Earn the Right
+
+13
+EARN THE RIGHT
+Phase 1: Earn the Right
+Phase 1 sets the foundation for your consulting relationship.  In it, you consciously do things to build trust
+and  rapport  so that  your  client  comes  to  view  you  as  someone  in  whom they  can  have  confidence.In
+this phase you are demonstrating the three keyskills Internal Consulting Skills. They are:
+Technical Skills
+Interpersonal Skills
+Consulting Skills
+
+14
+Internal ConsultantSkills
+The end goal of the consulting model is for the internal consultant to create change–to both substance
+and relationship.  Every time you consult to a person or group, they make a choice based on your input.
+To enable your clients to make the rightchoices, you need to be proficient in 3 kinds of skills:
+1.Technical skills
+Your expertise in a specific aspect of the business is your first requirement in a consulting role.  This will
+be based your experience in operational, management or organisationaldevelopment functions.
+2.Interpersonal skills
+These  are  the  skills  that  reflect  your  ability  to  relate  with  others:  how  you  express  yourself,  respond,
+give support or disagree reasonably within the contexts of a relationship.
+3.Consulting skills
+These  skillsare  in  addition  to  your  technical  and  interpersonal  skills,  and  dictate  your  ability  to  enter
+into, carry out and successfully complete consulting projects.
+
+15
+Exercise:
+In  triads,  brainstormthe  two  different  sets  of  interpersonal  and  consulting  skills  required  by  an  internal
+consultant.Record on flip chart and present.
+Technical SkillsInterpersonal SkillsConsulting Skills
+IT
+Retail
+Marketing
+Risk Management
+Sales
+HR
+Project Management
+Finance
+Operations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EFFECTIVE ENGAGEMENT AND IMPLEMENTATION OF CONSULTING PROJECTS
+
+16
+Building Trust
+To  achieve  a  collaborative  relationship,  trust  is  essential.  Trust  dependson  the  internal  consultant
+developing and sustaining an image and reputation with the client that is high on the following factors:
+Familiarity/similarity
+Openness
+Credibility
+Dependability
+Predictability
+Valuing common good
+Emotional safety
+Trust
+Is a key component in any successful relationship
+Develops overtime
+Once lost, is hard to regain
+Includes giving something of yourself, being genuinely
+interested in the other person and seeing communication as a
+shared experience
+
+17
+Exercise:
+Identify thetype of trust element that the statement is referencing.
+ConceptAction or Behaviour
+A. Familiarity/
+Similarity
+B.  Openness
+C.  Credibility
+D. Dependability
+E.  Predictability
+F.  Valuing the
+common
+good
+G.  Emotional
+Safety
+F or GDo not indulge in back-stabbing or gossip
+GMaintain confidentiality
+Spend time with the client–get to know their personal
+motivations and relate to these when communicating
+with them
+Don’t springunpleasant surprises
+Make good on promises
+Check  facts  so  your  spoken  or  written  word  can  be
+believed
+Share  mistakes  you  have  made–and  what  you
+learned from them
+Be honest when you disagree with something
+Express yourself in terms thatsupport (not reduce) the
+client’s self esteem
+Don’t take advantage of the client’s emotions
+Inform  yourself  about  the  business  issues  the  client
+faces
+Accept  criticism  in  the  spirit  of  what  you  can  learn
+from it
+Back up commitments you makewith action
+Learn what is important to the client and why
+Put aside self-interest for the sake of the project
+Admit when you don’t know something
+Promote team efforts–thank, congratulate, recognise
+and celebrate team success
+Have  thecourage  to  stand  up  for  your  own  beliefs
+and standards
+Say nothing rather than say half-truths
+Show trust in the client
+Take   the   client’s   concerns   to   heart,   treat   them
+seriously
+
+18
+Proposal
+Write a few notes about a proposal you have recently made to your client orpreferablya change that
+you think needs making.
+Your   Client   or
+Manager
+Your Proposal
+Best Outcome
+Dependent  on  howtrustedyou  areofhaving  the  skills  needed  to  put  forth  arecommendation
+(proposal) and seen as trustworthy, your proposals will land in one of 4 areas:
+At Jeopardy
+Counted In
+Left Out
+Have a Prospect
+
+19
+Listener Receptivity
+The typeof reaction you receivedfrom your client may be areflection of how well you aretrustedin the
+three areas oftechnical, interpersonal and consulting skills.What type ofreactiondid youexperienceor
+do youanticipatereceiving?
+ReactionYour ProposalYou as A Trusted Consultant
+EnthusiasticSatisfied    with    your    proposal    and
+committed to implementation.
+Routinely  seeks  you  for  information
+and guidance in decision making.
+EngagedSees   value   and   considers   how   to
+implement.
+Sees  your  experience  and  expertise
+as helpful in decision making
+InterestedMore  information  on  proposal  and
+personal impacts.
+Solicits     information     but     doesn’t
+necessarily implement.
+ImpartialListener   is   ready   to   consider   the
+proposal
+Does not actively seek your
+guidance or but will respond.
+Voicing
+Concerns
+Raises  concerns  and  may  bring  up
+past experiences.
+Brings    up    past    experiences    and
+questions your experience/expertise.
+ResistantProposal   seems   more   trouble   than
+the original problem being resolved.
+Listener  seems  uninterested  in  your
+advice or support.
+ClosedListener  does  not  know  the  situation
+can be improved.
+Does  not  seek  your  advice  or  does
+not respond to your emails, calls.
+
+20
+Listener Receptivity
+Place an “x” where the two points intersect.
+Proposal
+Reaction
+Enthusiastic
+At JeopardyCounted in
+Engaged
+Interested
+Impartial
+Left outHave a Prospect
+Voicing Concerns
+Resistant
+Closed
+ResistantVoicingConcernsImpartialInterestedEngagedEnthusiasticInternalConsultant
+Interpretation
+Left OutThe listener is not receptive toyou andyour proposal.
+Have a ProspectListener has positive regard for you but notconvinced of proposal value.
+At JeopardyListener has positive regard for the proposal but not necessarily you.
+Counted InThelistener is receptive to you and your proposal.
+
+21
+Exercise
+In groups as assigned, write your answers in the spaces provided.
+PitfallsActions to Overcome
+Left Out
+Pushing your agenda without
+understanding  what  is  important  to  the
+client.
+Start  bystating  what  you  know  about
+the  client  situation  and  then  ask  more
+questions  until  you  fully  understand  their
+needs.
+Have a Prospect
+At Jeopardy
+Counted In
+Left OutThe listener is not receptive to you and your proposal.
+Have a ProspectListener has positive regard for you but not convinced of proposal value.
+At JeopardyListener has positive regard for the proposal but not necessarily you.
+Counted InThe listener is receptive to you and your proposal.
+
+22
+Key Learnings: Earn the Right
+
+23
+SESSIONTHREE
+Inquire and Summarise
+
+24
+Inquire and Summarise
+The  keytotheinquiry  and  summarize  phaseis  to  positionthe  issue  being  discussed  in  a  clear
+straightforward mannerand provide apossiblepath forward.
+Opening the ConversationProviding a Path Forward
+Client SituationChallengeConsequenceBeliefActionValue
+In  addition,  your  ability  to  ask  questions  and  develop  rapport  with  the  client  will  help  ensurea  robust
+discussion follows.
+
+25
+Opening the Conversation–Con
+
+[…truncated…]
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- Include: **Pronunciation Guide**, **Table of Contents**, and **Welcome & Learning Objectives** (first four).
+- Provide **3–5 Learning Outcomes** and ensure the ToC aligns with ~30 scenes.
+- Each scene: concise VO, OST ≤ 70w, visual with concrete AI prompt + alt text, interaction (if applicable), dev notes (logic/xAPI).
+- Accessibility: captions ON by default; include keyboard path hints where relevant.
+- Use UK English throughout.
+- Aim for Brandon Hall / LearnX calibre: scenario-based practice, spaced retrieval, meaningful feedback, authentic language, and practicality.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
