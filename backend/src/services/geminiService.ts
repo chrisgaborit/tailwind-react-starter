@@ -257,18 +257,95 @@ ${formData.content}
     // ✅ Ensure durationMins is present for downstream consumers
     parsed.storyboardModule.durationMins = durationMins;
 
-    // ✅ Generate images for any image-type events
-    for (const page of parsed.storyboardModule.pages as StoryboardPage[]) {
-      for (const event of (page.events || []) as StoryboardEvent[]) {
-        const prompt = (event as any)?.aiProductionBrief?.visual?.subject;
-        const mediaType = (event as any)?.aiProductionBrief?.visual?.mediaType;
-        if (prompt && String(mediaType).toLowerCase() === 'image') {
-          console.log('✅ --- PAUSING BEFORE IMAGE GENERATION --- ✅');
-          (event as any).generatedImageUrl = await generateImageFromPrompt(prompt);
-          await sleep(2000);
-        }
-      }
+    // --- Helper: hard-enforce photorealistic visuals and build a rich prompt ---
+function buildPhotorealisticPrompt(event: any, brand?: { colours?: string[]; fonts?: string }) {
+  const vb = event?.aiProductionBrief?.visual ?? {};
+  const subject = vb.subject || "diverse professionals collaborating in a modern workplace";
+  const setting = vb.setting || "contemporary office or home office environments";
+  const composition = vb.composition || "natural candid composition with clear subject focus, 16:9";
+  const lighting = vb.lighting || "soft natural daylight or warm practical lighting";
+  const mood = vb.mood || "professional, inclusive, productive";
+  const palette = (brand?.colours || ["#0387E6", "#E63946", "#BC57CF", "#000000", "#FFFFFF"]).join(", ");
+
+  // Style guardrails (overwrite any vector/flat)
+  const style = "Photorealistic";
+  const negative = [
+    "no vector art",
+    "no flat illustration",
+    "no cartoon",
+    "no clip art",
+    "no isometric illustration",
+    "no 3D render look",
+    "no exaggerated proportions",
+  ].join(", ");
+
+  // Camera/realism cues (kept tasteful/generic so any model can use them)
+  const realismCues = [
+    "photorealistic",
+    "high-resolution",
+    "natural skin tones",
+    "realistic proportions",
+    "subtle depth of field",
+    "authentic textures",
+    "clean background bokeh when appropriate",
+  ].join(", ");
+
+  // Build final prompt
+  return [
+    `${subject} in ${setting}.`,
+    `Composition: ${composition}. Lighting: ${lighting}. Mood: ${mood}.`,
+    `Style: ${style}; ${realismCues}.`,
+    `Brand-aware accents (subtle): ${palette}.`,
+    `Avoid: ${negative}.`,
+  ].join(" ");
+}
+
+// --- Helper: normalize brief in-place (enforce mediaType=image and style=Photorealistic) ---
+function normalizeVisualBrief(event: any) {
+  event.aiProductionBrief ||= {};
+  event.aiProductionBrief.visual ||= {};
+  const vb = event.aiProductionBrief.visual;
+
+  // Default/force mediaType
+  if (!vb.mediaType) vb.mediaType = "image";
+  if (String(vb.mediaType).toLowerCase() !== "image") vb.mediaType = "image";
+
+  // Overwrite any vector/flat signals
+  const style = String(vb.style || "").toLowerCase();
+  if (!style || /(vector|flat|illustration|isometric|cartoon)/i.test(style)) {
+    vb.style = "Photorealistic";
+  } else {
+    // Even if something else is present (e.g., "cinematic"), append Photorealistic
+    if (!/photorealistic/i.test(style)) vb.style = `${vb.style} Photorealistic`.trim();
+  }
+
+  return vb;
+}
+
+// ✅ Generate images for any image-type events (photorealism enforced)
+for (const page of parsed.storyboardModule.pages as StoryboardPage[]) {
+  for (const event of (page.events || []) as StoryboardEvent[]) {
+    // Normalise the brief and enforce photorealistic defaults
+    const vb = normalizeVisualBrief(event);
+
+    // Build an enriched, photorealistic prompt (optionally pass brand from module if you have it)
+    const finalPrompt = buildPhotorealisticPrompt(event, parsed?.brand);
+
+    const mediaType = String(vb.mediaType || "").toLowerCase();
+    if (finalPrompt && mediaType === "image") {
+      console.log("✅ Photorealistic image generation enforced");
+      (event as any).generatedImageUrl = await generateImageFromPrompt(finalPrompt /*, { size: "2048x1152" }*/);
+      // Save metadata for traceability/debugging
+      (event as any).generatedImageMeta = {
+        styleEnforced: "Photorealistic",
+        promptUsed: finalPrompt,
+        mediaType: vb.mediaType,
+        timestamp: new Date().toISOString(),
+      };
+      await sleep(2000);
     }
+  }
+}
 
     return parsed.storyboardModule as StoryboardModule;
   } catch (error: any) {

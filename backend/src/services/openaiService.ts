@@ -1,4 +1,3 @@
-// backend/src/services/openaiService.ts
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
@@ -55,18 +54,21 @@ async function saveStoryboardToSupabase(
    Types (local helpers only)
    ========================================================= */
 export type AugmentedFormData = Record<string, any> & {
-  ragContext?: string; // storyboard-level RAG (full SBs)
-  ragChunkContext?: string; // chunk-level RAG (interaction blueprints)
+  ragContext?: string;
+  ragChunkContext?: string;
   aiModel?: string;
   moduleName?: string;
-  complexityLevel?: string; // e.g., "Level 3"
-  level?: string; // alt key
+  complexityLevel?: string;
+  level?: string;
   duration?: string | number;
   durationMins?: number;
-  targetAudience?: string;
+  targetAudience?: string;           // e.g., "Underwriters; Claims staff"
   organisationName?: string;
   learningOutcomes?: string | string[];
   instructionalPurpose?: string;
+
+  /** Preferred ID method switch, e.g., "ADDIE", "SAM", "MERRILL", "GAGNE", "BACKWARD", "BLOOM" */
+  idMethod?: string;
   preferredMethodology?: string;
 
   companyImages?: Array<{
@@ -87,12 +89,12 @@ export type AugmentedFormData = Record<string, any> & {
   forceLength?: boolean;
   minScenes?: number;
 
-  __source?: "text" | "files"; // optional source marker used for persistence
+  __source?: "text" | "files";
 };
 
 export type GenerateOptions = {
-  ragContext?: string; // storyboard-level RAG
-  ragChunkContext?: string; // chunk-level RAG
+  ragContext?: string;
+  ragChunkContext?: string;
   aiModel?: string;
 };
 
@@ -106,6 +108,31 @@ const ALLOWED_MODELS = (process.env.OPENAI_ALLOWED_MODELS || "gpt-5,gpt-4o,gpt-4
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+
+function normaliseProfile(raw: any, fallbackLevel: string = "Level 3") {
+  const safeArray = (arr: any, fallback: string[]) =>
+    Array.isArray(arr) && arr.length ? arr : fallback;
+
+  return {
+    minKnowledgeChecks: Number(raw?.minKnowledgeChecks ?? 3),
+    preferredInteractionTypes: safeArray(
+      raw?.preferredInteractionTypes,
+      ["Scenario", "MCQ", "Clickable Hotspots", "Drag & Drop", "Reflection"]
+    ),
+    maxSameTypeInRow: Number(raw?.maxSameTypeInRow ?? 2),
+    branchingRequired: Boolean(raw?.branchingRequired ?? true),
+    level: raw?.level ?? fallbackLevel,
+  };
+}
+
+function genericAIPrompt(title: string) {
+  // Photorealistic default with vector avoidance baked in
+  return [
+    `Photorealistic workplace photograph supporting "${title}"`,
+    "natural lighting; shallow depth of field; authentic textures; inclusive; modern office/home office; 16:9.",
+    "Avoid: vector art, flat illustration, cartoon, isometric, clip art, 3D render look."
+  ].join("; ");
+}
 
 console.log("🔧 Using OpenAI default model from env:", OPENAI_DEFAULT);
 console.log("🔒 Allowed models:", ALLOWED_MODELS.join(", "));
@@ -196,7 +223,6 @@ function parseHexListFromString(s?: string): string[] {
     .filter(Boolean)
     .map((x) => (x.startsWith("#") ? x : `#${x}`))
     .filter((x) => /^#[0-9a-f]{3,8}$/i.test(x));
-  // de-dup, keep order
   return Array.from(new Set(hex));
 }
 function firstFontFromString(s?: string): string | undefined {
@@ -205,7 +231,7 @@ function firstFontFromString(s?: string): string | undefined {
 }
 
 /* =========================================================
-   System Prompt (Brandon Hall + strict schema + AI asset prompts)
+   System Prompt (Brandon Hall + strict schema + ID method)
    ========================================================= */
 export const getSystemPrompt = () => `
 You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
@@ -217,29 +243,69 @@ NON-NEGOTIABLES
 - Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
 - Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
 
-STRICT FIRST FOUR (must be first, in order)
-1) Title
-2) Pronunciation Guide
-3) Table of Contents
-4) Welcome & Learning Objectives
+FRONT MATTER (NOT PART OF MODULE FLOW)
+- Return a top-level **frontMatter[]** with exactly 3 items, in order:
+  1) { "type": "Cover", "companyName": string, "logoNote"?: string }
+  2) { "type": "Pronunciation", "items": [{ "term": string, "pronunciation": string, "note"?: string }] }
+  3) { "type": "TableOfContents", "items": string[] }
+- **Scenes** begin at the Welcome & Learning Objectives page (module flow starts after front matter).
 
-RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+GLOBAL VISUAL STANDARD
+- Use **PHOTOREALISTIC**, high-resolution, human-centric imagery for ~97% of visuals.
+- Vector/flat/cartoon/isometric art is NOT allowed as a main scene style.
+- Minimal vector ICONS allowed only as micro UI hints (≤3% of visuals).
+- For every visual brief, include composition, lighting, HEX palette, mood, brand integration, and negative space.
+
+INSTRUCTIONAL DESIGN METHOD (TAG EVERY SCENE)
+- The caller will pass idMethod ∈ {"ADDIE","SAM","MERRILL","GAGNE","BACKWARD","BLOOM"}.
+- You MUST set scene.instructionalTag based on the chosen method:
+
+If ADDIE:
+  instructionalTag = { "method": "ADDIE", "addie": { "phase": "A"|"D1"|"D2"|"I"|"E" } }
+  Guidance: A=Analysis (audience/context/gap); D1=Design (objectives/blueprint); D2=Development (assets/accessibility); I=Implementation (rollout); E=Evaluation (checks, post-test, confidence, follow-up).
+
+If SAM:
+  instructionalTag = { "method": "SAM", "sam": { "phase": "Prepare"|"Iterate"|"Implement" } }
+
+If MERRILL:
+  instructionalTag = { "method": "MERRILL", "merrill": { "phase": "Activation"|"Demonstration"|"Application"|"Integration" } }
+
+If GAGNE:
+  instructionalTag = { "method": "GAGNE", "gagne": { "event": "GainAttention"|"InformObjectives"|"StimulateRecall"|"PresentContent"|"ProvideGuidance"|"ElicitPerformance"|"ProvideFeedback"|"AssessPerformance"|"EnhanceRetentionTransfer" } }
+
+If BACKWARD:
+  instructionalTag = { "method": "BACKWARD", "backward": { "stage": "IdentifyResults"|"DetermineEvidence"|"PlanLearning" } }
+
+If BLOOM:
+  instructionalTag = { "method": "BLOOM", "bloom": { "level": "Remember"|"Understand"|"Apply"|"Analyze"|"Evaluate"|"Create" } }
+
+RETURN EXACTLY THIS SHAPE:
 {
   "moduleName": string,
   "moduleOverview": string,
   "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
   "targetAudience": string,
+  "idMethod": "ADDIE" | "SAM" | "MERRILL" | "GAGNE" | "BACKWARD" | "BLOOM",
+  "frontMatter": Array<{
+    "type": "Cover" | "Pronunciation" | "TableOfContents",
+    "companyName"?: string,
+    "logoNote"?: string,
+    "items"?: any[]
+  }>,
   "metadata": {
     "moduleTiming": {
       "targetMinutes": number,
       "totalEstimatedMinutes": number,
       "perSceneSeconds": number[]
     },
-    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string },
+    "performanceSupport"?: { "jobAids"?: string[], "timeframeTables"?: string[] }
   },
   "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
   "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
   "tableOfContents": string[],
+  "learningObjectiveMap": Array<{ "objective": string, "teachScenes": number[], "practiceScenes": number[], "assessScenes": number[], "masteryCriteria": string }>,
+  "evaluationPlan": { "postTestItems": number, "passMarkPercent": number, "confidenceSlider": boolean, "followUpDays": number, "kirkpatrickLevels": string[] },
   "scenes": Scene[]
 }
 
@@ -248,47 +314,21 @@ Scene = {
   "pageTitle": string,
   "pageType": "Informative" | "Interactive",
   "aspectRatio": "16:9" | "1:1" | "4:5" | string,
-
-  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
-  "screenLayout": string | {
-    "description": string,
-    "elements": Array<Record<string, any>>
-  },
-
+  "screenLayout": string | { "description": string, "elements": Array<Record<string, any>> },
   "templateId": string,
   "screenId": string,
-
-  // Structured audio + legacy mirror
   "audio": {
     "script": string,
-    "voiceParameters": {
-      "persona": string,
-      "gender"?: "Female" | "Male" | "Neutral" | string,
-      "pace": string,
-      "tone": string,
-      "emphasis": string
-    },
+    "voiceParameters": { "persona": string, "gender"?: "Female" | "Male" | "Neutral" | string, "pace": string, "tone": string, "emphasis": string },
     "backgroundMusic"?: string,
     "aiGenerationDirective"?: string
   },
   "narrationScript": string,
-
-  // Short OST + optional style block
   "onScreenText": string,
-  "textOnScreen"?: {
-    "onScreenTextContent": string,
-    "style"?: {
-      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
-      "color"?: string, "alignment"?: string, "position"?: string,
-      "animation"?: string
-    }
-  },
-
+  "textOnScreen"?: { "onScreenTextContent": string, "style"?: Record<string, string> },
   "visual": {
     "mediaType": "Image" | "Graphic" | "Animation" | "Video",
     "style": string,
-
-    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
     "visualGenerationBrief": {
       "sceneDescription": string,
       "style": string,
@@ -296,55 +336,43 @@ Scene = {
       "setting"?: string,
       "composition"?: string,
       "lighting"?: string,
-      "colorPalette"?: string[],      // HEX codes expected
+      "colorPalette"?: string[],
       "mood"?: string,
       "brandIntegration"?: string,
-      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "negativeSpace"?: string,
       "assetId"?: string
     },
-    "overlayElements"?: Array<{
-      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
-      "content"?: string,
-      "style"?: {
-        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
-        "color"?: string, "alignment"?: string, "position"?: string,
-        "padding"?: string, "border"?: string, "animation"?: string
-      },
-      "aiGenerationDirective"?: string
-    }>,
+    "overlayElements"?: Array<Record<string, any>>,
     "aiPrompt": string,
     "altText": string,
     "aspectRatio": "16:9" | "1:1" | "4:5" | string,
     "composition": string,
     "environment": string
   },
-
-  // Detailed interaction + legacy mirrors
   "interactionDetails"?: {
     "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
     "aiActions"?: string[],
-    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "aiDecisionLogic"?: Array<Record<string, any>>,
     "retryLogic"?: string,
     "completionRule"?: string,
     "aiGenerationDirective"?: string,
-    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>,
+    "distractorRationale"?: Array<{ "option": string, "whyPlausible": string, "whyWrong": string }>
   },
   "interactionType": string,
   "interactionDescription": string,
-
+  "scaffoldingPhase"?: "Overview" | "Context" | "KeyConcepts" | "Example" | "Application" | "KnowledgeCheck" | "Summary",
+  "roleFocus"?: string,
+  "instructionalTag": any, // per method (see above)
   "developerNotes": string,
   "accessibilityNotes": string,
-
   "timing": { "estimatedSeconds": number }
 }
 
 Brandon Hall Enforcement:
-- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
-- Ensure **≥5 distinct interaction types** across the module.
+- Ensure **≥5 interaction types** across the module; **knowledge check every 3–5 scenes**.
 - Provide **≥3 branching decision points** with consequences + coaching feedback.
-- Insert a **knowledge check every 3–5 scenes**.
 - End with **capstone branching** + **action plan/commitment**.
-- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
 - Accessibility: captions ON, alt text, keyboard path & focus order, reduced-motion fallback.
 `.trim();
 
@@ -357,7 +385,23 @@ export const getAugmentedUserPrompt = (
   ragContext?: string,
   ragChunkContext?: string
 ) => {
-  const profile = pickProfile(formData.complexityLevel || formData.level || "Level 3");
+  // ID method (explicit)
+  const idMethod = String(formData.idMethod || formData.preferredMethodology || "ADDIE")
+    .toUpperCase()
+    .replace(/\s+/g, "") as "ADDIE"|"SAM"|"MERRILL"|"GAGNE"|"BACKWARD"|"BLOOM";
+
+  const profileRaw = pickProfile(formData.complexityLevel || formData.level || "Level 3");
+  const profile = {
+    minKnowledgeChecks: Number(profileRaw?.minKnowledgeChecks ?? 3),
+    preferredInteractionTypes:
+      Array.isArray(profileRaw?.preferredInteractionTypes) && profileRaw.preferredInteractionTypes.length
+        ? profileRaw.preferredInteractionTypes
+        : ["Scenario", "MCQ", "Clickable Hotspots", "Drag & Drop", "Reflection"],
+    maxSameTypeInRow: Number(profileRaw?.maxSameTypeInRow ?? 2),
+    branchingRequired: Boolean(profileRaw?.branchingRequired ?? true),
+    level: profileRaw?.level ?? (formData.complexityLevel || formData.level || "Level 3"),
+  };
+
   const ragSB = safeSlice(String(ragContext ?? formData.ragContext ?? ""), 8000);
   const ragChunks = safeSlice(String(ragChunkContext ?? formData.ragChunkContext ?? ""), 8000);
 
@@ -378,24 +422,16 @@ HARD CONSTRAINTS
 `.trim();
 
   const quality = `
-QUALITY MANDATES
-- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
-- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~${opts.duration} min).
-- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
-- Include **captions ON** by default, keyboard path hints and focus order.
-- Use **UK English** throughout.
-- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
-
-SPECIFICATION TEMPLATES (adapt as needed):
-- visual.visualGenerationBrief must include:
-  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
-- overlayElements[]:
-  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
-- audio:
-  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
-- interactionDetails:
-  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
-- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+QUALITY MANDATES (apply to ALL modules)
+- **Front matter** is NOT part of module flow. Provide it under "frontMatter" (Cover, Pronunciation, TOC) then start scenes at "Welcome & Learning Objectives".
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~${opts.duration} min). Make them **role-tied and performance-based**.
+- For every **key concept**, generate at least one **role-specific example** drawn from targetAudience. Label scenes with "scaffoldingPhase".
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** (composition + lighting + HEX palette + mood + brand integration + negativeSpace), **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Progressive disclosure: use tabs/accordions/hotspots for definitions and details; keep OST scannable.
+- Tone: Professional, supportive, empathetic, aligned to organisation values.
+- Knowledge checks: include **distractorRationale[]** explaining plausibility and error for each wrong option.
+- Performance & compliance: If relevant, include timeframe tables + job aids in metadata.performanceSupport.
+- Use **UK English**; captions ON; keyboard path & focus order documented.
 `.trim();
 
   const moduleName = tidyModuleName(formData.moduleName);
@@ -443,19 +479,19 @@ Module Type: ${formData.moduleType || "eLearning"}
 Complexity Level: ${formData.complexityLevel || formData.level || "Level 3"}
 Target Duration (mins): ${opts.duration}
 Audience: ${formData.targetAudience || "General staff"}
-Tone: ${formData.tone || "Professional, encouraging"}
+Tone: ${formData.tone || "Professional, supportive, empathetic"}
 Output Language: ${formData.outputLanguage || "English (UK)"}
 Organisation: ${formData.organisationName || "Not specified"}
-Learning Outcomes (desired): ${lo.length ? lo.join(" | ") : "Author to propose 3–5 outcomes aligned to the brief."}
+Learning Outcomes (desired): ${lo.length ? lo.join(" | ") : "Author to propose 3–5 outcomes aligned to the brief (role-tied)."}
 Instructional Purpose: ${formData.instructionalPurpose || "Not specified"}
-Preferred Instructional Design Methodology: ${formData.preferredMethodology || formData.idMethod || "Not specified"}
+ID_METHOD: ${idMethod}
+REQUIRE: Annotate every scene with instructionalTag for ${idMethod}.
 Brand Guidelines: ${brandGuidelines || "None provided"}
 Colours: ${colours || "Default"}
 Fonts: ${fonts || "Default"}
 Company Images (binary uploaded or URLs):
 ${imagesBlock}
 Additional Notes: ${additionalNotes || "None"}
-
 --- SOURCE CONTENT (sanitised) ---
 ${content}
 --- END USER BRIEF ---
@@ -464,8 +500,10 @@ ${quality}
 
 OUTPUT RULES
 - Return a single **JSON object only** (no markdown fences, no commentary).
-- Use the exact schema above and include the first four scenes in order.
-- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.
+- Use the exact schema in the SYSTEM prompt.
+- **frontMatter** must include Cover, Pronunciation, TableOfContents (in that order).
+- **Scenes** begin with "Welcome & Learning Objectives" and continue the module flow.
+- Populate the new structured fields and legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string).
 `.trim();
 };
 
@@ -480,7 +518,7 @@ function getExpansionPrompt(
 The storyboard JSON is **too short or incomplete** for a ${opts.duration}-minute module.
 Expand/enhance to roughly **${opts.targetScenes} scenes** ensuring at least **${opts.minInteractive} interactive scenes**.
 Place a knowledge check every **3–5 scenes** with varied formats and coaching feedback.
-Use the **new structured fields** (screenLayout object, visualGenerationBrief, overlayElements, audio.aiGenerationDirective, interactionDetails with xAPI, timing) while preserving legacy mirrors.
+Preserve **frontMatter** (Cover, Pronunciation, TOC) separate from module scenes.
 Return **JSON ONLY** with the SAME SCHEMA.
 
 CURRENT_JSON_START
@@ -519,8 +557,16 @@ function safeParseJson(maybe: string): any {
 }
 
 /* =========================================================
-   Canonical header scenes + guarantees
+   Front matter + guarantees
    ========================================================= */
+function mkFrontMatter(company?: string) {
+  return [
+    { type: "Cover", companyName: company || "Your Company", logoNote: "Place logo top-left; maintain clear space." },
+    { type: "Pronunciation", items: [] as Array<{ term: string; pronunciation: string; note?: string }> },
+    { type: "TableOfContents", items: [] as string[] },
+  ];
+}
+
 function mkScene(num: number, title: string, opts: Partial<any> = {}) {
   const audioScript = (opts as any)?.audio?.script || opts.narrationScript || "";
   const shortLayout =
@@ -531,7 +577,7 @@ function mkScene(num: number, title: string, opts: Partial<any> = {}) {
   return {
     sceneNumber: num,
     pageTitle: title,
-    pageType: (opts as any).pageType || (/(pronunciation|table|welcome)/i.test(title) ? "Informative" : "Interactive"),
+    pageType: (opts as any).pageType || (/(welcome|objective)/i.test(title) ? "Informative" : "Interactive"),
     aspectRatio: (opts as any).aspectRatio || "16:9",
 
     screenLayout: opts.screenLayout || shortLayout,
@@ -550,7 +596,7 @@ function mkScene(num: number, title: string, opts: Partial<any> = {}) {
       backgroundMusic: (opts as any)?.audio?.backgroundMusic || "",
       aiGenerationDirective:
         (opts as any)?.audio?.aiGenerationDirective ||
-        "[AI Generate: Voiceover using a warm, professional voice at ~110–130 WPM. Keep tone reassuring. Emphasise key nouns/verbs.]",
+        "[AI Generate: Voiceover ~110–130 WPM; warm, professional; emphasise key terms.]",
     },
     narrationScript: audioScript,
 
@@ -561,19 +607,19 @@ function mkScene(num: number, title: string, opts: Partial<any> = {}) {
     },
 
     visual: {
-      mediaType: (opts as any)?.visual?.mediaType || "Graphic",
-      style: (opts as any)?.visual?.style || "Clean corporate",
+      mediaType: (opts as any)?.visual?.mediaType || "Image",
+      style: (opts as any)?.visual?.style || "Photorealistic",
       visualGenerationBrief:
         (opts as any)?.visual?.visualGenerationBrief || {
-          sceneDescription: `Conceptual illustration supporting "${title}".`,
-          style: "Vector / Flat design, modern",
+          sceneDescription: `Photorealistic workplace visual supporting "${title}".`,
+          style: "Photorealistic",
           subject: {},
-          setting: "Modern office; inclusive; uncluttered",
-          composition: "Medium shot; eye-level; ample negative space top-right",
-          lighting: "Soft, diffused; neutral white (~4800K)",
-          colorPalette: ["#FFFFFF", "#111111", "#B877D5", "#80D4FF"],
+          setting: "Modern office or home office; inclusive",
+          composition: "Natural candid composition; clear subject focus; 16:9",
+          lighting: "Soft natural daylight or warm practical",
+          colorPalette: ["#FFFFFF", "#111111", "#0387E6", "#E63946", "#BC57CF"],
           mood: "Professional, calm, optimistic",
-          brandIntegration: "Subtle accent stripe in Bright Purple (#B877D5).",
+          brandIntegration: "Subtle brand accents only; never on skin tones.",
           negativeSpace: "30% top-right",
           assetId: "",
         },
@@ -583,16 +629,15 @@ function mkScene(num: number, title: string, opts: Partial<any> = {}) {
             elementType: "TitleText",
             content: title,
             style: { fontFamily: "Montserrat", fontWeight: "Bold", fontSize: "40pt", color: "#111111", alignment: "Center", position: "Top third", animation: "FadeIn 0.5s" },
-            aiGenerationDirective: "[AI Generate: Title overlay; crisp kerning; subtle drop shadow; WCAG AA contrast.]",
+            aiGenerationDirective: "[AI Generate: Title overlay; crisp kerning; subtle shadow; WCAG AA contrast.]",
           },
         ],
       aiPrompt:
-        (opts as any)?.visual?.aiPrompt ||
-        "Clean, modern illustration; accessible contrast; room for headings; 16:9",
-      altText: (opts as any)?.visual?.altText || `Illustration supporting "${title}"`,
+        (opts as any)?.visual?.aiPrompt || genericAIPrompt(title),
+      altText: (opts as any)?.visual?.altText || `Photograph supporting "${title}"`,
       aspectRatio: (opts as any)?.visual?.aspectRatio || "16:9",
-      composition: (opts as any)?.visual?.composition || "Centered hero subject; negative space for UI",
-      environment: (opts as any)?.visual?.environment || "Neutral, light-filled office",
+      composition: (opts as any)?.visual?.composition || "Natural candid composition; negative space for UI",
+      environment: (opts as any)?.visual?.environment || "Neutral, light-filled workspace",
       ...(opts.visual || {}),
     },
 
@@ -603,225 +648,77 @@ function mkScene(num: number, title: string, opts: Partial<any> = {}) {
     developerNotes: (opts as any).developerNotes || "",
     accessibilityNotes:
       (opts as any).accessibilityNotes ||
-      "Captions ON by default; Keyboard path: Tab/Shift+Tab to navigate, Enter/Space to activate; visible focus outline; reduced-motion alternative available.",
+      "Captions ON by default; Keyboard path: Tab/Shift+Tab; Enter/Space to activate; visible focus outline; reduced-motion alternative.",
 
     timing: (opts as any).timing || { estimatedSeconds: 60 },
   };
 }
 
-function ensureFirstFour(parsed: any, formData: AugmentedFormData): any {
-  const out = { ...parsed } as StoryboardModule & { tableOfContents?: string[] };
+/**
+ * Ensure we have frontMatter (Cover, Pronunciation, TOC).
+ * If the model returned them as the first 3 scenes, extract them into frontMatter
+ * and start module scenes at "Welcome & Learning Objectives".
+ */
+function ensureFrontMatterAndWelcome(parsed: any, formData: AugmentedFormData): any {
+  const out = { ...parsed } as StoryboardModule & { frontMatter?: any[]; tableOfContents?: string[] };
   const scenes: any[] = Array.isArray(out.scenes) ? [...out.scenes] : [];
 
+  // Ensure frontMatter array exists
+  if (!Array.isArray(out.frontMatter) || out.frontMatter.length < 3) {
+    out.frontMatter = mkFrontMatter(formData.organisationName);
+  }
+
   const norm = (s?: string) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
-  const firstFour = scenes.slice(0, 4).map((s) => norm((s as any)?.pageTitle || (s as any)?.title));
-  const ok =
-    firstFour.length === 4 &&
-    norm(firstFour[0]).includes("title") &&
-    norm(firstFour[1]).includes("pronunciation") &&
-    (norm(firstFour[2]).includes("table of contents") || norm(firstFour[2]).includes("contents")) &&
-    (norm(firstFour[3]).includes("welcome") || norm(firstFour[3]).includes("objective"));
 
-  if (!ok) {
-    const s1 = mkScene(1, "Title", {
-      pageType: "Informative",
-      onScreenText: tidyModuleName(formData.moduleName || "Module Title"),
-      audio: {
-        script: `Welcome to ${tidyModuleName(formData.moduleName) || "this module"}.`,
-        voiceParameters: {
-          persona: "Warm, professional, encouraging",
-          pace: "Moderate (110–130 WPM)",
-          tone: "Welcoming",
-          emphasis: "Module title",
-        },
-      },
-      developerNotes: "Logo lockup; no interaction.",
-    });
+  // Attempt to pull the first 3 header-like scenes into frontMatter if present
+  const headerCandidates = scenes.slice(0, 3);
+  const flags = headerCandidates.map((s) => norm((s as any)?.pageTitle || (s as any)?.title));
+  const looksLikeHeader =
+    flags.length >= 2 &&
+    (flags[0]?.includes("title") || flags[0]?.includes("cover")) &&
+    flags[1]?.includes("pronunciation") &&
+    (flags[2]?.includes("table of contents") || flags[2]?.includes("contents"));
 
-    const s2 = mkScene(2, "Pronunciation Guide", {
-      pageType: "Interactive",
-      onScreenText: "Key terms with phonetic guidance.",
-      audio: { script: "Here are pronunciations for key terms used in this module." },
-      screenLayout: {
-        description: "Two-column responsive grid with interactive term list",
-        elements: [
-          { elementType: "TitleText", content: "Pronunciation Guide", style: { alignment: "Center" } },
-          {
-            elementType: "TwoColumnLayout",
-            columns: [
-              { columnId: "termsList", width: "40%" },
-              { columnId: "pronunciationDisplay", width: "60%" },
-            ],
-          },
-        ],
-      },
-      interactionType: "ClickableHotspots",
-      interactionDescription:
-        "Clickable list items populate pronunciation panel; play per-term audio; show vector sound icon.",
-      interactionDetails: {
-        interactionType: "ClickableHotspots",
-        aiActions: [
-          "Render list of terms; on click, highlight term; populate pronunciation panel; play short audio.",
-          "Display minimalist speech-wave icon adjacent to pronunciation.",
-        ],
-        aiDecisionLogic: [
-          { choice: "termClick", feedback: "Show pronunciation + icon; play audio; mark term as viewed." },
-        ],
-        retryLogic: "Not applicable; interaction is exploratory.",
-        completionRule: "All terms viewed OR minimum 3 terms viewed to continue.",
-        aiGenerationDirective:
-          "[AI Generate: Interactive list with hover/active states; audio sprite per term; visited-state indicator.]",
-        xapiEvents: [
-          { verb: "selected", object: "Pronunciation_Term", result: { viewed: true } },
-          { verb: "experienced", object: "Pronunciation_Panel" },
-        ],
-      },
-      developerNotes:
-        "Two-column list: Term | Pronunciation. Populate from pronunciationGuide if available. Ensure audio files or TTS hooks per term.",
-    });
+  if (looksLikeHeader) {
+    // Move any pronunciation terms and TOC into frontMatter
+    const pron = (headerCandidates[1] as any)?.pronunciationGuide || [];
+    if (Array.isArray(pron) && pron.length) {
+      const fm = out.frontMatter.find((f: any) => f.type === "Pronunciation");
+      if (fm) fm.items = pron;
+    }
+    const tocFromScenes = (scenes as any[]).map((s, i) => s.pageTitle || s.title || `Section ${i + 1}`);
+    const fmTOC = out.frontMatter.find((f: any) => f.type === "TableOfContents");
+    if (fmTOC) fmTOC.items = tocFromScenes.slice(3); // module-only items
 
-    const s3 = mkScene(3, "Table of Contents", {
-      pageType: "Informative",
-      onScreenText: "What you'll cover. Your progress is saved as you go.",
-      audio: { script: "An overview of the topics and activities you will complete." },
-      developerNotes: "List from tableOfContents or infer from scene titles; show progress dots.",
-    });
+    // Drop the first 3 from scenes
+    scenes.splice(0, 3);
+  }
 
+  // Ensure the first module scene is Welcome & LOs
+  if (!scenes.length || !/welcome|objective/i.test(norm(scenes[0]?.pageTitle || scenes[0]?.title))) {
     const lo = normaliseLO(formData.learningOutcomes);
-    const s4 = mkScene(4, "Welcome & Learning Objectives", {
+    const sWelcome = mkScene(1, "Welcome & Learning Objectives", {
       pageType: "Informative",
       onScreenText: clampOnScreenText(
         lo.length ? `Learning Objectives:\n- ${lo.join("\n- ")}` : "By the end, you'll be able to…"
       ),
       audio: {
-        script: lo.length ? `By the end of this module, you will be able to ${lo.join("; ")}.` : "Let's set expectations.",
+        script: lo.length ? `By the end of this module, you will be able to ${lo.join("; ")}.` : "Let's set expectations for this module.",
         voiceParameters: { persona: "Warm facilitator", pace: "Moderate", tone: "Encouraging", emphasis: "Outcomes" },
       },
-      developerNotes: "Show outcomes on-screen and in VO; keep OST under 70 words.",
+      developerNotes: "Welcome + LOs. Keep OST under 70 words. Make outcomes role-tied.",
     });
-
-    const isHeader = (t: string) => {
-      const nt = norm(t);
-      return (
-        nt.includes("title") ||
-        nt.includes("pronunciation") ||
-        nt.includes("table of contents") ||
-        nt.includes("welcome & learning objectives") ||
-        (nt.includes("welcome") && nt.includes("objective"))
-      );
-    };
-    const remainder = scenes.filter((s) => !isHeader(String((s as any)?.pageTitle || (s as any)?.title || "")));
-    out.scenes = [s1, s2, s3, s4, ...remainder].map((s, i) => ({ ...s, sceneNumber: i + 1 }));
-  } else {
-    out.scenes = scenes.map((s, i) => {
-      const audioScript = (s as any)?.audio?.script || (s as any)?.narrationScript || "";
-      const layout = (s as any)?.screenLayout;
-      const shortLayout = typeof layout === "string" ? layout : layout?.description || "Standard slide layout";
-      const visual = (s as any)?.visual || {};
-
-      const vgb = visual.visualGenerationBrief || {
-        sceneDescription: `Conceptual illustration supporting "${(s as any).pageTitle || `Screen ${i + 1}`}"`,
-        style: visual.style || "Clean corporate illustration",
-        subject: {},
-        setting: "Modern office",
-        composition: "Centered subject",
-        lighting: "Soft, diffused",
-        colorPalette: ["#FFFFFF", "#111111", "#B877D5", "#80D4FF"],
-        mood: "Professional, calm",
-        brandIntegration: "Subtle accent in Bright Purple",
-        negativeSpace: "30% top-right",
-        assetId: "",
-      };
-
-      return {
-        sceneNumber: (s as any).sceneNumber || i + 1,
-        pageTitle: (s as any).pageTitle || (s as any).title || `Screen ${i + 1}`,
-        pageType:
-          (s as any).pageType ||
-          ((s as any).interactionType && (s as any).interactionType !== "None" ? "Interactive" : "Informative"),
-        aspectRatio: (s as any).aspectRatio || "16:9",
-
-        screenLayout: layout || shortLayout,
-        templateId: (s as any).templateId || "",
-        screenId: (s as any).screenId || `S${i + 1}`,
-
-        audio: {
-          script: audioScript,
-          voiceParameters:
-            (s as any)?.audio?.voiceParameters || {
-              persona: "Warm, professional, encouraging",
-              pace: "Moderate (110–130 WPM)",
-              tone: "Clear",
-              emphasis: "",
-            },
-          backgroundMusic: (s as any)?.audio?.backgroundMusic || "",
-          aiGenerationDirective:
-            (s as any)?.audio?.aiGenerationDirective ||
-            "[AI Generate: Voiceover using a warm, professional voice at ~110–130 WPM. Emphasise key terms.]",
-        },
-        narrationScript: audioScript,
-
-        onScreenText: clampOnScreenText((s as any).onScreenText || ""),
-        textOnScreen:
-          (s as any).textOnScreen || {
-            onScreenTextContent: clampOnScreenText((s as any).onScreenText || ""),
-            style: {
-              fontFamily: "Montserrat",
-              fontWeight: "SemiBold",
-              fontSize: "20pt",
-              color: "#111111",
-              alignment: "Left",
-            },
-          },
-
-        visual: {
-          mediaType: visual.mediaType || "Graphic",
-          style: visual.style || "Clean corporate",
-          visualGenerationBrief: vgb,
-          overlayElements:
-            visual.overlayElements ||
-            [
-              {
-                elementType: "TitleText",
-                content: (s as any).pageTitle || `Screen ${i + 1}`,
-                style: {
-                  fontFamily: "Montserrat",
-                  fontWeight: "Bold",
-                  fontSize: "36pt",
-                  color: "#111111",
-                  alignment: "Center",
-                  position: "Top third",
-                  animation: "FadeIn 0.5s",
-                },
-                aiGenerationDirective:
-                  "[AI Generate: Title overlay; crisp kerning; subtle drop shadow; WCAG AA contrast.]",
-              },
-            ],
-          aiPrompt:
-            visual.aiPrompt ||
-            `Modern, inclusive workplace visual supporting "${(s as any).pageTitle || `Screen ${i + 1}`}"`,
-          altText: visual.altText || `Illustration supporting "${(s as any).pageTitle || `Screen ${i + 1}`}"`,
-          aspectRatio: visual.aspectRatio || "16:9",
-          composition: visual.composition || "Centered hero subject; negative space",
-          environment: visual.environment || "Neutral office background",
-        },
-
-        interactionDetails: (s as any).interactionDetails || undefined,
-        interactionType: (s as any).interactionType || "None",
-        interactionDescription: (s as any).interactionDescription || "",
-
-        developerNotes: (s as any).developerNotes || (s as any).interactionDescription || "",
-        accessibilityNotes:
-          (s as any).accessibilityNotes ||
-          "Captions ON by default; Keyboard path with visible focus; focus order documented; reduced-motion fallback.",
-        timing: (s as any).timing || { estimatedSeconds: 60 },
-      };
-    });
+    scenes.unshift(sWelcome);
   }
 
+  // Renumber module scenes from 1
+  out.scenes = scenes.map((s, i) => ({ ...s, sceneNumber: i + 1 }));
   return out;
 }
 
+/* =========================================================
+   Module-level enrichment (TOC/brand/eval)
+   ========================================================= */
 function ensureTOCAndOutcomes(
   m: StoryboardModule & {
     tableOfContents?: string[];
@@ -834,6 +731,15 @@ function ensureTOCAndOutcomes(
   if (!Array.isArray(m.tableOfContents) || m.tableOfContents.length === 0) {
     m.tableOfContents = (m.scenes || []).map((s: any, i) => s.pageTitle || s.title || `Section ${i + 1}`);
   }
+
+  // Also push module TOC into frontMatter item if present
+  const fmTOC = Array.isArray((m as any).frontMatter)
+    ? (m as any).frontMatter.find((f: any) => f.type === "TableOfContents")
+    : null;
+  if (fmTOC && (!Array.isArray(fmTOC.items) || fmTOC.items.length === 0)) {
+    fmTOC.items = [...m.tableOfContents];
+  }
+
   m.moduleOverview =
     m.moduleOverview ||
     "This programme combines short scenarios, interactive checks, and a capstone to help you apply key concepts in context.";
@@ -851,13 +757,25 @@ function ensureTOCAndOutcomes(
   };
 
   // brand thread-through
-  const colours = parseHexListFromString(m?.metadata?.brand?.colours || m?.colours);
-  const fonts = firstFontFromString(m?.metadata?.brand?.fonts || m?.fonts);
+  const colours = parseHexListFromString(m?.metadata?.brand?.colours || (m as any)?.colours);
+  const fonts = firstFontFromString(m?.metadata?.brand?.fonts || (m as any)?.fonts);
   m.metadata.brand = {
     ...(m.metadata.brand || {}),
     colours: colours?.join(", ") || m?.metadata?.brand?.colours || "",
     fonts: fonts || m?.metadata?.brand?.fonts || "",
     guidelines: m?.metadata?.brand?.guidelines || "",
+  };
+
+  // initialise performance support container so the model can fill it
+  m.metadata.performanceSupport = m.metadata.performanceSupport || { jobAids: [], timeframeTables: [] };
+
+  // Ensure evaluationPlan exists (soft default if model omitted)
+  (m as any).evaluationPlan = (m as any).evaluationPlan || {
+    postTestItems: 8,
+    passMarkPercent: 80,
+    confidenceSlider: true,
+    followUpDays: 30,
+    kirkpatrickLevels: ["L1", "L2", "L3"],
   };
 
   return m;
@@ -878,7 +796,7 @@ function minInteractiveCountFor(totalScenes: number) {
 function injectInteractions(scenes: any[], needed: number) {
   const types = ["Scenario", "MCQ", "Clickable Hotspots", "Drag & Drop", "Reflection"];
   const out = [...scenes];
-  let i = 1; // start after Title
+  let i = 0; // module scenes start at index 0 (Welcome)
   while (needed > 0 && i < out.length) {
     const s = out[i];
     if (s && (!s.interactionType || s.interactionType === "None")) {
@@ -889,7 +807,7 @@ function injectInteractions(scenes: any[], needed: number) {
       s.developerNotes =
         s.developerNotes ||
         (t === "MCQ"
-          ? "Add 2–3 MCQs for this topic. Provide option-level feedback and allow retry."
+          ? "Add 2–3 MCQs for this topic. Provide option-level feedback and allow retry. Include distractorRationale."
           : "Include completion rule and xAPI verb in developer notes.");
       s.interactionDetails = s.interactionDetails || {
         interactionType: t,
@@ -899,6 +817,7 @@ function injectInteractions(scenes: any[], needed: number) {
         completionRule: "User must interact at least once.",
         aiGenerationDirective: "[AI Generate: Accessible interaction with visible focus and keyboard operation.]",
         xapiEvents: [{ verb: "interacted", object: `Screen_${i + 1}` }],
+        distractorRationale: [],
       };
       needed--;
     }
@@ -908,8 +827,8 @@ function injectInteractions(scenes: any[], needed: number) {
 }
 function enforceKCCadence(scenes: any[]) {
   const kcTypes = new Set(["MCQ", "Scenario", "Drag & Drop"]);
-  let lastKC = 0;
-  for (let i = 4; i < scenes.length; i++) {
+  let lastKC = -4;
+  for (let i = 0; i < scenes.length; i++) {
     const isKC = kcTypes.has((scenes[i].interactionType || "None") as string);
     if (isKC) lastKC = i;
     const gap = i - lastKC;
@@ -919,7 +838,7 @@ function enforceKCCadence(scenes: any[]) {
         scenes[i].interactionDescription = describeInteraction("MCQ", scenes[i].pageTitle || `Screen ${i + 1}`);
       }
       if (!/feedback/i.test(String(scenes[i].developerNotes || ""))) {
-        scenes[i].developerNotes = `${scenes[i].developerNotes || ""}\nProvide option-level feedback. Allow retry.`.trim();
+        scenes[i].developerNotes = `${scenes[i].developerNotes || ""}\nProvide option-level feedback. Allow retry. Include distractorRationale per option.`.trim();
       }
       scenes[i].interactionDetails = scenes[i].interactionDetails || {
         interactionType: "MCQ",
@@ -929,6 +848,7 @@ function enforceKCCadence(scenes: any[]) {
         completionRule: "User must answer all items.",
         aiGenerationDirective: "[AI Generate: MCQ with stateful buttons; keyboard operable; ARIA roles.]",
         xapiEvents: [{ verb: "answered", object: `Screen_${i + 1}_MCQ` }],
+        distractorRationale: [],
       };
       lastKC = i;
     }
@@ -937,7 +857,68 @@ function enforceKCCadence(scenes: any[]) {
 }
 
 /* =========================================================
-   Auto-pad helper
+   Photorealistic visual blueprint enforcement
+   ========================================================= */
+function ensureVisualBlueprint(scene: any, brand?: { colours?: string; fonts?: string }) {
+  const v = (scene.visual = scene.visual || {});
+  const vgb = (v.visualGenerationBrief = v.visualGenerationBrief || {});
+  const brandPalette = parseHexListFromString(brand?.colours);
+  const primaryFont = firstFontFromString(brand?.fonts);
+
+  // Photorealistic defaults
+  v.mediaType = v.mediaType || "Image";
+  v.style = /photo|real/i.test(String(v.style || "")) ? v.style : "Photorealistic";
+
+  vgb.sceneDescription = vgb.sceneDescription || `Photorealistic workplace visual supporting "${scene.pageTitle || "this scene"}".`;
+  vgb.style = /photo|real/i.test(String(vgb.style || "")) ? vgb.style : "Photorealistic";
+  vgb.setting = vgb.setting || "Modern, uncluttered office or home office";
+  vgb.composition = vgb.composition || "Natural candid composition; clear subject focus; 16:9";
+  vgb.lighting = vgb.lighting || "Soft natural daylight or warm practical";
+  vgb.colorPalette =
+    Array.isArray(vgb.colorPalette) && vgb.colorPalette.length
+      ? vgb.colorPalette
+      : (brandPalette.length ? brandPalette : ["#FFFFFF", "#111111", "#0387E6", "#E63946", "#BC57CF"]);
+  vgb.mood = vgb.mood || "Professional, calm, optimistic";
+  vgb.brandIntegration =
+    vgb.brandIntegration || (brandPalette.length ? `Use brand palette: ${brandPalette.join(", ")}.` : "Subtle brand accents; never on skin tones.");
+  vgb.negativeSpace = vgb.negativeSpace || "30% top-right";
+  vgb.assetId = vgb.assetId || "";
+
+  if (!Array.isArray(v.overlayElements) || !v.overlayElements.length) {
+    v.overlayElements = [
+      {
+        elementType: "TitleText",
+        content: scene.pageTitle || "",
+        style: {
+          fontFamily: primaryFont || "Montserrat",
+          fontWeight: "Bold",
+          fontSize: "36pt",
+          color: "#111111",
+          alignment: "Center",
+          position: "Top third",
+          animation: "FadeIn 0.5s",
+        },
+        aiGenerationDirective:
+          "[AI Generate: Title overlay; crisp kerning; subtle shadow; WCAG AA contrast.]",
+      },
+    ];
+  } else if (primaryFont) {
+    v.overlayElements = v.overlayElements.map((el: any) => ({
+      ...el,
+      style: { ...(el.style || {}), fontFamily: (el.style?.fontFamily || primaryFont) },
+    }));
+  }
+
+  if (!v.aiPrompt) v.aiPrompt = genericAIPrompt(scene.pageTitle || "This scene");
+  if (!v.altText) v.altText = `Photograph supporting "${scene.pageTitle || "this scene"}"`;
+  if (!v.aspectRatio) v.aspectRatio = "16:9";
+  if (!v.composition) v.composition = "Natural candid composition; negative space";
+  if (!v.environment) v.environment = "Neutral, light-filled workspace";
+  return scene;
+}
+
+/* =========================================================
+   Auto-pad helper (photorealistic shells)
    ========================================================= */
 function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
   const shells = [
@@ -972,7 +953,7 @@ function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
       pageType: "Interactive",
       interactionType: "MCQ",
       interactionDescription: "2–3 items with option-level feedback.",
-      developerNotes: "Allow retry; randomise order; xAPI Verb: answered.",
+      developerNotes: "Allow retry; randomise order; xAPI Verb: answered. Include distractorRationale.",
       interactionDetails: {
         interactionType: "MCQ",
         aiActions: ["Render question + options", "On select, show feedback", "Allow retry once"],
@@ -981,6 +962,7 @@ function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
         completionRule: "All items answered.",
         aiGenerationDirective: "[AI Generate: MCQ with accessible radio buttons; visual correct/incorrect states.]",
         xapiEvents: [{ verb: "answered", object: `KnowledgeCheck_${i}` }],
+        distractorRationale: [],
       },
       audio: { script: "Check your understanding." },
       onScreenText: "Answer the questions.",
@@ -1017,18 +999,18 @@ function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
       templateId: "",
       screenId: `S${out.length + 1}`,
       visual: {
-        mediaType: "Graphic",
-        style: "Clean corporate",
+        mediaType: "Image",
+        style: "Photorealistic",
         visualGenerationBrief: {
-          sceneDescription: `Modern, inclusive visual supporting "${moduleName}"`,
-          style: "Vector / Flat",
+          sceneDescription: `Photorealistic workplace visual supporting "${moduleName}"`,
+          style: "Photorealistic",
           subject: {},
-          setting: "Modern office",
-          composition: "Centered; negative space",
-          lighting: "Soft, diffused",
-          colorPalette: ["#FFFFFF", "#111111", "#B877D5", "#80D4FF"],
+          setting: "Modern office or home office",
+          composition: "Natural candid composition; negative space",
+          lighting: "Soft natural daylight",
+          colorPalette: ["#FFFFFF", "#111111", "#0387E6", "#E63946", "#BC57CF"],
           mood: "Professional",
-          brandIntegration: "Subtle purple accent",
+          brandIntegration: "Subtle brand accents; avoid skin tones",
           negativeSpace: "30% top-right",
           assetId: "",
         },
@@ -1040,11 +1022,11 @@ function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
             aiGenerationDirective: "[AI Generate: Title overlay]",
           },
         ],
-        aiPrompt: `Modern, inclusive visual supporting "${moduleName}"`,
-        altText: `Illustration supporting "${moduleName}"`,
+        aiPrompt: genericAIPrompt(moduleName),
+        altText: `Photograph supporting "${moduleName}"`,
         aspectRatio: "16:9",
-        composition: "Centered subject, negative space",
-        environment: "Neutral office",
+        composition: "Natural candid composition; negative space",
+        environment: "Neutral workspace",
       },
       accessibilityNotes: "Captions ON; keyboard path.",
       ...make(i++),
@@ -1054,49 +1036,25 @@ function autoPadToTarget(scenes: any[], target: number, moduleName: string) {
 }
 
 /* =========================================================
-   Misc utils
+   Instructional method tags (soft enforcement)
    ========================================================= */
-function clampInt(n: number, lo: number, hi: number) {
-  n = Math.round(n);
-  return Math.max(lo, Math.min(hi, n));
-}
-function levelFrom(formData: AugmentedFormData): "Level 1" | "Level 2" | "Level 3" | "Level 4" {
-  const raw = String(formData.complexityLevel || formData.level || "Level 3").replace(/level\s*/i, "");
-  if (/^4/.test(raw)) return "Level 4";
-  if (/^3/.test(raw)) return "Level 3";
-  if (/^2/.test(raw)) return "Level 2";
-  return "Level 1";
-}
-function estimateTargetScenes(durationMins: number, lvl: string) {
-  if (lvl === "Level 4") return clampInt(Math.round(durationMins * 1.2), 20, 34);
-  if (lvl === "Level 3") return clampInt(Math.round(durationMins * 1.0), 18, 34);
-  if (lvl === "Level 2") return clampInt(Math.round(durationMins * 0.8), 12, 22);
-  return clampInt(Math.round(durationMins * 0.6), 8, 16);
-}
-function safeSlice(s: string, max: number) {
-  if (!s) return "";
-  if (s.length <= max) return s;
-  return s.slice(0, max) + "\n\n[…truncated…]";
-}
-function modelSupportsTuning(model: string): boolean {
-  return !/gpt-5/i.test(model); // safeguard
-}
-async function withTimeout<T>(p: Promise<T>, ms: number, tag = "OpenAI"): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`${tag} timed out after ${ms}ms`)), ms)),
-  ]);
-}
-function normaliseLO(lo?: string | string[]): string[] {
-  if (!lo) return [];
-  if (Array.isArray(lo)) return lo.filter(Boolean);
-  return String(lo)
-    .split(/\n|;|\.|\||,/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-function genericAIPrompt(title: string) {
-  return `Modern, inclusive workplace visual supporting "${title}"; natural light; shallow depth of field; clean composition; ample negative space; accessible contrast; 16:9`;
+function ensureInstructionalTags(story: any, idMethod: string) {
+  const method = (idMethod || "ADDIE").toUpperCase();
+  for (const s of story.scenes || []) {
+    s.instructionalTag = s.instructionalTag || { method };
+    if (method === "ADDIE" && !s.instructionalTag.addie) {
+      // Heuristic: welcome/objectives → D1, interactions → D2, knowledge check → E (or D2), capstone/summary → I/E
+      const title = String(s.pageTitle || "").toLowerCase();
+      const isKC = /knowledge|quiz|check|assessment/i.test(s.pageTitle || "") || /mcq|drag|scenario/i.test(s.interactionType || "");
+      const isImpl = /action plan|commit|rollout|implementation|capstone/i.test(title);
+      s.instructionalTag.addie = {
+        phase: isKC ? "E" : isImpl ? "I" : /welcome|objective|design|plan/i.test(title) ? "D1" : "D2",
+      };
+    }
+    // Other methods could have more heuristics here if needed.
+  }
+  story.idMethod = method;
+  return story;
 }
 
 /* =========================================================
@@ -1132,6 +1090,9 @@ function ensureKCFeedback(scene: any) {
     (!Array.isArray(scene.interactionDetails.xapiEvents) || !scene.interactionDetails.xapiEvents.length)
   ) {
     scene.interactionDetails.xapiEvents = [{ verb: "answered", object: `Screen_${scene.sceneNumber || ""}_MCQ` }];
+  }
+  if (scene.interactionDetails && scene.interactionType?.toLowerCase() === "mcq" && !scene.interactionDetails.distractorRationale) {
+    scene.interactionDetails.distractorRationale = [];
   }
   return scene;
 }
@@ -1177,60 +1138,6 @@ function ensureTOCProgressNote(scene: any) {
   return scene;
 }
 
-function ensureVisualBlueprint(scene: any, brand?: { colours?: string; fonts?: string }) {
-  const v = (scene.visual = scene.visual || {});
-  const vgb = (v.visualGenerationBrief = v.visualGenerationBrief || {});
-  const brandPalette = parseHexListFromString(brand?.colours);
-  const primaryFont = firstFontFromString(brand?.fonts);
-
-  vgb.sceneDescription = vgb.sceneDescription || `Visual supporting "${scene.pageTitle || "this scene"}".`;
-  vgb.style = vgb.style || v.style || "Vector / Flat";
-  vgb.setting = vgb.setting || "Modern, uncluttered office";
-  vgb.composition = vgb.composition || "Medium shot; eye-level; negative space top-right";
-  vgb.lighting = vgb.lighting || "Soft, diffused; neutral white (~4800K)";
-  vgb.colorPalette =
-    Array.isArray(vgb.colorPalette) && vgb.colorPalette.length
-      ? vgb.colorPalette
-      : (brandPalette.length ? brandPalette : ["#FFFFFF", "#111111", "#B877D5", "#80D4FF"]);
-  vgb.mood = vgb.mood || "Professional, calm, optimistic";
-  vgb.brandIntegration =
-    vgb.brandIntegration || (brandPalette.length ? `Use brand palette: ${brandPalette.join(", ")}.` : "Subtle accent in Bright Purple (#B877D5).");
-  vgb.negativeSpace = vgb.negativeSpace || "30% top-right";
-  vgb.assetId = vgb.assetId || "";
-
-  if (!Array.isArray(v.overlayElements) || !v.overlayElements.length) {
-    v.overlayElements = [
-      {
-        elementType: "TitleText",
-        content: scene.pageTitle || "",
-        style: {
-          fontFamily: primaryFont || "Montserrat",
-          fontWeight: "Bold",
-          fontSize: "36pt",
-          color: "#111111",
-          alignment: "Center",
-          position: "Top third",
-          animation: "FadeIn 0.5s",
-        },
-        aiGenerationDirective:
-          "[AI Generate: Title overlay; crisp kerning; subtle drop shadow; WCAG AA contrast.]",
-      },
-    ];
-  } else if (primaryFont) {
-    v.overlayElements = v.overlayElements.map((el: any) => ({
-      ...el,
-      style: { ...(el.style || {}), fontFamily: (el.style?.fontFamily || primaryFont) },
-    }));
-  }
-
-  if (!v.aiPrompt) v.aiPrompt = genericAIPrompt(scene.pageTitle || "This scene");
-  if (!v.altText) v.altText = `Illustration supporting "${scene.pageTitle || "this scene"}"`;
-  if (!v.aspectRatio) v.aspectRatio = "16:9";
-  if (!v.composition) v.composition = "Centered hero subject; negative space";
-  if (!v.environment) v.environment = "Neutral office background";
-  return scene;
-}
-
 function applyGlobalEnforcements(story: any) {
   if (!Array.isArray(story?.scenes)) return story;
 
@@ -1249,7 +1156,7 @@ function applyGlobalEnforcements(story: any) {
     return s;
   });
 
-  if (story.scenes[2]) story.scenes[2] = ensureTOCProgressNote(story.scenes[2]);
+  // Front matter note (if a TOC page exists there, add progress note) — handled earlier via frontMatter
 
   const meta = (story.metadata = story.metadata || {});
   const hasCompletion =
@@ -1343,35 +1250,43 @@ export const generateStoryboardFromOpenAI = async (
     const parsedRaw = safeParseJson(jsonString);
 
     let storyboard: StoryboardModule & {
+      frontMatter?: any[];
       tableOfContents?: string[];
       metadata?: any;
       moduleOverview?: string;
       targetAudience?: string;
       learningLevel?: string;
+      idMethod?: string;
     } = {
       moduleName: parsedRaw?.moduleName || tidyModuleName(formData.moduleName) || "Untitled Module",
       moduleOverview: parsedRaw?.moduleOverview || "",
       learningLevel: parsedRaw?.learningLevel || lvl,
       targetAudience: parsedRaw?.targetAudience || formData.targetAudience || "",
+      idMethod: parsedRaw?.idMethod || String(formData.idMethod || formData.preferredMethodology || "ADDIE").toUpperCase(),
       revisionHistory: parsedRaw?.revisionHistory ?? [
         { dateISO: new Date().toISOString().slice(0, 10), change: "Initial AI draft", author: "OpenAI" },
       ],
+      frontMatter: Array.isArray(parsedRaw?.frontMatter) ? parsedRaw.frontMatter : mkFrontMatter(formData.organisationName),
       pronunciationGuide: parsedRaw?.pronunciationGuide ?? [],
       tableOfContents: parsedRaw?.tableOfContents ?? [],
+      learningObjectiveMap: parsedRaw?.learningObjectiveMap ?? [],
+      evaluationPlan: parsedRaw?.evaluationPlan ?? undefined,
       scenes: Array.isArray(parsedRaw?.scenes) ? parsedRaw.scenes : [],
       metadata: parsedRaw?.metadata ?? {},
     } as any;
 
-    // First pass
-    storyboard = ensureFirstFour(storyboard, formData);
+    // Front matter & welcome
+    storyboard = ensureFrontMatterAndWelcome(storyboard, formData);
     storyboard = ensureTOCAndOutcomes(storyboard);
-    storyboard = ensureCapstoneAndClosing(storyboard, {
-      minKnowledgeChecks: 3,   // tweak if you like
-      requireActionPlan: true, // keep action/commitment screen
-    });
+    storyboard = ensureCapstoneAndClosing(storyboard);
+    storyboard = ensureInstructionalTags(storyboard, storyboard.idMethod || "ADDIE");
 
+    // Density / interactivity distribution
     const levelKeyGen = String(formData.complexityLevel || formData.level || "Level 3").replace(/\s+/g, "");
-    const profileForDensity = pickProfile(formData.complexityLevel || formData.level || "Level 3");
+    const profileForDensity = normaliseProfile(
+      pickProfile(formData.complexityLevel || formData.level || "Level 3"),
+      (formData.complexityLevel || formData.level || "Level 3")
+    );
     const levelRatio =
       /Level4/i.test(levelKeyGen) ? 0.65 : /Level3/i.test(levelKeyGen) ? 0.5 : /Level2/i.test(levelKeyGen) ? 0.35 : 0.2;
 
@@ -1399,10 +1314,7 @@ export const generateStoryboardFromOpenAI = async (
         storyboard.scenes = autoPadToTarget(storyboard.scenes as any[], targetScenes, storyboard.moduleName);
       }
       storyboard.scenes = enforceKCCadence(storyboard.scenes as any[]);
-      storyboard = ensureCapstoneAndClosing(storyboard, {
-        minKnowledgeChecks: 3,
-        requireActionPlan: true,
-      });
+      storyboard = ensureCapstoneAndClosing(storyboard);
       storyboard = applyGlobalEnforcements(storyboard);
 
       // 💾 Save to Supabase on non-expansion path
@@ -1471,31 +1383,38 @@ export const generateStoryboardFromOpenAI = async (
     const parsed2 = safeParseJson(json2);
 
     let storyboard2: StoryboardModule & {
+      frontMatter?: any[];
       tableOfContents?: string[];
       metadata?: any;
       moduleOverview?: string;
       targetAudience?: string;
       learningLevel?: string;
+      idMethod?: string;
     } = {
       moduleName: parsed2?.moduleName || storyboard.moduleName,
       moduleOverview: parsed2?.moduleOverview || storyboard.moduleOverview,
       learningLevel: parsed2?.learningLevel || storyboard.learningLevel,
       targetAudience: parsed2?.targetAudience || storyboard.targetAudience,
+      idMethod: parsed2?.idMethod || storyboard.idMethod,
       revisionHistory: parsed2?.revisionHistory ?? storyboard.revisionHistory ?? [],
+      frontMatter: Array.isArray(parsed2?.frontMatter) ? parsed2.frontMatter : storyboard.frontMatter,
       pronunciationGuide: parsed2?.pronunciationGuide ?? storyboard.pronunciationGuide ?? [],
       tableOfContents: parsed2?.tableOfContents ?? storyboard.tableOfContents ?? [],
+      learningObjectiveMap: parsed2?.learningObjectiveMap ?? (storyboard as any).learningObjectiveMap ?? [],
+      evaluationPlan: parsed2?.evaluationPlan ?? (storyboard as any).evaluationPlan ?? undefined,
       scenes: Array.isArray(parsed2?.scenes) ? parsed2.scenes : storyboard.scenes,
       metadata: parsed2?.metadata ?? storyboard.metadata ?? {},
     } as any;
 
-    storyboard2 = ensureFirstFour(storyboard2, formData);
+    storyboard2 = ensureFrontMatterAndWelcome(storyboard2, formData);
     storyboard2 = ensureTOCAndOutcomes(storyboard2);
-    storyboard2 = ensureCapstoneAndClosing(storyboard2, {
-      minKnowledgeChecks: 3,
-      requireActionPlan: true,
-    });
+    storyboard2 = ensureCapstoneAndClosing(storyboard2);
+    storyboard2 = ensureInstructionalTags(storyboard2, storyboard2.idMethod || "ADDIE");
 
-    const profileForDensity2 = pickProfile(formData.complexityLevel || formData.level || "Level 3");
+    const profileForDensity2 = normaliseProfile(
+      pickProfile(formData.complexityLevel || formData.level || "Level 3"),
+      (formData.complexityLevel || formData.level || "Level 3")
+    );
     const levelKeyExpand = String(formData.complexityLevel || formData.level || "Level 3").replace(/\s+/g, "");
     const levelRatio2 =
       /Level4/i.test(levelKeyExpand) ? 0.65 : /Level3/i.test(levelKeyExpand) ? 0.5 : /Level2/i.test(levelKeyExpand) ? 0.35 : 0.2;
@@ -1518,10 +1437,7 @@ export const generateStoryboardFromOpenAI = async (
       storyboard2.scenes = autoPadToTarget(storyboard2.scenes as any[], targetScenes, storyboard2.moduleName);
     }
     storyboard2.scenes = enforceKCCadence(storyboard2.scenes as any[]);
-    storyboard2 = ensureCapstoneAndClosing(storyboard2, {
-      minKnowledgeChecks: 3,
-      requireActionPlan: true,
-    });
+    storyboard2 = ensureCapstoneAndClosing(storyboard2);
     storyboard2 = applyGlobalEnforcements(storyboard2);
 
     // 💾 Save to Supabase after successful expansion
@@ -1551,8 +1467,47 @@ export default {
 };
 
 /* =========================================================
-   Helper: describe interaction text
+   Helper: level/targets + describe interaction
    ========================================================= */
+function clampInt(n: number, lo: number, hi: number) {
+  n = Math.round(n);
+  return Math.max(lo, Math.min(hi, n));
+}
+function levelFrom(formData: AugmentedFormData): "Level 1" | "Level 2" | "Level 3" | "Level 4" {
+  const raw = String(formData.complexityLevel || formData.level || "Level 3").replace(/level\s*/i, "");
+  if (/^4/.test(raw)) return "Level 4";
+  if (/^3/.test(raw)) return "Level 3";
+  if (/^2/.test(raw)) return "Level 2";
+  return "Level 1";
+}
+function estimateTargetScenes(durationMins: number, lvl: string) {
+  if (lvl === "Level 4") return clampInt(Math.round(durationMins * 1.2), 20, 34);
+  if (lvl === "Level 3") return clampInt(Math.round(durationMins * 1.0), 18, 34);
+  if (lvl === "Level 2") return clampInt(Math.round(durationMins * 0.8), 12, 22);
+  return clampInt(Math.round(durationMins * 0.6), 8, 16);
+}
+function safeSlice(s: string, max: number) {
+  if (!s) return "";
+  if (s.length <= max) return s;
+  return s.slice(0, max) + "\n\n[…truncated…]";
+}
+function modelSupportsTuning(model: string): boolean {
+  return !/gpt-5/i.test(model); // safeguard
+}
+async function withTimeout<T>(p: Promise<T>, ms: number, tag = "OpenAI"): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`${tag} timed out after ${ms}ms`)), ms)),
+  ]);
+}
+function normaliseLO(lo?: string | string[]): string[] {
+  if (!lo) return [];
+  if (Array.isArray(lo)) return lo.filter(Boolean);
+  return String(lo)
+    .split(/\n|;|\.|\||,/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 function describeInteraction(t: string, topic: string) {
   switch (t) {
     case "MCQ":

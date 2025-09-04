@@ -3,7 +3,8 @@ import axios from 'axios';
 import type { StoryboardFormData, StoryboardScene } from '@/types/storyboardTypes';
 
 // Tip: switch to import.meta.env.VITE_API_URL for prod if you like
-const API_URL = 'http://localhost:8080'; // ✅ Local backend URL
+// AFTER
+const API_URL = import.meta.env.VITE_BACKEND_URL; // This will be "/api" in development // ✅ Local backend URL
 
 // Extend locally to allow aiModel without touching global types
 type StoryboardFormDataWithAI = StoryboardFormData & {
@@ -15,7 +16,7 @@ export const generateStoryboard = async (
 ): Promise<StoryboardScene[]> => {
   try {
     const response = await axios.post(
-      `${API_URL}/api/v1/generate-storyboard`,
+  `${API_-URL}/v1/generate-storyboard`,
       {
         ...formData,
         aiModel: formData.aiModel || 'gpt-4-turbo', // ✅ default if none selected

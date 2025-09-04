@@ -1,35 +1,59 @@
-import type { StoryboardFormData } from "@/types";
+// @ts-nocheck
+import React from "react";
 
-// src/components/FormInput.tsx
-
-interface FormInputProps {
+interface Props {
   label: string;
-  name: keyof StoryboardFormData | "aiModel";
-  hint?: string;
-  value: string | number | undefined;
-  onChange: (fieldName: keyof StoryboardFormData, value: string) => void;
+  name: string;
+  value?: string | number;
+  onChange: (field: string, value: any) => void;
   placeholder?: string;
-  disabled: boolean;
+  type?: string;
+  disabled?: boolean;
   required?: boolean;
+  autoComplete?: string;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ label, name, value, onChange, placeholder, disabled, required }) => (
-  <div className="flex flex-col">
-    <label htmlFor={name} className="mb-2 font-medium text-slate-300">
-      {label} {required && <span className="text-red-400">*</span>}
-    </label>
-    <input
-      type="text"
-      id={name}
-      name={name}
-      value={value}
-      onChange={(e) => onChange(name, e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      className="p-3 bg-slate-700 border border-slate-600 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-shadow duration-200 disabled:opacity-50"
-    />
-  </div>
-);
+export default function FormInput({
+  label,
+  name,
+  value = "",
+  onChange,
+  placeholder,
+  type = "text",
+  disabled = false,
+  required = false,
+  autoComplete,
+}: Props) {
+  return (
+    <div className="w-full">
+      <label
+        htmlFor={name}
+        className="mb-2 block font-semibold text-slate-100 text-base lg:text-lg"
+      >
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
 
-export default FormInput;
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value as any}
+        onChange={(e) => onChange(name, e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        disabled={disabled}
+        required={required}
+        className="
+          block w-full rounded-2xl
+          border border-slate-600 bg-slate-700/80
+          px-5 py-4
+          text-slate-100 text-lg lg:text-xl
+          shadow-sm
+          placeholder:text-slate-400
+          focus:border-sky-400 focus:ring-2 focus:ring-sky-400
+          disabled:opacity-60 disabled:cursor-not-allowed
+        "
+      />
+    </div>
+  );
+}

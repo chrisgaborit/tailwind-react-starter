@@ -28,7 +28,6 @@ const KeyRow = ({ label, value }: { label: string; value?: any }) => {
       return <span>{String(val)}</span>;
     }
     if (Array.isArray(val)) {
-      // Join simple arrays, pretty-print complex ones
       const simple = val.every((v) => ["string", "number", "boolean"].includes(typeof v));
       return simple ? (
         <span className="whitespace-pre-wrap break-words">{val.join(", ")}</span>
@@ -92,6 +91,14 @@ const SceneCard = ({ scene, index }: any) => {
     scene?.timing?.estimatedSecs ??
     scene?.timing?.estimatedSeconds ??
     (typeof scene?.estimatedSeconds === "number" ? scene.estimatedSeconds : undefined);
+
+  // Image (robust) – use any of the mirrors
+  const img =
+    scene.generatedImageUrl ||
+    scene.imageUrl ||
+    scene?.visual?.generatedImageUrl ||
+    scene?.visual?.previewUrl ||
+    "";
 
   return (
     <div className="pdf-avoid-break rounded-2xl border border-slate-700 bg-slate-800 shadow-xl overflow-hidden">
@@ -171,6 +178,23 @@ const SceneCard = ({ scene, index }: any) => {
               <KeyRow label="Asset ID" value={vgb.assetId} />
               <KeyRow label="Legacy AI Prompt" value={scene.visual?.aiPrompt} />
             </div>
+
+            {/* Inline image thumbnail + link to full-size */}
+            {!!img && (
+              <div className="mt-4">
+                <a href={img} target="_blank" rel="noreferrer" className="block">
+                  <img
+                    src={img}
+                    alt={scene.visual?.altText || pageTitle}
+                    className="rounded-lg border border-slate-600 max-h-64 object-contain w-full bg-slate-900"
+                  />
+                </a>
+                <div className="mt-2 text-xs text-slate-400 break-all">
+                  <span className="mr-1">Full:</span>
+                  <a href={img} target="_blank" rel="noreferrer" className="underline">{img}</a>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card title="Overlay Elements">

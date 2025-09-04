@@ -2,13 +2,8 @@
 import type { StoryboardModule, StoryboardScene } from "@/types";
 
 /**
- * Renders a polished, print‑ready HTML document for PDF export.
- * - Matches the on‑screen card layout, with readable typography and spacing
- * - Visual brief (incl. palette swatches), overlay elements, OST word count
- * - Audio (script + voice params), interaction (logic, retry, completion, xAPI)
- * - Accessibility quick checks and timing
- * - Module header: overview, brand, timing rollup, revision history, TOC, pronunciation guide
- * - Extras: optional preview image, knowledge checks, per‑scene events
+ * Renders a polished, print-ready HTML document for PDF export.
+ * Includes embedded scene images via scene.imageUrl (preferred) or visual.generatedImageUrl.
  */
 export function renderStoryboardAsHTML(sb: StoryboardModule): string {
   const css = `
@@ -70,21 +65,23 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
     .footer-note{margin-top:8px;}
     .imgwrap{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px; display:inline-block;}
     .imgwrap img{max-width:100%; height:auto; display:block; border-radius:6px;}
+    .image-grid{display:grid; grid-template-columns: 1fr; gap:10px;}
+    .image-meta{background:var(--bg-soft); border:1px solid var(--line); border-radius:10px; padding:8px;}
   </style>
   `;
 
   // ==== HEADER =======================================================================
-  const timing = sb?.metadata?.moduleTiming || {};
-  const brand = sb?.metadata?.brand || {};
+  const timing = (sb as any)?.metadata?.moduleTiming || {};
+  const brand = (sb as any)?.metadata?.brand || {};
   const headerHTML = `
-    <h1>${esc(sb.moduleName || "Untitled Module")}</h1>
-    <div class="muted small">${esc(sb.moduleOverview || "—")}</div>
+    <h1>${esc((sb as any).moduleName || "Untitled Module")}</h1>
+    <div class="muted small">${esc((sb as any).moduleOverview || "—")}</div>
     <div class="kpi" style="margin-top:10px;">
-      <div class="box"><div class="muted small">Learning Level</div><strong>${esc(sb.learningLevel || "—")}</strong></div>
-      <div class="box"><div class="muted small">Audience</div><strong>${esc(sb.targetAudience || "—")}</strong></div>
+      <div class="box"><div class="muted small">Learning Level</div><strong>${esc((sb as any).learningLevel || "—")}</strong></div>
+      <div class="box"><div class="muted small">Audience</div><strong>${esc((sb as any).targetAudience || "—")}</strong></div>
       <div class="box"><div class="muted small">Target Minutes</div><strong>${numOrDash(timing.targetMinutes)}</strong></div>
       <div class="box"><div class="muted small">Estimated Minutes</div><strong>${numOrDash(timing.totalEstimatedMinutes)}</strong></div>
-      <div class="box"><div class="muted small">Scenes</div><strong>${(sb.scenes || []).length}</strong></div>
+      <div class="box"><div class="muted small">Scenes</div><strong>${((sb as any).scenes || []).length}</strong></div>
     </div>
 
     <div class="header-grid" style="margin-top:12px;">
@@ -99,9 +96,9 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
       <div class="brand-card">
         <h3 style="margin-top:0">Revision History</h3>
         ${
-          (sb.revisionHistory && sb.revisionHistory.length)
-            ? `<ul class="rev small">${sb.revisionHistory
-                .map(r => `<li><strong>${esc(r.dateISO || "")}</strong> — ${esc(r.change || "")} <span class="muted">(${esc(r.author || "—")})</span></li>`)
+          ((sb as any).revisionHistory && (sb as any).revisionHistory.length)
+            ? `<ul class="rev small">${(sb as any).revisionHistory
+                .map((r: any) => `<li><strong>${esc(r.dateISO || "")}</strong> — ${esc(r.change || "")} <span class="muted">(${esc(r.author || "—")})</span></li>`)
                 .join("")}</ul>`
             : `<div class="small muted">—</div>`
         }
@@ -114,7 +111,7 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
   `;
 
   // ==== SCENES =======================================================================
-  const scenesHTML = (sb.scenes || []).map((s, i) => renderScene(s, i)).join("");
+  const scenesHTML = ((sb as any).scenes || []).map((s: any, i: number) => renderScene(s, i)).join("");
 
   return `<!doctype html>
   <html>
@@ -139,25 +136,49 @@ function renderScene(s: StoryboardScene, idx: number): string {
   const ost = String((s as any).onScreenText || "");
   const ostWords = countWords(ost);
 
+  // NEW: resolve generated image + recipe (flat mirror preferred)
+  const imgSrc =
+    (typeof (s as any).imageUrl === "string" && (s as any).imageUrl.trim()) ? (s as any).imageUrl.trim()
+    : (typeof v.generatedImageUrl === "string" && v.generatedImageUrl.trim()) ? v.generatedImageUrl.trim()
+    : "";
+
+  const recipe = (s as any).imageParams || v.imageParams || null;
+
   const pageBadges = `
     <span class="badge">p${String(idx + 1).padStart(2, "0")}</span>
-    <span class="badge">${esc(s.pageType || ((s.interactionType && s.interactionType !== "None") ? "Interactive" : "Informative"))}</span>
-    ${s.interactionType && s.interactionType !== "None" ? `<span class="badge">${esc(s.interactionType!)}</span>` : ""}
+    <span class="badge">${esc((s as any).pageType || (((s as any).interactionType && (s as any).interactionType !== "None") ? "Interactive" : "Informative"))}</span>
+    ${(s as any).interactionType && (s as any).interactionType !== "None" ? `<span class="badge">${esc((s as any).interactionType!)}</span>` : ""}
     ${v?.aspectRatio ? `<span class="badge">${esc(v.aspectRatio)}</span>` : ""}
-    ${s.screenId ? `<span class="badge">#${esc(s.screenId)}</span>` : ""}
+    ${(s as any).screenId ? `<span class="badge">#${esc((s as any).screenId)}</span>` : ""}
   `;
 
   const quick = computeQuickChecks(s, v);
 
-  // Optional preview image (e.g., already generated visual or placeholder)
-  const preview = (v as any).previewUrl || (s as any).generatedImageUrl;
-  const previewBlock = preview
-    ? `<div class="section" style="padding-top:0;">
-         <div class="muted small"><strong>Preview</strong></div>
-         <div class="imgwrap" style="margin-top:6px; max-width:520px;">
-           <img alt="${esc(v.altText || s.pageTitle || "Preview")}" src="${esc(preview)}" />
-         </div>
-       </div>`
+  // Image block (if we have a URL)
+  const imageBlock = imgSrc
+    ? `
+      <div class="section" style="padding-top:0;">
+        <div class="muted small"><strong>Generated Image</strong></div>
+        <div class="image-grid">
+          <div class="imgwrap" style="max-width:520px;">
+            <img alt="${esc(v.altText || (s as any).pageTitle || "Scene Image")}" src="${esc(imgSrc)}" />
+          </div>
+          ${
+            recipe
+              ? `<div class="image-meta small">
+                   <div class="muted"><strong>Image Recipe</strong></div>
+                   <div class="kv" style="margin-top:6px;">
+                     <div class="muted small">Prompt</div><div class="mono small">${esc(recipe.prompt || "—")}</div>
+                     <div class="muted small">Model</div><div>${esc(recipe.model || "gemini-2.5-flash-image")}</div>
+                     <div class="muted small">Size</div><div>${esc(recipe.size || "1280x720")}</div>
+                     <div class="muted small">Style</div><div>${esc(recipe.style || "photorealistic")}</div>
+                   </div>
+                 </div>`
+              : ``
+          }
+        </div>
+      </div>
+    `
     : "";
 
   // Knowledge check (legacy tolerance)
@@ -169,16 +190,16 @@ function renderScene(s: StoryboardScene, idx: number): string {
   return `
   <div class="card">
     <div class="bar">
-      <div class="title">${esc(s.pageTitle || `Screen ${idx + 1}`)}</div>
+      <div class="title">${esc((s as any).pageTitle || `Screen ${idx + 1}`)}</div>
       <div class="right">
         ${pageBadges}
         <span class="badge">OST: ${ostWords} words</span>
       </div>
     </div>
 
-    <!-- On‑screen text -->
+    <!-- On-screen text -->
     <div class="section">
-      <div class="muted small"><strong>On‑Screen Text</strong></div>
+      <div class="muted small"><strong>On-Screen Text</strong></div>
       <div>${esc(ost || "—")}</div>
     </div>
 
@@ -219,7 +240,7 @@ Negative Space: ${esc(b.negativeSpace || "—")}
           <div class="muted small"><strong>Media</strong></div>
           <div class="small">${esc([v.mediaType, v.style, v.environment].filter(Boolean).join(" • ") || "—")}</div>
           <div class="muted small" style="margin-top:6px;"><strong>Screen Layout</strong></div>
-          <div class="small">${esc(typeof s.screenLayout === "string" ? s.screenLayout : s.screenLayout?.description || "—")}</div>
+          <div class="small">${esc(typeof (s as any).screenLayout === "string" ? (s as any).screenLayout : (s as any).screenLayout?.description || "—")}</div>
         </div>
       </div>
 
@@ -243,7 +264,7 @@ Negative Space: ${esc(b.negativeSpace || "—")}
       }
     </div>
 
-    ${previewBlock}
+    ${imageBlock}
 
     <!-- Audio -->
     <div class="section">
@@ -251,20 +272,20 @@ Negative Space: ${esc(b.negativeSpace || "—")}
       <div class="grid g-3">
         <div>
           <div class="muted small"><strong>Voiceover Script</strong></div>
-          <div class="mono small">${esc(s.audio?.script || s.narrationScript || "—")}</div>
+          <div class="mono small">${esc((s as any).audio?.script || (s as any).narrationScript || "—")}</div>
         </div>
         <div>
           <div class="muted small"><strong>Voice Parameters</strong></div>
           <div class="small">
-            Persona: ${esc(s.audio?.voiceParameters?.persona || "—")}<br/>
-            Pace: ${esc(s.audio?.voiceParameters?.pace || "—")}<br/>
-            Tone: ${esc(s.audio?.voiceParameters?.tone || "—")}<br/>
-            Emphasis: ${esc(s.audio?.voiceParameters?.emphasis || "—")}
+            Persona: ${esc((s as any).audio?.voiceParameters?.persona || "—")}<br/>
+            Pace: ${esc((s as any).audio?.voiceParameters?.pace || "—")}<br/>
+            Tone: ${esc((s as any).audio?.voiceParameters?.tone || "—")}<br/>
+            Emphasis: ${esc((s as any).audio?.voiceParameters?.emphasis || "—")}
           </div>
         </div>
         <div>
           <div class="muted small"><strong>AI Directive</strong></div>
-          <div class="mono small">${esc(s.audio?.aiGenerationDirective || "—")}</div>
+          <div class="mono small">${esc((s as any).audio?.aiGenerationDirective || "—")}</div>
         </div>
       </div>
     </div>
@@ -272,7 +293,7 @@ Negative Space: ${esc(b.negativeSpace || "—")}
     <!-- Interaction -->
     <div class="section">
       <h3>Interaction</h3>
-      <div class="small"><strong>Type:</strong> ${esc(s.interactionType || "None")}</div>
+      <div class="small"><strong>Type:</strong> ${esc((s as any).interactionType || "None")}</div>
       ${interactionBlock(s)}
     </div>
 
@@ -284,7 +305,7 @@ Negative Space: ${esc(b.negativeSpace || "—")}
     <div class="section">
       <h3>Accessibility & Timing</h3>
       <div class="small"><strong>Accessibility Notes</strong></div>
-      <div class="small">${esc(s.accessibilityNotes || "—")}</div>
+      <div class="small">${esc((s as any).accessibilityNotes || "—")}</div>
 
       <div class="grid g-3" style="margin-top:8px;">
         <div>
@@ -299,11 +320,11 @@ Negative Space: ${esc(b.negativeSpace || "—")}
         </div>
         <div>
           <div class="muted small"><strong>Timing</strong></div>
-          <div class="small">Estimated: ${String(s.timing?.estimatedSeconds ?? "—")}s</div>
+          <div class="small">Estimated: ${String((s as any).timing?.estimatedSeconds ?? "—")}s</div>
         </div>
         <div>
           <div class="muted small"><strong>Developer Notes</strong></div>
-          <div class="small">${esc(s.developerNotes || "—")}</div>
+          <div class="small">${esc((s as any).developerNotes || "—")}</div>
         </div>
       </div>
     </div>
@@ -313,16 +334,16 @@ Negative Space: ${esc(b.negativeSpace || "—")}
 // ----------------------------- Header helpers ---------------------------------------
 
 function renderTOC(sb: StoryboardModule): string {
-  const toc = sb.tableOfContents || [];
+  const toc: any = (sb as any).tableOfContents || [];
   if (!toc || (Array.isArray(toc) && toc.length === 0)) return "";
 
   const isStructured =
-    Array.isArray(toc) && (toc as any)[0] && typeof (toc as any)[0] === "object" && "title" in (toc as any)[0];
+    Array.isArray(toc) && toc[0] && typeof toc[0] === "object" && "title" in toc[0];
 
   if (isStructured) {
     return `<h2>Table of Contents</h2>
       <ol class="toc">
-        ${(toc as any).map((t: any) => `<li>${esc(t.title)} ${t.pageNumber ? `<span class="muted small">— p${t.pageNumber}</span>` : ""}</li>`).join("")}
+        ${toc.map((t: any) => `<li>${esc(t.title)} ${t.pageNumber ? `<span class="muted small">— p${t.pageNumber}</span>` : ""}</li>`).join("")}
       </ol>`;
   }
 
@@ -331,7 +352,7 @@ function renderTOC(sb: StoryboardModule): string {
 }
 
 function renderPronunciationGuide(sb: StoryboardModule): string {
-  const pg = sb.pronunciationGuide || [];
+  const pg: any[] = (sb as any).pronunciationGuide || [];
   if (!pg.length) return "";
   return `
     <h2>Pronunciation Guide</h2>
@@ -347,7 +368,7 @@ function renderPronunciationGuide(sb: StoryboardModule): string {
 // ----------------------------- Scene helpers ----------------------------------------
 
 function interactionBlock(s: StoryboardScene): string {
-  const id = (s as any).interactionDetails;
+  const id: any = (s as any).interactionDetails;
   if (!id) return `<div class="hint small">No interaction details.</div>`;
 
   const logicRows = (id.aiDecisionLogic || []).map((r: any) => `
@@ -397,7 +418,7 @@ function interactionBlock(s: StoryboardScene): string {
 }
 
 function renderKnowledgeChecks(s: StoryboardScene): string {
-  const kcList = (s as any).knowledgeChecks || ((s as any).knowledgeCheck ? [(s as any).knowledgeCheck] : []);
+  const kcList: any[] = (s as any).knowledgeChecks || ((s as any).knowledgeCheck ? [(s as any).knowledgeCheck] : []);
   if (!kcList || kcList.length === 0) return "";
 
   const rows = kcList
@@ -432,7 +453,7 @@ function renderKnowledgeChecks(s: StoryboardScene): string {
 }
 
 function renderEvents(s: StoryboardScene): string {
-  const events = (s as any).events || [];
+  const events: any[] = (s as any).events || [];
   if (!Array.isArray(events) || !events.length) return "";
   const rows = events
     .map((e: any) => `<tr>
@@ -447,7 +468,7 @@ function renderEvents(s: StoryboardScene): string {
     <div class="section" style="padding-top:0;">
       <h3>Events</h3>
       <table class="tbl small">
-        <thead><tr><th>#</th><th>On‑Screen</th><th>Audio</th><th>Notes</th></tr></thead>
+        <thead><tr><th>#</th><th>On-Screen</th><th>Audio</th><th>Notes</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -457,9 +478,9 @@ function renderEvents(s: StoryboardScene): string {
 // ----------------------------- Utility ----------------------------------------------
 
 function computeQuickChecks(s: StoryboardScene, v: any) {
-  const notes = `${(s.accessibilityNotes || "").toLowerCase()} ${JSON.stringify(s.interactionDetails || {})}`; // include details text
-  const captionsRequired = /video|animation/i.test(v?.mediaType || "") || /video/.test(String(s.screenLayout || ""));
-  const captionsFlag = /captions\s*on/.test(notes) || !captionsRequired; // if not media, we allow ✓
+  const notes = `${((s as any).accessibilityNotes || "").toLowerCase()} ${JSON.stringify((s as any).interactionDetails || {})}`;
+  const captionsRequired = /video|animation/i.test(v?.mediaType || "") || /video/.test(String((s as any).screenLayout || ""));
+  const captionsFlag = /captions\s*on/.test(notes) || !captionsRequired;
   return {
     captions: captionsFlag,
     keyboard: /keyboard path|tab to focus|keyboard/i.test(notes),

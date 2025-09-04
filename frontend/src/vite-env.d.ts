@@ -1,11 +1,12 @@
-cat > src/vite-env.d.ts <<'TS'
 /// <reference types="vite/client" />
+
 interface ImportMetaEnv {
-  readonly VITE_API_BASE?: string;
-  readonly VITE_BACKEND_URL?: string;
+  readonly VITE_BACKEND_URL?: string;     // "/api" in dev, full URL in prod
   readonly VITE_SUPABASE_URL?: string;
-  readonly VITE_SUPABASE_ANON_KEY?: string;
-  readonly VITE_OPENAI_API_KEY?: string;
+  readonly VITE_SUPABASE_ANON?: string;
+  // add other VITE_* you actually use
 }
-interface ImportMeta { readonly env: ImportMetaEnv; }
-TS
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

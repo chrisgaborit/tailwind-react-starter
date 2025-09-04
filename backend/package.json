@@ -6,13 +6,14 @@
   "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "nodemon --watch src --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=development nodemon --watch src --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist .tsbuildinfo",
     "format": "prettier --write .",
     "ingest": "ts-node -r tsconfig-paths/register scripts/bulkUpload.ts",
-    "gcp-build": "npm run build"
+    "gcp-build": "npm run build",
+    "start:dev": "NODE_ENV=development ts-node -r tsconfig-paths/register src/index.ts"
   },
   "author": "Genesis AI",
   "license": "MIT",
@@ -23,7 +24,7 @@
     "@google-cloud/storage": "^7.16.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.5.0",
-    "@supabase/supabase-js": "^2.54.0",
+    "@supabase/supabase-js": "^2.56.1",
     "bullmq": "^5.58.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",

@@ -5,24 +5,29 @@
  * - Single master PDF builder that matches the detailed on-screen storyboard
  * - /api/v1/generate-pdf and /api/v1/generate-pdf-full both use the same builder
  * - /api/storyboard/pdf (alias) POSTs a payload and returns the exact PDF
+ * - Image generation (optional) via Gemini/Imagen when formData.generateImages = true
  */
 
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors, { CorsOptionsDelegate } from "cors";
 import morgan from "morgan";
+console.log("🚀 Backend starting. NODE_ENV =", process.env.NODE_ENV);
 import puppeteer from "puppeteer";
 import pdf from "pdf-parse";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 import multer from "multer";
 import client from "prom-client";
+import adminRouter from "./routes/admin";
 
 // Services / utils
 import { generateStoryboardFromOpenAI, resolveOpenAIModel } from "./services/openaiService";
 import { parseDurationMins } from "./utils/parseDuration";
 import { classifyStoryboard } from "./utils/levelClassifier";
 import { normalizeToScenes } from "./utils/normalizeStoryboard";
+import { imageRoute } from "./routes/imageRoute";
+import { generateImageFromPrompt } from "./services/imageService";
 
 /* ============================ Local Types ============================ */
 type VisualBlock = {
@@ -36,6 +41,19 @@ type VisualBlock = {
   subject?: string;
   setting?: string;
   lighting?: string;
+  /** New: generated image + recipe mirrors */
+  generatedImageUrl?: string;
+  imageParams?: {
+    prompt: string;
+    style?: string;
+    size?: string;
+    seed?: number;
+    model?: string;
+    safetyFilter?: "on" | "off";
+    enhancements?: string[];
+    version?: number;
+    generatedAt?: string;
+  };
 };
 
 type SceneV2 = {
@@ -135,6 +153,12 @@ type SceneV2 = {
     developerNotes?: string;
     interactive?: { behaviourExplanation?: string };
   }>;
+
+  /** Scene-level mirrors for ease-of-use in UI & PDF */
+  imageUrl?: string;
+  /** Extra mirror to be absolutely unambiguous for the UI */
+  generatedImageUrl?: string;
+  imageParams?: VisualBlock["imageParams"];
 };
 
 export type StoryboardModuleV2 = {
@@ -155,6 +179,10 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 const CORS_ORIGINS = process.env.CORS_ORIGINS || CORS_ORIGIN;
 const EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-small";
 
+/** NEW: force images without relying on front-end flag */
+const forceImages =
+  String(process.env.FORCE_GENERATE_IMAGES || "").trim().toLowerCase() === "true";
+
 /* ============================ CLIENTS ============================== */
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -163,6 +191,30 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPE
 
 /* =========================== EXPRESS APP =========================== */
 const app = express();
+
+import cors from "cors";
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174", // vite may switch ports
+    "https://app.learno.com.au" // production
+  ],
+  credentials: true
+}));
+
+const IS_PROD = process.env.NODE_ENV === "production";
+
+if (IS_PROD) {
+  app.enable("trust proxy"); // so x-forwarded-proto is respected
+  app.use((req, res, next) => {
+    const proto = (req.headers["x-forwarded-proto"] as string) || (req.secure ? "https" : "http");
+    if (proto !== "https") {
+      return res.redirect(301, `https://${req.headers.host}${req.originalUrl}`);
+    }
+    next();
+  });
+}
 
 /* CORS */
 function parseAllowedOrigins(): string[] {
@@ -193,6 +245,8 @@ app.options("*", cors(corsDelegate));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(morgan("dev"));
+app.use("/api/images", imageRoute);
+app.use("/api/admin", adminRouter);
 
 /* ============================ METRICS ============================== */
 const metricsRegistry = new client.Registry();
@@ -350,7 +404,7 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
         <td class="cell">${esc(e?.verb)}</td>
         <td class="cell">${esc(e?.object)}</td>
         <td class="cell">${esc(
-          typeof e?.result === "string" ? e.result : e?.result ? JSON.stringify(e.result) : ""
+          typeof e?.result === "string" ? e?.result : e?.result ? JSON.stringify(e?.result) : ""
         )}</td>
       </tr>
     `,
@@ -379,11 +433,10 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
             },
           ];
 
-    const ostCombined = evs.map(e => e?.onScreenText ?? s.onScreenText ?? "").join(" ");
     const type = s.interactionType && s.interactionType !== "None" ? "Interactive" : "Informative";
     const pageNo = `p${String(i + 1).padStart(2, "0")}`;
 
-    // little header chips: aspect + interaction type
+    // header chips: aspect + interaction type
     const chips: string[] = [];
     chips.push(esc(s.visual?.aspectRatio || "16:9"));
     chips.push(esc(s.interactionType || "None"));
@@ -413,6 +466,12 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
       ["Asset ID", vgb.assetId],
     ];
 
+    // Robust image selection (any mirror)
+    const imgSrc = (s.imageUrl || s.generatedImageUrl || s.visual?.generatedImageUrl || "").trim();
+
+    // Light-touch recipe render (prompt + model)
+    const recipe = s.imageParams || s.visual?.imageParams;
+
     return `
     <article class="page">
       <header class="page-h">
@@ -429,10 +488,18 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
           <h3>Screen Layout & Visuals</h3>
           <div class="layout">${esc([s.screenLayout, s.visual?.style, s.visual?.composition, s.visual?.environment].filter(Boolean).join(" • "))}</div>
         </div>
+
         <div class="row">
           <div class="card w-2">
             <h4>AI Visual Generation Brief</h4>
             ${visualPairs.map(([k, v]) => `<div class="kv"><span>${esc(k)}</span><p>${esc(v)}</p></div>`).join("")}
+            ${
+              imgSrc
+                ? `<div class="imgwrap" style="margin-top:8px;">
+                     <img src="${imgSrc}" alt="${esc(s.visual?.altText || s.pageTitle || "Scene Image")}" style="width:100%; height:auto; border-radius:6px; border:1px solid var(--b);" />
+                   </div>`
+                : ""
+            }
           </div>
           <div class="col w-1">
             <div class="card"><h4>Alt Text</h4><p>${esc(s.visual?.altText)}</p></div>
@@ -444,6 +511,17 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
                 : "—"
             }</p></div>
             <div class="card"><h4>AI Prompt (legacy)</h4><p>${esc(s.visual?.aiPrompt)}</p></div>
+            ${
+              recipe
+                ? `<div class="card">
+                     <h4>Image Recipe</h4>
+                     <div class="kv"><span>Prompt</span><p>${esc(recipe.prompt)}</p></div>
+                     <div class="kv"><span>Model</span><p>${esc(recipe.model || "imagen-3.0")}</p></div>
+                     <div class="kv"><span>Size</span><p>${esc(recipe.size || "1280x720")}</p></div>
+                     <div class="kv"><span>Style</span><p>${esc(recipe.style || "photorealistic")}</p></div>
+                   </div>`
+                : ""
+            }
             <div class="card"><h4>Media</h4><p>${esc([s.media?.type, s.media?.style, s.media?.notes].filter(Boolean).join(" • "))}</p></div>
           </div>
         </div>
@@ -528,19 +606,19 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
             ${renderXapi(s.xapiEvents)}
           </div>
 
-          <div class="card">
-            <h4>Quick Checks</h4>
-            <ul class="checks">
-              <li><span class="${yesClass(qc.captionsOn)}">${yes(qc.captionsOn)}</span> Captions ON by default</li>
-              <li><span class="${yesClass(qc.keyboardPath)}">${yes(qc.keyboardPath)}</span> Keyboard path provided</li>
-              <li><span class="${yesClass(qc.focusOrder)}">${yes(qc.focusOrder)}</span> Focus order guidance</li>
-            </ul>
-          </div>
+            <div class="card">
+              <h4>Quick Checks</h4>
+              <ul class="checks">
+                <li><span class="${yesClass(qc.captionsOn)}">${yes(qc.captionsOn)}</span> Captions ON by default</li>
+                <li><span class="${yesClass(qc.keyboardPath)}">${yes(qc.keyboardPath)}</span> Keyboard path provided</li>
+                <li><span class="${yesClass(qc.focusOrder)}">${yes(qc.focusOrder)}</span> Focus order guidance</li>
+              </ul>
+            </div>
 
-          <div class="card">
-            <h4>Timing</h4>
-            <div>Estimated: ${esc(s.timing?.estimatedSecs ?? s.timing?.estimatedSeconds)}s</div>
-          </div>
+            <div class="card">
+              <h4>Timing</h4>
+              <div>Estimated: ${esc(s.timing?.estimatedSecs ?? s.timing?.estimatedSeconds)}s</div>
+            </div>
         </div>
       </section>
 
@@ -642,6 +720,7 @@ app.get("/api/v1/config", (_req, res) => {
       openaiEmbedModel: EMBED_MODEL,
       openaiKey: mask(process.env.OPENAI_API_KEY),
       nodeEnv: process.env.NODE_ENV || "development",
+      forceGenerateImages: forceImages,
     },
   });
 });
@@ -746,8 +825,8 @@ app.post(
           brandGuidelines: b["formData.brandGuidelines"] ?? b.brandGuidelines,
           colours: b["formData.colours"] ?? b.colours,
           fonts: b["formData.fonts"] ?? b.fonts,
-          // optional: allow UI to hint target interaction for blueprint biasing
           interactionType: b["formData.interactionType"] ?? b.interactionType,
+          generateImages: b["formData.generateImages"] ?? b.generateImages,
         };
         const allUndef = Object.values(formData).every(v => v === undefined || v === null || v === "");
         if (allUndef) formData = undefined;
@@ -780,7 +859,7 @@ app.post(
         return res.status(400).json({ success: false, error: { message: "Cannot generate a storyboard with no content." } });
       }
 
-      // ---- RAG: whole-storyboard exemplars
+      // ---- RAG contexts
       const searchQuery = finalFormData.moduleName || String(finalFormData.content).slice(0, 500);
       const similarExamples = await searchSimilarStoryboards(searchQuery, 2);
       const ragContext =
@@ -794,16 +873,13 @@ app.post(
               .join("\n\n")
           : "No similar examples were found in the database.";
 
-      // ---- RAG: chunk-level blueprints (patterns for interactions)
       const preferredInteraction =
         finalFormData.interactionType || finalFormData.targetInteraction || null;
       const chunkMatches = await searchRelevantChunks(searchQuery, 6, preferredInteraction);
       const ragChunkContext = buildChunkBlueprintContext(chunkMatches);
-
-      // ---- Merge contexts (exemplars + blueprints)
       const combinedContext = [ragContext, ragChunkContext].join("\n\n");
 
-      // ---- AI generate (now using combinedContext)
+      // ---- AI generate
       const modelUsed = resolveOpenAIModel(finalFormData.aiModel || undefined);
       const storyRaw = await generateStoryboardFromOpenAI(finalFormData, {
         ragContext: combinedContext,
@@ -813,6 +889,36 @@ app.post(
       const storyboardBase: StoryboardModuleV2 = (storyRaw as any)?.scenes
         ? (storyRaw as StoryboardModuleV2)
         : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
+
+      // ---- Optional: generate images per scene (respects env override)
+      if ((finalFormData.generateImages || forceImages) && Array.isArray(storyboardBase.scenes)) {
+        for (const s of storyboardBase.scenes) {
+          try {
+            const prompt =
+              s.visual?.visualGenerationBrief?.sceneDescription ||
+              s.visual?.aiPrompt ||
+              s.onScreenText ||
+              s.narrationScript ||
+              s.pageTitle ||
+              "Training visual, photorealistic, professional, high-quality";
+
+            const { imageUrl, recipe } = await generateImageFromPrompt(prompt, {
+              style: s.visual?.visualGenerationBrief?.style || "photorealistic",
+              size: "1280x720",
+            });
+
+            if (imageUrl) {
+              // set ALL mirrors for maximum compatibility
+              s.imageUrl = imageUrl;
+              s.generatedImageUrl = imageUrl;
+              s.visual = { ...(s.visual || {}), generatedImageUrl: imageUrl, imageParams: recipe };
+              s.imageParams = recipe;
+            }
+          } catch (e) {
+            console.error(`[images] Failed for scene ${s.sceneNumber}:`, e);
+          }
+        }
+      }
 
       const detection = classifyStoryboard(storyboardBase as any);
       const storyboard: StoryboardModuleV2 = {
@@ -825,6 +931,7 @@ app.post(
             exemplars: similarExamples.length,
             chunksUsed: chunkMatches.length,
             preferredInteraction: preferredInteraction || null,
+            imagesRequested: Boolean(finalFormData.generateImages || forceImages),
           },
         },
       };
@@ -839,6 +946,7 @@ app.post(
           examples: similarExamples.length,
           requestedLevel: finalFormData?.complexityLevel || null,
           detectedLevel: detection?.detectedLevel || null,
+          imagesGenerated: Boolean(finalFormData.generateImages || forceImages),
         },
       };
       return res.status(200).json(payload);
@@ -861,7 +969,7 @@ app.post(
 
       formData.durationMins = normaliseDuration(formData.durationMins ?? formData.duration ?? 20);
 
-      // RAG
+      // RAG (examples + blueprints)
       const searchQuery = formData.moduleName || String(formData.content).slice(0, 500);
       const similar = await searchSimilarStoryboards(searchQuery, 2);
       const preferredInteraction = formData.interactionType || formData.targetInteraction || null;
@@ -890,6 +998,35 @@ app.post(
         ? (storyRaw as StoryboardModuleV2)
         : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
 
+      // Optional: generate images (respects env override)
+      if ((formData.generateImages || forceImages) && Array.isArray(storyboardBase.scenes)) {
+        for (const s of storyboardBase.scenes) {
+          try {
+            const prompt =
+              s.visual?.visualGenerationBrief?.sceneDescription ||
+              s.visual?.aiPrompt ||
+              s.onScreenText ||
+              s.narrationScript ||
+              s.pageTitle ||
+              "Training visual, photorealistic, professional, high-quality";
+
+            const { imageUrl, recipe } = await generateImageFromPrompt(prompt, {
+              style: s.visual?.visualGenerationBrief?.style || "photorealistic",
+              size: "1280x720",
+            });
+
+            if (imageUrl) {
+              s.imageUrl = imageUrl;
+              s.generatedImageUrl = imageUrl;
+              s.visual = { ...(s.visual || {}), generatedImageUrl: imageUrl, imageParams: recipe };
+              s.imageParams = recipe;
+            }
+          } catch (e) {
+            console.error(`[images] Failed for scene ${s.sceneNumber}:`, e);
+          }
+        }
+      }
+
       const detection = classifyStoryboard(storyboardBase as any);
       const storyboard: StoryboardModuleV2 = {
         ...storyboardBase,
@@ -901,6 +1038,7 @@ app.post(
             exemplars: similar.length,
             chunksUsed: chunkMatches.length,
             preferredInteraction: preferredInteraction || null,
+            imagesRequested: Boolean(formData.generateImages || forceImages),
           },
         },
       };
@@ -915,6 +1053,7 @@ app.post(
           examples: similar.length,
           requestedLevel: formData?.complexityLevel || null,
           detectedLevel: detection?.detectedLevel || null,
+          imagesGenerated: Boolean(formData.generateImages || forceImages),
         },
       };
       res.json(envelope);
@@ -924,6 +1063,23 @@ app.post(
     }
   }),
 );
+
+// --- image smoke test ---
+app.post("/api/v1/image-smoke", async (req: Request, res: Response) => {
+  try {
+    const { prompt = "Photorealistic office team on a video call, natural light" } = req.body || {};
+    const { imageUrl, recipe } = await generateImageFromPrompt(prompt, {
+      style: "photorealistic",
+      size: "1280x720",
+      aspectRatio: "16:9",
+    });
+    if (!imageUrl) return res.status(500).json({ ok: false, error: "No imageUrl returned" });
+    return res.json({ ok: true, imageUrl, recipe });
+  } catch (e: any) {
+    console.error("image-smoke error:", e);
+    return res.status(500).json({ ok: false, error: e?.message || "Image test failed" });
+  }
+});
 
 /* ============== VALIDATOR (simple) =================== */
 function validateStoryboardInline(sb: StoryboardModuleV2) {

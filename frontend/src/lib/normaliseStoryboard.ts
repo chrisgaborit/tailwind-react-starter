@@ -16,7 +16,7 @@ export function normaliseStoryboardForUI(input: any): StoryboardModule {
     moduleOverview:
       input?.moduleOverview ||
       "This programme combines short scenarios, interactive checks, and a capstone to help you apply key concepts.",
-    learningLevel: input?.learningLevel || "Level 3",
+    learningLevel: input?.learningLevel || input?.complexityLevel || "Level 3",
     targetAudience: input?.targetAudience || "General staff",
     revisionHistory: Array.isArray(input?.revisionHistory) ? input.revisionHistory : [],
     pronunciationGuide: Array.isArray(input?.pronunciationGuide) ? input.pronunciationGuide : [],
@@ -58,6 +58,13 @@ export function normaliseStoryboardForUI(input: any): StoryboardModule {
 
 // ---------- helpers ----------
 
+function firstTruthy<T extends string>(...vals: (T | undefined)[]): T | undefined {
+  for (const v of vals) {
+    if (typeof v === "string" && v.trim()) return v as T;
+  }
+  return undefined;
+}
+
 function coerceScene(raw: any, idx: number): StoryboardScene {
   const pageTitle = String(raw?.pageTitle || raw?.title || `Scene ${idx + 1}`);
 
@@ -71,14 +78,22 @@ function coerceScene(raw: any, idx: number): StoryboardScene {
       : "Standard slide layout";
 
   // Audio
-  const audioScript = String(raw?.audio?.script || raw?.narrationScript || "");
+  const audioScript = String(raw?.audio?.script || raw?.narrationScript || raw?.voiceover || "");
 
   // Visual
   const visual = raw?.visual || {};
   const vgb = visual.visualGenerationBrief || {};
   const aspectRatio = visual.aspectRatio || raw?.aspectRatio || "16:9";
 
-  return {
+  // Robust image mirroring
+  const imageCandidate = firstTruthy(
+    raw?.imageUrl,
+    raw?.generatedImageUrl,
+    visual?.generatedImageUrl,
+    visual?.previewUrl
+  );
+
+  const scene: StoryboardScene = {
     sceneNumber: Number(raw?.sceneNumber || idx + 1),
     pageTitle,
     pageType:
@@ -104,7 +119,7 @@ function coerceScene(raw: any, idx: number): StoryboardScene {
         "[AI Generate: VO with warm, professional tone at ~110–130 WPM.]",
     },
     narrationScript: audioScript,
-    onScreenText: clampWords(String(raw?.onScreenText || ""), 70),
+    onScreenText: clampWords(String(raw?.onScreenText || raw?.textOnScreen?.onScreenTextContent || ""), 70),
     visual: {
       mediaType: visual.mediaType || "Graphic",
       style: visual.style || "Clean corporate",
@@ -122,6 +137,7 @@ function coerceScene(raw: any, idx: number): StoryboardScene {
         mood: vgb.mood || "Professional, calm, optimistic",
         brandIntegration: vgb.brandIntegration || "Subtle accent in Bright Purple (#B877D5).",
         negativeSpace: vgb.negativeSpace || "30% top-right",
+        assetId: vgb.assetId || undefined,
       },
       aiPrompt: visual.aiPrompt || `Modern, inclusive visual supporting "${pageTitle}"`,
       altText: visual.altText || `Illustration supporting "${pageTitle}"`,
@@ -131,24 +147,38 @@ function coerceScene(raw: any, idx: number): StoryboardScene {
       overlayElements: Array.isArray(visual.overlayElements) ? visual.overlayElements : [],
       previewUrl: visual.previewUrl || undefined,
       assetId: visual.assetId || undefined,
+      // ensure the visual also holds the generated url
+      generatedImageUrl: imageCandidate || visual.generatedImageUrl || undefined,
     },
     aspectRatio,
+    // Interaction
     interactionDetails: raw?.interactionDetails || undefined,
     interactionType: raw?.interactionType || "None",
     interactionDescription: raw?.interactionDescription || "",
-    developerNotes: raw?.developerNotes || "",
+    developerNotes: raw?.developerNotes || raw?.devNotes || "",
     accessibilityNotes:
       raw?.accessibilityNotes ||
+      raw?.a11y ||
       "Captions ON; keyboard path with visible focus; focus order documented; reduced-motion fallback.",
     timing:
       raw?.timing && Number.isFinite(Number(raw.timing.estimatedSeconds))
         ? { estimatedSeconds: Number(raw.timing.estimatedSeconds) }
-        : { estimatedSeconds: 60 },
+        : (Number.isFinite(Number(raw?.estimatedSeconds))
+            ? { estimatedSeconds: Number(raw.estimatedSeconds) }
+            : { estimatedSeconds: 60 }),
     events: Array.isArray(raw?.events) ? raw.events : undefined,
-    generatedImageUrl: raw?.generatedImageUrl || undefined,
+    // legacy / optional
+    generatedImageUrl: imageCandidate || raw?.generatedImageUrl || undefined,
     knowledgeCheck: raw?.knowledgeCheck || undefined,
     knowledgeChecks: Array.isArray(raw?.knowledgeChecks) ? raw.knowledgeChecks : undefined,
   };
+
+  // If we’ve inferred an image, also put it on the scene root for max compatibility
+  if (imageCandidate) {
+    (scene as any).imageUrl = imageCandidate;
+  }
+
+  return scene;
 }
 
 function ensureFirstFourScenes(scenes: StoryboardScene[]): StoryboardScene[] {

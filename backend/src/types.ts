@@ -105,6 +105,9 @@ export interface StoryboardFormData {
 
   /** Optional: which AI model to use */
   aiModel?: string;
+
+  /** Optional: ask backend to generate images now */
+  generateImages?: boolean;
 }
 
 /* ---------------------------------------
@@ -201,6 +204,18 @@ export interface VisualGenerationBrief {
   uiStates?: string[];
 }
 
+/** Image recipe saved with each generated asset */
+export interface ImageParams {
+  prompt: string;
+  style?: string;        // e.g., "photo-realistic"
+  size?: string;         // e.g., "1280x720"
+  seed?: number;
+  model?: string;        // e.g., "imagen-3-nano"
+  safetyFilter?: "on" | "off";
+  enhancements?: string[];
+  version?: number;
+}
+
 /** Backwards-compatible visual object used in scenes. */
 export interface VisualSpec {
   mediaType: "Image" | "Graphic" | "Animation" | "Video" | string;
@@ -214,6 +229,12 @@ export interface VisualSpec {
 
   /** New: richly detailed, AI-ready visual brief */
   visualGenerationBrief?: VisualGenerationBrief;
+
+  /** New: where the generated image is stored */
+  generatedImageUrl?: string;
+
+  /** New: full recipe used to create the image */
+  imageParams?: ImageParams;
 }
 
 /* ---------------------------------------
@@ -320,6 +341,10 @@ export interface Scene {
 
   /** Optional: AI-ready audio directives (full script + voice params) */
   audio?: AudioDirectives;
+
+  /** Convenience duplicates for image access at scene level */
+  imageUrl?: string;          // mirrors visual.generatedImageUrl
+  imageParams?: ImageParams;  // mirrors visual.imageParams
 }
 
 /* ---------------------------------------

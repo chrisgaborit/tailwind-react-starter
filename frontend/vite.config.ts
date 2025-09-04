@@ -1,32 +1,35 @@
-// frontend/vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// Log at build-time (will show in terminal, not browser)
-console.log("🔗 Using BACKEND_URL =", process.env.VITE_BACKEND_URL);
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), ""); // loads .env, .env.local, etc.
+  const isDev = mode === "development";
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"), // allows "@/..." imports
-    },
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      // Proxy /api → backend (local dev only)
-      "/api": {
-        target: process.env.VITE_BACKEND_URL || "http://localhost:8080",
-        changeOrigin: true,
-        secure: false,
+  // What the client will prepend to fetch paths ("/api" in dev, full URL in prod)
+  console.log("🔗 Client BACKEND_BASE =", env.VITE_BACKEND_URL || "(undefined)");
+
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
-  },
-  define: {
-    // Expose only what you need (import.meta.env is preferred in code)
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
-  },
+    server: {
+      port: 5173,
+      // In dev, proxy any request starting with /api to the local backend.
+      proxy: isDev
+        ? {
+            "/api": {
+              target: "http://localhost:8080",
+              changeOrigin: true,
+              secure: false,
+            },
+          }
+        : undefined,
+    },
+    // Prevent accidental use of Node env in the browser bundle
+    define: { "process.env": {} },
+  };
 });

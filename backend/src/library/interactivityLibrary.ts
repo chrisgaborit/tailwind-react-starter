@@ -1,340 +1,347 @@
-// backend/src/library/interactivityLibrary.ts
-
 /**
- * Enforce interactive density and quality across a storyboard's scenes.
- *
- * Responsibilities
- *  - Ensure a minimum ratio of interactive scenes (post "First Four").
- *  - Maintain variety (don’t repeat same interaction type > maxSameTypeInRow).
- *  - Prefer a rotating set of interaction types for distribution.
- *  - Seed/upgrade interactionDetails with retry rules, completion rules, and xAPI.
- *  - Leave the first four header scenes (Title, Pronunciation, ToC, Welcome) intact.
- *
- * Notes
- *  - The function returns a shallow-cloned array; it will not mutate the original.
- *  - This lives in the "library" layer (used by openaiService).
+ * Interactivity Library
+ * - Canonical patterns for scenarios, hotspots, reveal, knowledge checks, etc.
+ * - enforceInteractiveDensity() applies level/profile rules to any storyboard.
  */
 
-export function enforceInteractiveDensity(
-  scenes: any[],
-  levelKey: "Level1" | "Level2" | "Level3" | "Level4" | string,
-  targetInteractiveRatio = 0.5,
-  maxSameTypeInRow = 2,
-  preferredTypes: string[] = ["Scenario", "MCQ", "Clickable Hotspots", "Drag & Drop", "Reflection"]
-): any[] {
-  if (!Array.isArray(scenes) || scenes.length === 0) return scenes || [];
+import { pickProfile, GENERIC_DISTRACTOR_SEEDS, COMPLIANCE_CONFUSABLES } from "./interactivityProfiles";
 
-  // Work on a shallow clone so callers are safe from mutation side‑effects.
-  const out = scenes.map((s) => ({ ...s }));
+/** --------- Minimal “shape” types (lenient to avoid coupling) ---------- */
+type Scene = {
+  id?: string;
+  title?: string;
+  narration?: string;
+  onScreenText?: string[] | string;
+  visuals?: string;
+  interactivity?: any;
+  knowledgeChecks?: KnowledgeCheck[];
+  metadata?: Record<string, any>;
+};
 
-  // Helpers
-  const isInteractive = (s: any) => {
-    const t = normaliseType(s?.interactionType);
-    return t !== "none" && t.length > 0;
-  };
+type StoryboardModule = {
+  moduleName?: string;
+  moduleType?: string;
+  level?: string | number;
+  durationMins?: number;
+  audience?: string;
+  scenes: Scene[];
+  metadata?: Record<string, any>;
+};
 
-  const firstInteractiveIdx = Math.min(4, out.length); // after Title/Pronunciation/ToC/Welcome
-  const total = out.length;
-  const preferred = preferredTypes.length ? preferredTypes.slice() : ["Scenario", "MCQ", "Clickable Hotspots", "Drag & Drop", "Reflection"];
+export type KnowledgeCheck = {
+  type: "single" | "multi";
+  question: string;
+  options: Array<{ text: string; correct: boolean; rationale?: string }>;
+  feedbackCorrect?: string;
+  feedbackIncorrect?: string;
+};
 
-  // 1) Ensure minimum interactive ratio
-  const neededInteractive = Math.max(0, Math.ceil(total * targetInteractiveRatio));
-  let currentInteractive = out.filter(isInteractive).length;
+/** --------- Interactivity patterns (catalogue) ---------- */
 
-  let cursor = firstInteractiveIdx;
-  let rot = 0;
-
-  while (currentInteractive < neededInteractive && cursor < out.length) {
-    const s = out[cursor];
-    if (!isInteractive(s)) {
-      let nextType = preferred[rot % preferred.length];
-
-      // Avoid violating maxSameTypeInRow when injecting
-      nextType = chooseTypeRespectingRun(out, cursor, nextType, preferred, maxSameTypeInRow);
-
-      s.interactionType = nextType;
-      s.interactionDescription =
-        s.interactionDescription || describeInteraction(nextType, s.pageTitle || s.title || `Screen ${cursor + 1}`);
-
-      // Seed minimal interactionDetails if missing
-      s.interactionDetails = normaliseInteractionDetails(
-        s.interactionDetails,
-        nextType,
-        cursor + 1
-      );
-
-      // Developer hints
-      s.developerNotes = ensureDeveloperNotes(s.developerNotes, nextType);
-
-      currentInteractive++;
-      rot++;
-    }
-    cursor++;
-  }
-
-  // 2) Post-pass to fix long runs of the same type (> maxSameTypeInRow)
-  fixLongRuns(out, firstInteractiveIdx, preferred, maxSameTypeInRow);
-
-  // 3) Normalisation & xAPI safety for all interactive screens
-  for (let i = firstInteractiveIdx; i < out.length; i++) {
-    const s = out[i];
-    if (isInteractive(s)) {
-      // Ensure details exists and is consistent with the chosen type
-      s.interactionDetails = normaliseInteractionDetails(
-        s.interactionDetails,
-        normaliseLabel(s.interactionType),
-        i + 1
-      );
-      s.developerNotes = ensureDeveloperNotes(s.developerNotes, s.interactionType);
-    }
-  }
-
-  return out;
-}
-
-/* ========================================================================== */
-/* Internal helpers                                                           */
-/* ========================================================================== */
-
-function normaliseType(t: any): string {
-  const raw = String(t || "None").trim().toLowerCase();
-  if (!raw || raw === "none") return "none";
-  if (/^mcq/.test(raw) || /multiple\s*choice/.test(raw)) return "MCQ";
-  if (/drag/.test(raw)) return "Drag & Drop";
-  if (/hotspot/.test(raw)) return "Clickable Hotspots";
-  if (/scenario|branch/.test(raw)) return "Scenario";
-  if (/reflect/.test(raw) || /text\s*entry/.test(raw)) return "Reflection";
-  if (/interactive\s*video/.test(raw)) return "Interactive Video";
-  return capitaliseWords(raw);
-}
-function normaliseLabel(label: any): string {
-  return normaliseType(label);
-}
-function capitaliseWords(s: string) {
-  return s.replace(/\b[a-z]/g, (m) => m.toUpperCase());
-}
-
-/** Choose a type while respecting max run, by looking at neighbours. */
-function chooseTypeRespectingRun(
-  scenes: any[],
-  idx: number,
-  desired: string,
-  preferred: string[],
-  maxRun: number
-) {
-  const desiredLabel = normaliseLabel(desired);
-  if (!violatesRun(scenes, idx, desiredLabel, maxRun)) return desiredLabel;
-
-  // Try alternate types from preferred
-  for (let j = 1; j < preferred.length; j++) {
-    const alt = normaliseLabel(preferred[(preferred.indexOf(desired) + j) % preferred.length]);
-    if (!violatesRun(scenes, idx, alt, maxRun)) return alt;
-  }
-
-  // Fallback to desired even if it violates run (rare)
-  return desiredLabel;
-}
-
-/** Determine if placing "type" at index idx would exceed maxSameTypeInRow. */
-function violatesRun(scenes: any[], idx: number, type: string, maxRun: number): boolean {
-  if (maxRun <= 0) return false;
-
-  // Look backwards and forwards to measure the run length around idx.
-  let run = 1; // counting current placement
-  // backwards
-  for (let i = idx - 1; i >= 0; i--) {
-    const t = normaliseType(scenes[i]?.interactionType);
-    if (t === type) run++;
-    else break;
-  }
-  // forwards (only consider existing fixed types)
-  for (let i = idx + 1; i < scenes.length; i++) {
-    const t = normaliseType(scenes[i]?.interactionType);
-    if (t === type) run++;
-    else break;
-  }
-  return run > maxRun;
-}
-
-/** After injection, fix any long runs by swapping in alternates. */
-function fixLongRuns(scenes: any[], startIdx: number, preferred: string[], maxRun: number) {
-  if (maxRun <= 0) return;
-  let runType = "";
-  let runStart = -1;
-  let runLen = 0;
-
-  for (let i = startIdx; i <= scenes.length; i++) {
-    const t = i < scenes.length ? normaliseType(scenes[i]?.interactionType) : "__END__";
-    if (i < scenes.length && t !== "none" && t === runType) {
-      runLen++;
-    } else {
-      // run ends here
-      if (runType && runLen > maxRun) {
-        // We need to break the run by changing some mid items (not all).
-        for (let j = runStart + 1; j < runStart + runLen - 1; j += 2) {
-          const desiredBreak = chooseTypeRespectingRun(scenes, j, pickAlternate(preferred, runType), preferred, maxRun);
-          scenes[j].interactionType = desiredBreak;
-          scenes[j].interactionDescription =
-            scenes[j].interactionDescription || describeInteraction(desiredBreak, scenes[j].pageTitle || `Screen ${j + 1}`);
-          scenes[j].interactionDetails = normaliseInteractionDetails(
-            scenes[j].interactionDetails,
-            desiredBreak,
-            j + 1
-          );
-          scenes[j].developerNotes = ensureDeveloperNotes(scenes[j].developerNotes, desiredBreak);
-        }
-      }
-      // reset
-      runType = t !== "none" ? t : "";
-      runStart = i;
-      runLen = t !== "none" ? 1 : 0;
-    }
-  }
-}
-
-function pickAlternate(preferred: string[], avoid: string): string {
-  const idx = preferred.findIndex((p) => normaliseLabel(p) === normaliseLabel(avoid));
-  if (idx === -1) return preferred[0] || "Scenario";
-  return preferred[(idx + 1) % preferred.length] || "Scenario";
-}
-
-function normaliseInteractionDetails(
-  details: any,
-  type: string,
-  sceneNumber: number
-) {
-  const d = details && typeof details === "object" ? { ...details } : {};
-  d.interactionType = normaliseLabel(type);
-
-  // Retry / completion defaulting
-  if (!d.retryLogic) {
-    d.retryLogic =
-      type === "MCQ"
-        ? "Allow up to 2 retries; reveal correct after second incorrect."
-        : type === "Scenario"
-        ? "Allow replay to explore alternate branches."
-        : "Allow retry.";
-  }
-  if (!d.completionRule) {
-    d.completionRule =
-      type === "Clickable Hotspots"
-        ? "All hotspots revealed."
-        : type === "Reflection"
-        ? "Text field not empty (≥ 140 characters)."
-        : "User must interact at least once.";
-  }
-
-  // Minimal aiActions
-  if (!Array.isArray(d.aiActions) || d.aiActions.length === 0) {
-    d.aiActions =
-      type === "MCQ"
-        ? ["Render question and options", "On select, show feedback", "Enable Retry button"]
-        : type === "Scenario"
-        ? ["Render decision options", "On select, branch A/B and display coaching feedback", "Track choice for xAPI"]
-        : type === "Clickable Hotspots"
-        ? ["Render 3–5 hotspots", "On hover, show tooltip", "On click, show panel and mark visited"]
-        : type === "Drag & Drop"
-        ? ["Render draggable chips/cards", "Highlight valid drop zones on drag", "Snap on correct drop, shake & hint on incorrect"]
-        : ["Render prompt", "Auto-save text", "Validate on submit"];
-  }
-
-  // xAPI defaults
-  if (!Array.isArray(d.xapiEvents) || d.xapiEvents.length === 0) {
-    d.xapiEvents = [
+export const INTERACTIVITY_LIBRARY = {
+  branchingDilemma: (opts?: Partial<BranchingOpts>) => ({
+    type: "branching",
+    purpose: "Decision-making in realistic context",
+    layout: "Two-to-three choice dilemma with immediate feedback",
+    behaviour:
+      "Learner picks a path; each branch provides consequence, coaching tip, and optional retry",
+    progressiveDisclosure: true,
+    branches: [
       {
-        verb: defaultXapiVerb(type),
-        object: `${labelToId(type)}_S${sceneNumber}`,
+        choice: opts?.choiceA || "Schedule a private check-in",
+        outcomeOST: "Builds trust; clarifies blockers",
+        feedbackVO:
+          "Great choice. Start with a supportive 1:1 to understand context and co-create a recovery plan.",
       },
-    ];
+      {
+        choice: opts?.choiceB || "Escalate immediately",
+        outcomeOST: "May damage psychological safety",
+        feedbackVO:
+          "Escalation can be necessary, but use it after you’ve explored root causes and support options.",
+      },
+      ...(opts?.choiceC
+        ? [
+            {
+              choice: opts.choiceC,
+              outcomeOST: opts.outcomeC || "Inconsistent follow-up",
+              feedbackVO:
+                opts.feedbackC ||
+                "Mixed signals reduce accountability. Be explicit about expectations and timeframes.",
+            },
+          ]
+        : []),
+    ],
+  }),
+  hotspotsTour: (items: string[]) => ({
+    type: "hotspots",
+    purpose: "Interface or process familiarisation",
+    behaviour: "Click each hotspot to reveal concise explanations",
+    progressiveDisclosure: true,
+    items: items.map((label, i) => ({
+      id: `hs-${i + 1}`,
+      label,
+      ost: `${label} — click to reveal details`,
+      vo: `This hotspot explains ${label} and when to use it effectively.`,
+    })),
+  }),
+  revealPrinciples: (title: string, pairs: Array<{ term: string; definition: string }>) => ({
+    type: "reveal",
+    title,
+    purpose: "Progressive disclosure of dense concepts",
+    behaviour: "Hover or click to reveal explanations",
+    items: pairs.map((p, i) => ({
+      id: `rev-${i + 1}`,
+      label: p.term,
+      definition: p.definition,
+    })),
+    progressiveDisclosure: true,
+  }),
+  timelineSteps: (title: string, steps: string[]) => ({
+    type: "timeline",
+    title,
+    purpose: "Show ordered steps/timeframes",
+    behaviour: "Navigate steps to reveal guidance",
+    steps: steps.map((s, i) => ({ index: i + 1, label: s })),
+  }),
+};
+
+/** --------- KC builders ---------- */
+
+export function buildSingleSelectKC(
+  question: string,
+  correct: string,
+  domainHints: string[] = []
+): KnowledgeCheck {
+  const distractors = composeDistractors(correct, domainHints, 3);
+  return {
+    type: "single",
+    question,
+    options: shuffle([{ text: correct, correct: true }, ...distractors.map((t) => ({ text: t, correct: false }))]),
+    feedbackCorrect: "Correct — that aligns with best practice.",
+    feedbackIncorrect: "Not quite. Review the concept and try again.",
+  };
+}
+
+export function buildMultiSelectKC(
+  question: string,
+  correctList: string[],
+  domainHints: string[] = []
+): KnowledgeCheck {
+  const distractorCount = Math.max(2, 4 - correctList.length);
+  const distractors = multiComposeDistractors(correctList, domainHints, distractorCount);
+  const options = [
+    ...correctList.map((t) => ({ text: t, correct: true })),
+    ...distractors.map((t) => ({ text: t, correct: false })),
+  ];
+  return {
+    type: "multi",
+    question,
+    options: shuffle(options),
+    feedbackCorrect: "Nice — you selected all that apply.",
+    feedbackIncorrect: "Some selections aren’t quite right. Consider what the definition excludes.",
+  };
+}
+
+/** --------- Enforcement: make any storyboard meet the profile ---------- */
+
+export function enforceInteractiveDensity(storyboard: StoryboardModule, formData: any): StoryboardModule {
+  const profile = pickProfile(formData?.level, formData?.moduleType);
+
+  if (!storyboard || !Array.isArray(storyboard.scenes)) {
+    return storyboard;
   }
 
-  // AI directive default
-  if (!d.aiGenerationDirective) {
-    d.aiGenerationDirective = defaultAiDirective(type);
+  const scenes = storyboard.scenes;
+
+  // 1) Ensure at least one branching dilemma exists (scenario fidelity)
+  let hasBranching = scenes.some((s) => s.interactivity?.type === "branching");
+  if (!hasBranching) {
+    const injectAt = Math.min( Math.max(2, Math.floor(scenes.length / 2)), Math.max(0, scenes.length - 1) );
+    scenes.splice(injectAt, 0, {
+      title: "Scenario: Handling a Difficult Decision",
+      onScreenText: ["Choose how to respond", "Consider impact on trust and outcomes"],
+      narration:
+        "Here is a realistic dilemma. Choose a response that balances empathy, accountability, and performance.",
+      interactivity: INTERACTIVITY_LIBRARY.branchingDilemma(),
+      knowledgeChecks: [],
+      metadata: { injected: true, reason: "profile.minScenarioBranches", level: profile.level },
+    });
+    hasBranching = true;
   }
 
-  return d;
+  // 2) Knowledge check density (with plausible distractors)
+  const existingKC = countKCs(scenes);
+  if (existingKC < profile.minKnowledgeChecks) {
+    const toAdd = profile.minKnowledgeChecks - existingKC;
+    distributeKCs(scenes, toAdd, profile.kcPerXScenes, formData?.moduleType);
+  }
+
+  // 3) Progressive disclosure for concept heavy scenes
+  if (profile.progressiveDisclosure) {
+    for (const s of scenes) {
+      const ostList = toArray(s.onScreenText);
+      if (ostList.length >= 4 && !s.interactivity?.progressiveDisclosure) {
+        s.interactivity = s.interactivity || {};
+        s.interactivity.progressiveDisclosure = true;
+        s.metadata = { ...(s.metadata || {}), progressiveDisclosure: true };
+      }
+    }
+  }
+
+  // 4) Enforce OST scannability (limit bullet length)
+  for (const s of scenes) {
+    const ost = toArray(s.onScreenText);
+    if (!ost.length) continue;
+    const compact = ost.map((line) => clampWords(line, profile.maxOstBulletWords));
+    s.onScreenText = compact;
+  }
+
+  // 5) Ensure at least one role-specific example per concept-heavy scene (light heuristic)
+  if (profile.requireRoleExamples) {
+    for (const s of scenes) {
+      if (looksLikeConceptScene(s) && !hasExampleCue(s)) {
+        s.narration = (s.narration || "") + " For example, in your role, apply this by adapting the steps to your context.";
+        s.metadata = { ...(s.metadata || {}), roleExampleInjected: true };
+      }
+    }
+  }
+
+  // 6) Compliance/performance tables for compliance-like modules
+  if (profile.requireComplianceTables) {
+    const hasTable = scenes.some((s) => s.metadata?.complianceTable === true);
+    if (!hasTable) {
+      scenes.push({
+        title: "Performance & Timeframes",
+        onScreenText: ["Key timeframes at a glance", "Use this as your quick-reference"],
+        narration:
+          "This table summarises critical timeframes and performance standards. Keep it handy and align your actions to these benchmarks.",
+        visuals:
+          "Table: Activity | Standard/Timeframe | Notes. Include typical examples for Claims, Underwriting, Complaints.",
+        interactivity: INTERACTIVITY_LIBRARY.timelineSteps("Key Activities", [
+          "Acknowledge claim receipt — within 10 business days",
+          "Update claim progress — every 20 business days",
+          "Urgent financial need — within 5 business days",
+          "Final response on complaint — 45 or 90 days depending on policy owner",
+        ]),
+        knowledgeChecks: [
+          buildSingleSelectKC(
+            "What is the maximum timeframe for final response when a policy is owned by a superannuation trustee?",
+            "90 days",
+            ["45 days", "60 days", "20 business days"]
+          ),
+        ],
+        metadata: { injected: true, complianceTable: true },
+      });
+    }
+  }
+
+  storyboard.scenes = scenes;
+  storyboard.metadata = { ...(storyboard.metadata || {}), profileApplied: profile.level };
+  return storyboard;
 }
 
-function ensureDeveloperNotes(notes: any, type: string): string {
-  const base = String(notes || "").trim();
-  const add =
-    type === "MCQ"
-      ? "Provide option‑level feedback for each response. Allow up to 2 retries; reveal correct after second incorrect. xAPI verb: answered."
-      : type === "Scenario"
-      ? "Include coaching feedback per branch. Allow replay to explore both branches. xAPI verb: responded."
-      : type === "Clickable Hotspots"
-      ? "All hotspots must be revealed to continue. Provide tooltips and a visited indicator. xAPI verb: experienced."
-      : type === "Drag & Drop"
-      ? "Snap on correct drop, shake on incorrect with hint. Allow retry. xAPI verb: interacted."
-      : type === "Reflection"
-      ? "Autosave text, min length validation, optional exemplar answers."
-      : "Ensure completion rule and xAPI are configured.";
-  if (!base) return add;
-  if (base.toLowerCase().includes("xapi") || base.toLowerCase().includes("retry") || base.toLowerCase().includes("feedback"))
-    return base; // assume adequate
-  return `${base}\n${add}`.trim();
+/** --------- Helpers ---------- */
+
+function countKCs(scenes: Scene[]): number {
+  return scenes.reduce((sum, s) => sum + (s.knowledgeChecks?.length || 0), 0);
 }
 
-function defaultXapiVerb(type: string): string {
-  switch (normaliseLabel(type)) {
-    case "MCQ":
-      return "answered";
-    case "Scenario":
-      return "responded";
-    case "Clickable Hotspots":
-      return "experienced";
-    case "Drag & Drop":
-      return "interacted";
-    case "Reflection":
-      return "responded";
-    case "Interactive Video":
-      return "experienced";
-    default:
-      return "interacted";
+function distributeKCs(scenes: Scene[], toAdd: number, kcPerXScenes: number, moduleType?: string) {
+  let i = 0;
+  while (toAdd > 0 && i < scenes.length) {
+    const s = scenes[i];
+    const sparse = (s.knowledgeChecks?.length || 0) === 0;
+    const dropHere = sparse && i % kcPerXScenes === 0;
+    if (dropHere) {
+      const domain = /compliance|policy|code|licop/i.test(moduleType || "") ? COMPLIANCE_CONFUSABLES : GENERIC_DISTRACTOR_SEEDS;
+      const kc = buildSingleSelectKC(
+        "Which option best reflects the principle described in this section?",
+        "Honesty, transparency, and fairness",
+        domain
+      );
+      s.knowledgeChecks = [...(s.knowledgeChecks || []), kc];
+      toAdd--;
+    }
+    i++;
+  }
+
+  // If we still have some to add, append to the end in a cluster
+  while (toAdd > 0) {
+    scenes.push({
+      title: "Knowledge Check",
+      onScreenText: ["Check your understanding"],
+      narration: "Answer the question to confirm your understanding before proceeding.",
+      knowledgeChecks: [
+        buildSingleSelectKC(
+          "Which action aligns most closely with the guidance provided?",
+          "Provide clear updates within the defined timeframes",
+          GENERIC_DISTRACTOR_SEEDS
+        ),
+      ],
+      metadata: { injected: true, reason: "kc-shortfall" },
+    });
+    toAdd--;
   }
 }
 
-function labelToId(label: string): string {
-  return normaliseLabel(label).replace(/\s+|&/g, "_");
+function toArray(value?: string[] | string): string[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : splitToBullets(value);
 }
 
-function defaultAiDirective(type: string): string {
-  switch (normaliseLabel(type)) {
-    case "MCQ":
-      return "[AI Generate: MCQ with accessible radio buttons; keyboard operable; visible focus; ARIA roles; feedback panel with correct/incorrect states.]";
-    case "Scenario":
-      return "[AI Generate: Branching UI with two large decision cards; on select, animate feedback and branch A/B; include Retry to explore other branch.]";
-    case "Clickable Hotspots":
-      return "[AI Generate: Image map with 3–5 hotspots; tooltip on hover; panel on click; visited badges; keyboard focus rings with arrow‑key support.]";
-    case "Drag & Drop":
-      return "[AI Generate: Draggable chips; highlight valid drop zones; snap on correct; shake on incorrect with hint text; keyboard drag alternative.]";
-    case "Reflection":
-      return "[AI Generate: Text input with placeholder guidance; 140–500 characters; auto‑save; word count; validate on submit.]";
-    case "Interactive Video":
-      return "[AI Generate: Video with inline decision points; captions on; transcript toggle; keyboard seek and activate.]";
-    default:
-      return "[AI Generate: Accessible interaction; visible focus; keyboard operation; ARIA roles.]";
-  }
+function splitToBullets(text: string): string[] {
+  const parts = text
+    .split(/\r?\n|•|- |\u2022/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+  return parts.length ? parts : [text.trim()];
 }
 
-/** Narrative description used when we auto‑assign an interaction type. */
-function describeInteraction(t: string, topic: string) {
-  const type = normaliseLabel(t);
-  switch (type) {
-    case "MCQ":
-      return `2–3 question knowledge check on: ${topic}. Immediate, option‑level feedback.`;
-    case "Scenario":
-      return `Branching decision on: ${topic}. Two paths (A/B) with consequences and coaching feedback.`;
-    case "Clickable Hotspots":
-      return `Reveal hotspots to explore key elements of: ${topic}. Tooltips and visited indicators.`;
-    case "Drag & Drop":
-      return `Sort or match items related to: ${topic}. Snap on correct; shake with hint on incorrect.`;
-    case "Reflection":
-      return `Short written reflection on: ${topic}. Validate minimum length and auto‑save.`;
-    case "Interactive Video":
-      return `Short video with inline decision point(s) on: ${topic}. Captions and transcript available.`;
-    default:
-      return `Interactive activity aligned to: ${topic}.`;
-  }
+function clampWords(line: string, maxWords: number): string {
+  const words = line.split(/\s+/);
+  if (words.length <= maxWords) return line;
+  return words.slice(0, maxWords).join(" ") + " …";
 }
+
+function looksLikeConceptScene(s: Scene): boolean {
+  const t = (s.title || "").toLowerCase();
+  return /key concept|principle|overview|background|purpose|framework|definition/.test(t);
+}
+
+function hasExampleCue(s: Scene): boolean {
+  const t = `${s.title || ""} ${toArray(s.onScreenText).join(" ")} ${s.narration || ""}`.toLowerCase();
+  return /example|for instance|case study|in your role/.test(t);
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function composeDistractors(correct: string, domain: string[] = [], n = 3): string[] {
+  const seeds = [...domain, ...GENERIC_DISTRACTOR_SEEDS];
+  const pool = seeds
+    .filter((t) => t.toLowerCase() !== correct.toLowerCase())
+    .slice(0, Math.max(n * 2, 8));
+  return shuffle(pool).slice(0, n);
+}
+
+function multiComposeDistractors(correctList: string[], domain: string[] = [], n = 3): string[] {
+  const lower = correctList.map((s) => s.toLowerCase());
+  const seeds = [...domain, ...GENERIC_DISTRACTOR_SEEDS].filter((t) => !lower.includes(t.toLowerCase()));
+  const pool = seeds.slice(0, Math.max(n * 2, 8));
+  return shuffle(pool).slice(0, n);
+}
+
+/** Optional typing for branching options */
+type BranchingOpts = {
+  choiceA?: string;
+  choiceB?: string;
+  choiceC?: string;
+  outcomeC?: string;
+  feedbackC?: string;
+};

@@ -1,64 +1,88 @@
-import type { StoryboardFormData } from "@/types";
+// @ts-nocheck
+import React from "react";
 
-// frontend/src/components/FormSelect.tsx
+type Option = string | { label: string; value: string };
 
-// ✅ UPDATED: The 'options' prop is now more flexible.
-// It can accept a simple array of strings OR our new array of { value, label } objects.
-type SelectOption = string | { value: string | undefined; label: string };
-
-interface FormSelectProps {
+interface Props {
   label: string;
-  name: keyof StoryboardFormData | "aiModel";
-  value: string | undefined;
-  onChange: (fieldName: keyof StoryboardFormData | "aiModel", value: string | string[]) => void;
-  options: SelectOption[];
+  name: string;
+  value?: string;
+  options: Option[];
+  onChange: (field: string, value: any) => void;
+  placeholder?: string;
   disabled?: boolean;
   required?: boolean;
 }
 
-const FormSelect: React.FC<FormSelectProps> = ({
+export default function FormSelect({
   label,
   name,
-  value,
-  onChange,
+  value = "",
   options,
+  onChange,
+  placeholder,
   disabled = false,
-  required = false
-}) => {
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange(name as any, e.target.value);
-  };
+  required = false,
+}: Props) {
+  const normalised = options.map((opt) =>
+    typeof opt === "string" ? { label: opt, value: opt } : opt
+  );
 
   return (
     <div className="w-full">
-      <label htmlFor={name} className="block text-sm font-medium text-slate-300 mb-1">
+      <label
+        htmlFor={name}
+        className="mb-2 block font-semibold text-slate-100 text-base lg:text-lg"
+      >
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      <select
-        id={name}
-        name={name}
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-        required={required}
-        className="block w-full rounded-md border-0 bg-white/5 py-2.5 px-3 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-sky-500 sm:text-sm sm:leading-6 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {/* ✅ UPDATED: Smart rendering logic */}
-        {options.map((option) => {
-          // Check if the option is a simple string or a complex object
-          const isObject = typeof option === 'object' && option !== null && 'value' in option;
-          const optionValue = isObject ? (option as { value: string }).value : option as string;
-          const optionLabel = isObject ? (option as { label: string }).label : option as string;
-          
-          return (
-            <option key={optionValue} value={optionValue}>
-              {optionLabel}
+
+      <div className="relative">
+        <select
+          id={name}
+          name={name}
+          value={value}
+          onChange={(e) => onChange(name, e.target.value)}
+          disabled={disabled}
+          required={required}
+          className="
+            block w-full appearance-none rounded-2xl
+            border border-slate-600 bg-slate-700/80
+            px-5 py-4
+            text-slate-100 text-lg lg:text-xl
+            shadow-sm
+            focus:border-sky-400 focus:ring-2 focus:ring-sky-400
+            disabled:opacity-60 disabled:cursor-not-allowed
+          "
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
             </option>
-          );
-        })}
-      </select>
+          )}
+          {normalised.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Chevron */}
+        <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+          <svg
+            className="h-6 w-6 text-slate-300"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 12a1 1 0 01-.707-.293l-4-4a1 1 0 111.414-1.414L10 9.586l3.293-3.293a1 1 0 111.414 1.414l-4 4A1 1 0 0110 12z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default FormSelect;
+}
