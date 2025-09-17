@@ -1,13 +1,13 @@
 // backend/src/routes/storyboardRoute.ts
-import express, { Request, Response } from "express";
-import { generateStoryboardFromOpenAI, resolveOpenAIModel } from "../services/openaiService";
-import type { StoryboardFormData } from "../types/storyboardTypesArchive"; // keep if this is your current form type
+const express, { Request, Response } = require('express');
+const { generateStoryboardFromOpenAI, resolveOpenAIModel } = require('../services/openaiService');
+{ StoryboardFormData } from "../types/storyboardTypesArchive"; // keep if this is your current form type
 
-import {
+const {
   saveStoryboard,
   getBestStoryboards,
   setBestExample,
-} from "../db/storyboardDb";
+} = require('../db/storyboardDb');
 
 const router = express.Router();
 
@@ -217,7 +217,7 @@ router.patch("/storyboards/:id/best", async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+module.exports = router;
 
 /* ---------------------- retry helper ---------------------- */
 

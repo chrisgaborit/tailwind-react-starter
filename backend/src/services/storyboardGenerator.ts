@@ -1,7 +1,7 @@
 // backend/src/services/storyboardGenerator.ts
-import OpenAI from 'openai';
-import { storyboardSystem, storyboardUser } from '../prompts/storyboardPrompt';
-import { StoryboardModule } from '../types/storyboardTypes';
+const OpenAI = require('openai');
+const { storyboardSystem, storyboardUser } = require('../prompts/storyboardPrompt');
+const { StoryboardModule } = require('../types/storyboardTypes');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 const MODEL = process.env.OPENAI_GEN_MODEL || 'gpt-4o-mini';

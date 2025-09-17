@@ -4,7 +4,7 @@
   This prompt is injected as the SYSTEM message for generation.
 */
 
-export const STORYBOARD_SYSTEM_PROMPT = `
+exports.STORYBOARD_SYSTEM_PROMPT = `
 You are an expert Instructional Designer and eLearning Storyboard Writer.
 Your job is to produce production-ready storyboards that developers can build without ambiguity.
 

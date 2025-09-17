@@ -8,26 +8,45 @@
  * - Image generation (optional) via Gemini/Imagen when formData.generateImages = true
  */
 
-import "dotenv/config";
-import express, { Request, Response, NextFunction } from "express";
-import cors, { CorsOptionsDelegate } from "cors";
-import morgan from "morgan";
-console.log("🚀 Backend starting. NODE_ENV =", process.env.NODE_ENV);
-import puppeteer from "puppeteer";
-import pdf from "pdf-parse";
-import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
-import multer from "multer";
-import client from "prom-client";
-import adminRouter from "./routes/admin";
+// ✅ Load env vars correctly in CommonJS
+require("dotenv").config();
 
-// Services / utils
-import { generateStoryboardFromOpenAI, resolveOpenAIModel } from "./services/openaiService";
-import { parseDurationMins } from "./utils/parseDuration";
-import { classifyStoryboard } from "./utils/levelClassifier";
-import { normalizeToScenes } from "./utils/normalizeStoryboard";
-import { imageRoute } from "./routes/imageRoute";
-import { generateImageFromPrompt } from "./services/imageService";
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+
+// Safe compression: falls back to no-op if module isn't installed
+let compressionMw;
+try {
+  const comp = require("compression");
+  compressionMw = comp.default ?? comp;
+} catch {
+  console.warn("⚠️ 'compression' not installed. Continuing without response compression.");
+  compressionMw = undefined;
+}
+
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
+console.log("🚀 Backend starting. NODE_ENV =", process.env.NODE_ENV);
+
+const puppeteer = require("puppeteer");
+const pdf = require("pdf-parse");
+const OpenAI = require("openai");
+const { createClient } = require("@supabase/supabase-js");
+const multer = require("multer");
+const client = require("prom-client");
+
+// ✅ Import routers and services using require
+const adminRouter = require("./routes/admin");
+const { generateStoryboardFromOpenAI, resolveOpenAIModel } = require("./services/openaiService");
+const { parseDurationMins } = require("./utils/parseDuration");
+const { classifyStoryboard } = require("./utils/levelClassifier");
+const { normalizeToScenes } = require("./utils/normalizeStoryboard");
+const imageRoute = require("./routes/imageRoute");
+const { generateImageFromPrompt } = require("./services/imageService");
+
+// ⬇️ Continue with your Express setup, middleware, routes, etc.
 
 /* ============================ Local Types ============================ */
 type VisualBlock = {
@@ -179,36 +198,57 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 const CORS_ORIGINS = process.env.CORS_ORIGINS || CORS_ORIGIN;
 const EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-small";
 
-/** NEW: force images without relying on front-end flag */
-const forceImages =
-  String(process.env.FORCE_GENERATE_IMAGES || "").trim().toLowerCase() === "true";
+/** NEW: force images without relying on front-end flag (1/true/yes) */
+function toBool(v?: string | number | boolean) {
+  const s = String(v ?? "").trim().toLowerCase();
+  return s === "1" || s === "true" || s === "yes";
+}
+const forceImages = toBool(process.env.FORCE_GENERATE_IMAGES);
 
 /* ============================ CLIENTS ============================== */
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const supabase =
+  supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 /* =========================== EXPRESS APP =========================== */
 const app = express();
-
-import cors from "cors";
-
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174", // vite may switch ports
-    "https://app.learno.com.au" // production
-  ],
-  credentials: true
-}));
-
 const IS_PROD = process.env.NODE_ENV === "production";
 
+/* ---------- Security/Perf Middlewares (opt-in) ---------- */
+if (toBool(process.env.USE_HELMET ?? (IS_PROD ? "true" : "false"))) {
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // puppeteer renders local HTML
+      crossOriginEmbedderPolicy: false,
+    })
+  );
+}
+if (toBool(process.env.USE_COMPRESSION ?? "true") && compressionMw) {
+  app.use(compressionMw());
+}
+
+// Optional global rate limit (mainly protects PDF generation); tweak as needed
+if (toBool(process.env.USE_RATE_LIMIT ?? (IS_PROD ? "true" : "false"))) {
+  const limiter = rateLimit({
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000),
+    max: Number(process.env.RATE_LIMIT_MAX || 120),
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
+}
+
+/* ---------- TLS Redirect in prod behind proxy ---------- */
 if (IS_PROD) {
-  app.enable("trust proxy"); // so x-forwarded-proto is respected
+  app.enable("trust proxy");
   app.use((req, res, next) => {
-    const proto = (req.headers["x-forwarded-proto"] as string) || (req.secure ? "https" : "http");
+    const proto =
+      (req.headers["x-forwarded-proto"] as string) ||
+      (req.secure ? "https" : "http");
     if (proto !== "https") {
       return res.redirect(301, `https://${req.headers.host}${req.originalUrl}`);
     }
@@ -216,9 +256,9 @@ if (IS_PROD) {
   });
 }
 
-/* CORS */
+/* ---------- CORS ---------- */
 function parseAllowedOrigins(): string[] {
-  return CORS_ORIGINS.split(",").map(s => s.trim()).filter(Boolean);
+  return CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean);
 }
 const allowedOrigins = parseAllowedOrigins();
 const localhostRegex = /^https?:\/\/localhost(?::\d+)?$/i;
@@ -230,21 +270,34 @@ const corsDelegate: CorsOptionsDelegate = (req, callback) => {
     (req.headers as any)?.Origin ??
     "";
   const origin = String(originHeader || "");
-  const isAllowed = !origin || localhostRegex.test(origin) || allowedOrigins.includes(origin);
+  const isAllowed =
+    !origin || localhostRegex.test(origin) || allowedOrigins.includes(origin);
+
+  if (!isAllowed && origin) {
+    console.warn("❌ CORS blocked origin:", origin);
+  }
 
   callback(null, {
     origin: isAllowed ? origin : false,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
-  });
+    allowedHeaders: [
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+    ],
+    maxAge: 86400,
+  } as any);
 };
 
 app.use(cors(corsDelegate));
 app.options("*", cors(corsDelegate));
 
+/* ---------- Core Middlewares ---------- */
 app.use(express.json({ limit: "50mb" }));
-app.use(morgan("dev"));
+app.use(morgan(IS_PROD ? "combined" : "dev"));
 app.use("/api/images", imageRoute);
 app.use("/api/admin", adminRouter);
 
@@ -286,7 +339,8 @@ const upload = multer({
 });
 
 /* ============================= HELPERS ============================== */
-const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+const clamp = (n: number, lo: number, hi: number) =>
+  Math.max(lo, Math.min(hi, n));
 const MIN_DURATION = 5;
 const MAX_DURATION = 90;
 
@@ -296,12 +350,15 @@ function normaliseDuration(value: unknown): number {
 }
 
 const parseCsvParam = (v: unknown): string[] | null =>
-  typeof v === "string" ? v.split(",").map(s => s.trim()).filter(Boolean) : null;
+  typeof v === "string" ? v.split(",").map((s) => s.trim()).filter(Boolean) : null;
 
 /* =========================== RAG HELPERS =========================== */
 async function searchSimilarStoryboards(query: string, topN: number = 3) {
   if (!openai || !supabase) return [];
-  const embeddingResp = await openai.embeddings.create({ model: EMBED_MODEL, input: query });
+  const embeddingResp = await openai.embeddings.create({
+    model: EMBED_MODEL,
+    input: query,
+  });
   const queryEmbedding = embeddingResp.data[0].embedding;
 
   const { data, error } = await supabase.rpc("rag_match_storyboards", {
@@ -377,12 +434,14 @@ function buildChunkBlueprintContext(rows: ChunkMatch[]): string {
       B.behaviour?.completionRule ? `Completion: ${B.behaviour.completionRule}` : "",
       B.copy?.instructions ? `Instructions: ${B.copy.instructions}` : "",
       B.copy?.successFeedback ? `Success FB: ${B.copy.successFeedback}` : "",
-      B.copy?.errorFeedback ? `Error FB: ${B.copy.errorFeedback}` : "",
+      B.copy?.errorFeedback ? `Error FB: ${B.copy?.errorFeedback}` : "",
     ]
       .filter(Boolean)
       .join("\n");
   });
-  return `## HIGH-VALUE INTERACTION BLUEPRINTS (use as patterns, not verbatim)\n\n${lines.join("\n\n")}`;
+  return `## HIGH-VALUE INTERACTION BLUEPRINTS (use as patterns, not verbatim)\n\n${lines.join(
+    "\n\n"
+  )}`;
 }
 
 /* ======================= PDF HTML (High-Fidelity) ======================= */
@@ -390,7 +449,10 @@ const esc = (v?: any) =>
   v === 0 || v === "0"
     ? "0"
     : v
-    ? String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    ? String(v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
     : "—";
 
 const words = (t?: string) => (t || "").trim().split(/\s+/).filter(Boolean).length;
@@ -399,15 +461,19 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
   const renderXapi = (events?: any[]) => {
     const rows = (Array.isArray(events) ? events : [])
       .map(
-        e => `
+        (e) => `
       <tr>
         <td class="cell">${esc(e?.verb)}</td>
         <td class="cell">${esc(e?.object)}</td>
         <td class="cell">${esc(
-          typeof e?.result === "string" ? e?.result : e?.result ? JSON.stringify(e?.result) : ""
+          typeof e?.result === "string"
+            ? e?.result
+            : e?.result
+            ? JSON.stringify(e?.result)
+            : ""
         )}</td>
       </tr>
-    `,
+    `
       )
       .join("");
     return `
@@ -433,7 +499,10 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
             },
           ];
 
-    const type = s.interactionType && s.interactionType !== "None" ? "Interactive" : "Informative";
+    const type =
+      s.interactionType && s.interactionType !== "None"
+        ? "Interactive"
+        : "Informative";
     const pageNo = `p${String(i + 1).padStart(2, "0")}`;
 
     // header chips: aspect + interaction type
@@ -448,14 +517,19 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
     // visual meta (matches on-screen cards)
     const vgb = s.visual?.visualGenerationBrief || {};
     const palette =
-      Array.isArray(vgb.colorPalette) ? vgb.colorPalette.join(", ") :
-      Array.isArray(s.palette) ? s.palette.join(", ") :
-      s.colourPalette;
+      Array.isArray(vgb.colorPalette)
+        ? vgb.colorPalette.join(", ")
+        : Array.isArray(s.palette)
+        ? s.palette.join(", ")
+        : s.colourPalette;
 
     const visualPairs: Array<[string, any]> = [
       ["Scene Description", vgb.sceneDescription],
       ["Style", vgb.style ?? s.visual?.style],
-      ["Subject", vgb.subject ? JSON.stringify(vgb.subject) : s.visual?.subject || "{}"],
+      [
+        "Subject",
+        vgb.subject ? JSON.stringify(vgb.subject) : s.visual?.subject || "{}",
+      ],
       ["Setting", vgb.setting ?? s.visual?.setting],
       ["Composition", vgb.composition ?? s.visual?.composition],
       ["Lighting", vgb.lighting ?? s.visual?.lighting ?? s.lighting],
@@ -467,7 +541,12 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
     ];
 
     // Robust image selection (any mirror)
-    const imgSrc = (s.imageUrl || s.generatedImageUrl || s.visual?.generatedImageUrl || "").trim();
+    const imgSrc = (
+      s.imageUrl ||
+      s.generatedImageUrl ||
+      s.visual?.generatedImageUrl ||
+      ""
+    ).trim();
 
     // Light-touch recipe render (prompt + model)
     const recipe = s.imageParams || s.visual?.imageParams;
@@ -476,41 +555,68 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
     <article class="page">
       <header class="page-h">
         <div class="grid3">
-          <div><div class="label">Page Title</div><div class="value">${esc(s.pageTitle || `Screen ${i + 1}`)}</div></div>
-          <div><div class="label">Type</div><div class="value">${esc(type)}</div></div>
-          <div><div class="label">Number</div><div class="value">${esc(pageNo)}</div></div>
+          <div><div class="label">Page Title</div><div class="value">${esc(
+            s.pageTitle || `Screen ${i + 1}`
+          )}</div></div>
+          <div><div class="label">Type</div><div class="value">${esc(
+            type
+          )}</div></div>
+          <div><div class="label">Number</div><div class="value">${esc(
+            pageNo
+          )}</div></div>
         </div>
-        <div class="chips">${chips.map(c => `<span class="chip">${c}</span>`).join("")}</div>
+        <div class="chips">${chips
+          .map((c) => `<span class="chip">${c}</span>`)
+          .join("")}</div>
       </header>
 
       <section class="section">
         <div class="title-row">
           <h3>Screen Layout & Visuals</h3>
-          <div class="layout">${esc([s.screenLayout, s.visual?.style, s.visual?.composition, s.visual?.environment].filter(Boolean).join(" • "))}</div>
+          <div class="layout">${esc(
+            [s.screenLayout, s.visual?.style, s.visual?.composition, s.visual?.environment]
+              .filter(Boolean)
+              .join(" • ")
+          )}</div>
         </div>
 
         <div class="row">
           <div class="card w-2">
             <h4>AI Visual Generation Brief</h4>
-            ${visualPairs.map(([k, v]) => `<div class="kv"><span>${esc(k)}</span><p>${esc(v)}</p></div>`).join("")}
+            ${visualPairs
+              .map(
+                ([k, v]) =>
+                  `<div class="kv"><span>${esc(k)}</span><p>${esc(v)}</p></div>`
+              )
+              .join("")}
             ${
               imgSrc
                 ? `<div class="imgwrap" style="margin-top:8px;">
-                     <img src="${imgSrc}" alt="${esc(s.visual?.altText || s.pageTitle || "Scene Image")}" style="width:100%; height:auto; border-radius:6px; border:1px solid var(--b);" />
+                     <img src="${imgSrc}" alt="${esc(
+                    s.visual?.altText || s.pageTitle || "Scene Image"
+                  )}" style="width:100%; height:auto; border-radius:6px; border:1px solid var(--b);" />
                    </div>`
                 : ""
             }
           </div>
           <div class="col w-1">
-            <div class="card"><h4>Alt Text</h4><p>${esc(s.visual?.altText)}</p></div>
+            <div class="card"><h4>Alt Text</h4><p>${esc(
+              s.visual?.altText
+            )}</p></div>
             <div class="card"><h4>Overlay Elements</h4><p>${
-              Array.isArray(s.visual?.overlayElements) && s.visual?.overlayElements?.length
-                ? s.visual!.overlayElements!.map((el, idx) =>
-                    `#${idx + 1} ${esc(el.elementType)} – ${esc(el.content)}`
-                  ).join("<br/>")
+              Array.isArray(s.visual?.overlayElements) &&
+              s.visual?.overlayElements?.length
+                ? s
+                    .visual!.overlayElements!.map(
+                      (el, idx) =>
+                        `#${idx + 1} ${esc(el.elementType)} – ${esc(el.content)}`
+                    )
+                    .join("<br/>")
                 : "—"
             }</p></div>
-            <div class="card"><h4>AI Prompt (legacy)</h4><p>${esc(s.visual?.aiPrompt)}</p></div>
+            <div class="card"><h4>AI Prompt (legacy)</h4><p>${esc(
+              s.visual?.aiPrompt
+            )}</p></div>
             ${
               recipe
                 ? `<div class="card">
@@ -522,7 +628,9 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
                    </div>`
                 : ""
             }
-            <div class="card"><h4>Media</h4><p>${esc([s.media?.type, s.media?.style, s.media?.notes].filter(Boolean).join(" • "))}</p></div>
+            <div class="card"><h4>Media</h4><p>${esc(
+              [s.media?.type, s.media?.style, s.media?.notes].filter(Boolean).join(" • ")
+            )}</p></div>
           </div>
         </div>
       </section>
@@ -551,23 +659,21 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
       <section class="section">
         <div class="title-row">
           <h3>Events</h3>
-          <div class="ost-words">OST words: ${words(evs.map(e => e?.onScreenText ?? "").join(" "))}</div>
+          <div class="ost-words">OST words: ${words(evs.map((e) => e?.onScreenText ?? "").join(" "))}</div>
         </div>
         <table class="events">
           <thead><tr><th>Event</th><th>Audio (VO)</th><th>On-Screen Text (OST)</th><th>Dev Notes</th></tr></thead>
           <tbody>
-            ${evs
-              .map(
-                (e, j) => `
+            ${evs.map(
+              (e, j) => `
               <tr>
                 <td class="num">${esc(e?.eventNumber ?? j + 1)}.</td>
                 <td><pre class="mono">${esc(e?.audio?.script || e?.narrationScript || e?.voiceover || s.audio?.script || s.narrationScript || "")}</pre></td>
                 <td><pre class="mono">${esc(e?.onScreenText || s.onScreenText || "")}</pre></td>
                 <td><pre class="mono">${esc(e?.developerNotes || e?.interactive?.behaviourExplanation || s.developerNotes || s.interactionDescription || "")}</pre></td>
               </tr>
-            `,
-              )
-              .join("")}
+            `
+            ).join("")}
           </tbody>
         </table>
       </section>
@@ -606,19 +712,19 @@ function buildStoryboardPdfHtml(sb: StoryboardModuleV2): string {
             ${renderXapi(s.xapiEvents)}
           </div>
 
-            <div class="card">
-              <h4>Quick Checks</h4>
-              <ul class="checks">
-                <li><span class="${yesClass(qc.captionsOn)}">${yes(qc.captionsOn)}</span> Captions ON by default</li>
-                <li><span class="${yesClass(qc.keyboardPath)}">${yes(qc.keyboardPath)}</span> Keyboard path provided</li>
-                <li><span class="${yesClass(qc.focusOrder)}">${yes(qc.focusOrder)}</span> Focus order guidance</li>
-              </ul>
-            </div>
+          <div class="card">
+            <h4>Quick Checks</h4>
+            <ul class="checks">
+              <li><span class="ok">✓</span> Captions ON by default</li>
+              <li><span class="${yesClass(qc.keyboardPath)}">${yes(qc.keyboardPath)}</span> Keyboard path provided</li>
+              <li><span class="${yesClass(qc.focusOrder)}">${yes(qc.focusOrder)}</span> Focus order guidance</li>
+            </ul>
+          </div>
 
-            <div class="card">
-              <h4>Timing</h4>
-              <div>Estimated: ${esc(s.timing?.estimatedSecs ?? s.timing?.estimatedSeconds)}s</div>
-            </div>
+          <div class="card">
+            <h4>Timing</h4>
+            <div>Estimated: ${esc(s.timing?.estimatedSecs ?? s.timing?.estimatedSeconds)}s</div>
+          </div>
         </div>
       </section>
 
@@ -755,14 +861,9 @@ app.get(
       const industries = parseCsvParam(req.query.industries);
       const levels = parseCsvParam(req.query.levels);
 
-      // 1) Embed query
-      const emb = await openai.embeddings.create({
-        model: EMBED_MODEL,
-        input: q,
-      });
+      const emb = await openai.embeddings.create({ model: EMBED_MODEL, input: q });
       const v = emb.data[0].embedding;
 
-      // 2) Call RPC (facet-aware version if present, else fallback to basic)
       let rpc = await supabase.rpc("rag_match_storyboards_similarity", {
         query_embedding: v as any,
         match_count: k,
@@ -801,15 +902,10 @@ app.post(
   upload.array("files"),
   withTiming("/api/v1/generate-from-files", async (req: Request, res: Response) => {
     try {
-      // ---- parse formData from multipart
       let formData: any | undefined;
       const rawFD = (req.body as any)?.formData;
       if (typeof rawFD === "string") {
-        try {
-          formData = JSON.parse(rawFD);
-        } catch {
-          formData = rawFD;
-        }
+        try { formData = JSON.parse(rawFD); } catch { formData = rawFD; }
       } else if (rawFD) {
         formData = rawFD;
       } else {
@@ -828,7 +924,7 @@ app.post(
           interactionType: b["formData.interactionType"] ?? b.interactionType,
           generateImages: b["formData.generateImages"] ?? b.generateImages,
         };
-        const allUndef = Object.values(formData).every(v => v === undefined || v === null || v === "");
+        const allUndef = Object.values(formData).every((v) => v == null || v === "");
         if (allUndef) formData = undefined;
       }
 
@@ -838,7 +934,7 @@ app.post(
 
       const numericDurationMins = normaliseDuration(formData.durationMins ?? formData.duration ?? 20);
 
-      // ---- append PDF text if provided
+      // append PDF text if provided
       let extractedContent = formData.content || "";
       const uploadedFiles = Array.isArray(req.files) ? (req.files as Express.Multer.File[]) : [];
       for (const f of uploadedFiles) {
@@ -859,38 +955,30 @@ app.post(
         return res.status(400).json({ success: false, error: { message: "Cannot generate a storyboard with no content." } });
       }
 
-      // ---- RAG contexts
       const searchQuery = finalFormData.moduleName || String(finalFormData.content).slice(0, 500);
       const similarExamples = await searchSimilarStoryboards(searchQuery, 2);
-      const ragContext =
-        similarExamples.length
-          ? similarExamples
-              .map((ex: any, i: number) => {
-                const content =
-                  typeof ex.content === "string" ? ex.content : JSON.stringify(ex.content, null, 2);
-                return `--- START OF EXAMPLE ${i + 1} ---\n${content}\n--- END OF EXAMPLE ${i + 1} ---`;
-              })
-              .join("\n\n")
-          : "No similar examples were found in the database.";
-
-      const preferredInteraction =
-        finalFormData.interactionType || finalFormData.targetInteraction || null;
+      const preferredInteraction = finalFormData.interactionType || finalFormData.targetInteraction || null;
       const chunkMatches = await searchRelevantChunks(searchQuery, 6, preferredInteraction);
-      const ragChunkContext = buildChunkBlueprintContext(chunkMatches);
-      const combinedContext = [ragContext, ragChunkContext].join("\n\n");
+      const ragContext =
+        (similarExamples.length
+          ? similarExamples.map((ex: any, i: number) => {
+              const content = typeof ex.content === "string" ? ex.content : JSON.stringify(ex.content, null, 2);
+              return `--- START OF EXAMPLE ${i + 1} ---\n${content}\n--- END OF EXAMPLE ${i + 1} ---`;
+            }).join("\n\n")
+          : "No similar examples were found in the database.") +
+        "\n\n" +
+        buildChunkBlueprintContext(chunkMatches);
 
-      // ---- AI generate
       const modelUsed = resolveOpenAIModel(finalFormData.aiModel || undefined);
       const storyRaw = await generateStoryboardFromOpenAI(finalFormData, {
-        ragContext: combinedContext,
+        ragContext,
         aiModel: finalFormData.aiModel || undefined,
       });
 
-      const storyboardBase: StoryboardModuleV2 = (storyRaw as any)?.scenes
-        ? (storyRaw as StoryboardModuleV2)
-        : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
+      const storyboardBase: StoryboardModuleV2 =
+        (storyRaw as any)?.scenes ? (storyRaw as StoryboardModuleV2) : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
 
-      // ---- Optional: generate images per scene (respects env override)
+      // Optional images
       if ((finalFormData.generateImages || forceImages) && Array.isArray(storyboardBase.scenes)) {
         for (const s of storyboardBase.scenes) {
           try {
@@ -908,11 +996,10 @@ app.post(
             });
 
             if (imageUrl) {
-              // set ALL mirrors for maximum compatibility
               s.imageUrl = imageUrl;
               s.generatedImageUrl = imageUrl;
               s.visual = { ...(s.visual || {}), generatedImageUrl: imageUrl, imageParams: recipe };
-              s.imageParams = recipe;
+              (s as any).imageParams = recipe;
             }
           } catch (e) {
             console.error(`[images] Failed for scene ${s.sceneNumber}:`, e);
@@ -936,7 +1023,7 @@ app.post(
         },
       };
 
-      const payload: StoryboardEnvelope = {
+      const envelope: StoryboardEnvelope = {
         success: true,
         data: { storyboardModule: storyboard },
         meta: {
@@ -949,10 +1036,10 @@ app.post(
           imagesGenerated: Boolean(finalFormData.generateImages || forceImages),
         },
       };
-      return res.status(200).json(payload);
-    } catch (error: any) {
-      console.error("ERROR in /generate-from-files:", error);
-      return res.status(502).json({ success: false, error: { message: error?.message || "Generation failed" } });
+      res.json(envelope);
+    } catch (e: any) {
+      console.error("ERROR /generate-from-files:", e);
+      res.status(502).json({ success: false, error: { message: e?.message || "Failed" } });
     }
   }),
 );
@@ -969,36 +1056,30 @@ app.post(
 
       formData.durationMins = normaliseDuration(formData.durationMins ?? formData.duration ?? 20);
 
-      // RAG (examples + blueprints)
       const searchQuery = formData.moduleName || String(formData.content).slice(0, 500);
-      const similar = await searchSimilarStoryboards(searchQuery, 2);
+      const similarExamples = await searchSimilarStoryboards(searchQuery, 2);
       const preferredInteraction = formData.interactionType || formData.targetInteraction || null;
       const chunkMatches = await searchRelevantChunks(searchQuery, 6, preferredInteraction);
-      const ragChunkContext = buildChunkBlueprintContext(chunkMatches);
 
       const ragContext =
-        similar.length
-          ? similar
-              .map((ex: any, i: number) => {
-                const content =
-                  typeof ex.content === "string" ? ex.content : JSON.stringify(ex.content, null, 2);
-                return `--- START OF EXAMPLE ${i + 1} ---\n${content}\n--- END OF EXAMPLE ${i + 1} ---`;
-              })
-              .join("\n\n")
-          : "No similar examples were found in the database.";
+        (similarExamples.length
+          ? similarExamples.map((ex: any, i: number) => {
+              const content = typeof ex.content === "string" ? ex.content : JSON.stringify(ex.content, null, 2);
+              return `--- START OF EXAMPLE ${i + 1} ---\n${content}\n--- END OF EXAMPLE ${i + 1} ---`;
+            }).join("\n\n")
+          : "No similar examples were found in the database.") +
+        "\n\n" +
+        buildChunkBlueprintContext(chunkMatches);
 
-      // AI generate (use combined context)
       const modelUsed = resolveOpenAIModel(formData.aiModel || undefined);
       const storyRaw = await generateStoryboardFromOpenAI(formData, {
-        ragContext: [ragContext, ragChunkContext].join("\n\n"),
+        ragContext,
         aiModel: formData.aiModel || undefined,
       });
 
-      const storyboardBase: StoryboardModuleV2 = (storyRaw as any)?.scenes
-        ? (storyRaw as StoryboardModuleV2)
-        : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
+      const storyboardBase: StoryboardModuleV2 =
+        (storyRaw as any)?.scenes ? (storyRaw as StoryboardModuleV2) : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
 
-      // Optional: generate images (respects env override)
       if ((formData.generateImages || forceImages) && Array.isArray(storyboardBase.scenes)) {
         for (const s of storyboardBase.scenes) {
           try {
@@ -1019,7 +1100,7 @@ app.post(
               s.imageUrl = imageUrl;
               s.generatedImageUrl = imageUrl;
               s.visual = { ...(s.visual || {}), generatedImageUrl: imageUrl, imageParams: recipe };
-              s.imageParams = recipe;
+              (s as any).imageParams = recipe;
             }
           } catch (e) {
             console.error(`[images] Failed for scene ${s.sceneNumber}:`, e);
@@ -1035,7 +1116,7 @@ app.post(
           levelDetection: detection,
           modelUsed,
           rag: {
-            exemplars: similar.length,
+            exemplars: similarExamples.length,
             chunksUsed: chunkMatches.length,
             preferredInteraction: preferredInteraction || null,
             imagesRequested: Boolean(formData.generateImages || forceImages),
@@ -1050,7 +1131,7 @@ app.post(
           modelRequested: formData.aiModel || null,
           modelUsed,
           ragUsed: true,
-          examples: similar.length,
+          examples: similarExamples.length,
           requestedLevel: formData?.complexityLevel || null,
           detectedLevel: detection?.detectedLevel || null,
           imagesGenerated: Boolean(formData.generateImages || forceImages),
@@ -1216,4 +1297,4 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 
 /* =============================== SERVER =========================== */
 app.listen(PORT, () => console.log(`✅ Backend server listening on http://localhost:${PORT}`));
-export default app;
+module.exports = app;

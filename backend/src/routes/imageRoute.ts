@@ -1,8 +1,8 @@
 // backend/src/routes/imageRoute.ts
-import { Router } from "express";
-import { generateImageFromPrompt } from "../services/imageService";
+const express = require("express");
+const { generateImageFromPrompt } = require("../services/imageService");
 
-export const imageRoute = Router();
+const imageRoute = express.Router();
 
 imageRoute.post("/generate", async (req, res) => {
   try {
@@ -11,7 +11,9 @@ imageRoute.post("/generate", async (req, res) => {
 
     const { imageUrl, recipe } = await generateImageFromPrompt(prompt, { style, size });
     res.json({ imageUrl, recipe });
-  } catch (e: any) {
+  } catch (e) {
     res.status(500).json({ error: e?.message || "Image generation failed" });
   }
 });
+
+module.exports = imageRoute;

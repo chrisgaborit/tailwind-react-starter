@@ -1,9 +1,9 @@
 // backend/src/services/assetQueue.ts
-import path from "path";
-import fs from "fs";
-import crypto from "crypto";
-import OpenAI from "openai";
-import type { StoryboardModule, StoryboardScene, VisualSpec } from "../types";
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const OpenAI = require('openai');
+{ StoryboardModule, StoryboardScene, VisualSpec } from "../types";
 
 type JobKind = "image" | "voice";
 type JobStatus = "queued" | "running" | "done" | "error";
@@ -285,7 +285,7 @@ class InMemoryAssetQueue {
   }
 }
 
-export const assetQueue = new InMemoryAssetQueue();
+exports.assetQueue = new InMemoryAssetQueue();
 
 /** Convenience API for routes */
 export function enqueueStoryboardAssets(moduleId: string, storyboard: StoryboardModule) {

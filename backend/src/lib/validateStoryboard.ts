@@ -1,3 +1,5 @@
+// backend/src/lib/validateStoryboard.ts
+
 export type ValidationIssue = {
   path: string;
   message: string;
@@ -43,11 +45,21 @@ function isKCType(type: string) {
 
 function checkFrontMatter(sb: any, issues: ValidationIssue[]) {
   if (!Array.isArray(sb.frontMatter)) {
-    push(issues, "$.frontMatter", "frontMatter must be an array with exactly 3 items (Cover, Pronunciation, TableOfContents).", "error");
+    push(
+      issues,
+      "$.frontMatter",
+      "frontMatter must be an array with exactly 3 items (Cover, Pronunciation, TableOfContents).",
+      "error"
+    );
     return;
   }
   if (sb.frontMatter.length !== 3) {
-    push(issues, "$.frontMatter", "frontMatter must contain exactly 3 items in order: Cover, Pronunciation, TableOfContents.", "error");
+    push(
+      issues,
+      "$.frontMatter",
+      "frontMatter must contain exactly 3 items in order: Cover, Pronunciation, TableOfContents.",
+      "error"
+    );
   } else {
     const [cover, pron, toc] = sb.frontMatter;
     if ((cover?.type || "").toLowerCase() !== "cover") {
@@ -82,7 +94,12 @@ function checkTopLevel(sb: any, issues: ValidationIssue[]) {
   if (!idMethod) {
     push(issues, "$.idMethod", "idMethod is required (ADDIE, SAM, MERRILL, GAGNE, BACKWARD, BLOOM).", "error");
   } else if (!allowed.has(idMethod)) {
-    push(issues, "$.idMethod", `idMethod "${idMethod}" is not supported. Use one of: ${Array.from(allowed).join(", ")}.`, "error");
+    push(
+      issues,
+      "$.idMethod",
+      `idMethod "${idMethod}" is not supported. Use one of: ${Array.from(allowed).join(", ")}.`,
+      "error"
+    );
   }
 
   // metadata.brand presence (for palette/fonts thread-through)
@@ -93,12 +110,22 @@ function checkTopLevel(sb: any, issues: ValidationIssue[]) {
 
   // evaluationPlan presence
   if (!hasAll(sb?.evaluationPlan, ["postTestItems", "passMarkPercent"])) {
-    push(issues, "$.evaluationPlan", "evaluationPlan should include postTestItems and passMarkPercent (plus confidenceSlider/followUpDays).", "warn");
+    push(
+      issues,
+      "$.evaluationPlan",
+      "evaluationPlan should include postTestItems and passMarkPercent (plus confidenceSlider/followUpDays).",
+      "warn"
+    );
   }
 
   // learningObjectiveMap presence and structure
   if (!Array.isArray(sb.learningObjectiveMap) || sb.learningObjectiveMap.length === 0) {
-    push(issues, "$.learningObjectiveMap", "learningObjectiveMap should map each LO to teach/practice/assess scene IDs.", "warn");
+    push(
+      issues,
+      "$.learningObjectiveMap",
+      "learningObjectiveMap should map each LO to teach/practice/assess scene IDs.",
+      "warn"
+    );
   } else {
     sb.learningObjectiveMap.forEach((m: any, i: number) => {
       const p = `$.learningObjectiveMap[${i}]`;
@@ -157,7 +184,12 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
     if (isKC) lastKC = i;
     const gap = i - lastKC;
     if (i > 0 && gap > 5) {
-      push(issues, `$.scenes[${i}]`, "Knowledge-check cadence exceeded (>5 scenes since last KC). Insert a KC.", "warn");
+      push(
+        issues,
+        `$.scenes[${i}]`,
+        "Knowledge-check cadence exceeded (>5 scenes since last KC). Insert a KC.",
+        "warn"
+      );
     }
   });
 
@@ -194,7 +226,16 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
     // Visual blueprint completeness
     const v = scene.visual || {};
     const vgb = v.visualGenerationBrief || {};
-    const mustVisual = ["sceneDescription", "style", "composition", "lighting", "colorPalette", "mood", "brandIntegration", "negativeSpace"];
+    const mustVisual = [
+      "sceneDescription",
+      "style",
+      "composition",
+      "lighting",
+      "colorPalette",
+      "mood",
+      "brandIntegration",
+      "negativeSpace",
+    ];
     mustVisual.forEach((k) => {
       if (vgb[k] == null || (Array.isArray(vgb[k]) && !vgb[k].length)) {
         push(issues, `${p}.visual.visualGenerationBrief.${k}`, `Visual brief is missing "${k}".`, "warn");
@@ -218,23 +259,46 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
 
     // Instructional-tag per scene
     if (!scene.instructionalTag || !scene.instructionalTag.method) {
-      push(issues, `${p}.instructionalTag`, "instructionalTag with selected method is required for every scene.", "error");
+      push(
+        issues,
+        `${p}.instructionalTag`,
+        "instructionalTag with selected method is required for every scene.",
+        "error"
+      );
     } else {
       const method = String(scene.instructionalTag.method || "").toUpperCase();
       switch (method) {
         case "ADDIE":
           if (!scene.instructionalTag.addie || !/^(A|D1|D2|I|E)$/.test(scene.instructionalTag.addie.phase || "")) {
-            push(issues, `${p}.instructionalTag.addie.phase`, 'ADDIE tag must include phase ∈ {"A","D1","D2","I","E"}.', "error");
+            push(
+              issues,
+              `${p}.instructionalTag.addie.phase`,
+              'ADDIE tag must include phase ∈ {"A","D1","D2","I","E"}.',
+              "error"
+            );
           }
           break;
         case "SAM":
           if (!scene.instructionalTag.sam || !/^(Prepare|Iterate|Implement)$/i.test(scene.instructionalTag.sam.phase || "")) {
-            push(issues, `${p}.instructionalTag.sam.phase`, 'SAM tag must include phase ∈ {"Prepare","Iterate","Implement"}.', "error");
+            push(
+              issues,
+              `${p}.instructionalTag.sam.phase`,
+              'SAM tag must include phase ∈ {"Prepare","Iterate","Implement"}.',
+              "error"
+            );
           }
           break;
         case "MERRILL":
-          if (!scene.instructionalTag.merrill || !/^(Activation|Demonstration|Application|Integration)$/i.test(scene.instructionalTag.merrill.phase || "")) {
-            push(issues, `${p}.instructionalTag.merrill.phase`, 'Merrill tag must include phase ∈ {"Activation","Demonstration","Application","Integration"}.', "error");
+          if (
+            !scene.instructionalTag.merrill ||
+            !/^(Activation|Demonstration|Application|Integration)$/i.test(scene.instructionalTag.merrill.phase || "")
+          ) {
+            push(
+              issues,
+              `${p}.instructionalTag.merrill.phase`,
+              'Merrill tag must include phase ∈ {"Activation","Demonstration","Application","Integration"}.',
+              "error"
+            );
           }
           break;
         case "GAGNE":
@@ -243,12 +307,23 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
           }
           break;
         case "BACKWARD":
-          if (!scene.instructionalTag.backward || !/^(IdentifyResults|DetermineEvidence|PlanLearning)$/i.test(scene.instructionalTag.backward.stage || "")) {
-            push(issues, `${p}.instructionalTag.backward.stage`, 'Backward Design tag must include stage ∈ {"IdentifyResults","DetermineEvidence","PlanLearning"}.', "error");
+          if (
+            !scene.instructionalTag.backward ||
+            !/^(IdentifyResults|DetermineEvidence|PlanLearning)$/i.test(scene.instructionalTag.backward.stage || "")
+          ) {
+            push(
+              issues,
+              `${p}.instructionalTag.backward.stage`,
+              'Backward Design tag must include stage ∈ {"IdentifyResults","DetermineEvidence","PlanLearning"}.',
+              "error"
+            );
           }
           break;
         case "BLOOM":
-          if (!scene.instructionalTag.bloom || !/^(Remember|Understand|Apply|Analyze|Analyse|Evaluate|Create)$/i.test(scene.instructionalTag.bloom.level || "")) {
+          if (
+            !scene.instructionalTag.bloom ||
+            !/^(Remember|Understand|Apply|Analyze|Analyse|Evaluate|Create)$/i.test(scene.instructionalTag.bloom.level || "")
+          ) {
             push(issues, `${p}.instructionalTag.bloom.level`, "Bloom tag must include a cognitive level.", "error");
           }
           break;
@@ -281,7 +356,12 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
         // MCQ-specific
         if (String(scene.interactionType || "").toLowerCase().includes("mcq")) {
           if (!Array.isArray(id.distractorRationale)) {
-            push(issues, `${p}.interactionDetails.distractorRationale`, "MCQ must include distractorRationale per option.", "warn");
+            push(
+              issues,
+              `${p}.interactionDetails.distractorRationale`,
+              "MCQ must include distractorRationale per option.",
+              "warn"
+            );
           }
         }
       }
@@ -293,7 +373,12 @@ function checkScenes(sb: any, issues: ValidationIssue[]) {
       /font|typeface|colour|color|logo|brand|palette|#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})/i.test(notes) ||
       /use .*brand/i.test(notes);
     if (!hasBrandHint) {
-      push(issues, `${p}.developerNotes`, "Developer notes should reference brand usage (fonts/colours/logos) where visuals apply.", "warn");
+      push(
+        issues,
+        `${p}.developerNotes`,
+        "Developer notes should reference brand usage (fonts/colours/logos) where visuals apply.",
+        "warn"
+      );
     }
   });
 }
@@ -317,7 +402,12 @@ export function validateStoryboard(sb: any): ValidationIssue[] {
 
   // Optional legacy sections (warn if present but thin)
   if (sb.assessment && (!Array.isArray(sb.assessment.items) || sb.assessment.items.length === 0)) {
-    push(issues, "$.assessment.items", "Assessment items empty; rely on in-line knowledge checks or supply 5–10 items.", "warn");
+    push(
+      issues,
+      "$.assessment.items",
+      "Assessment items empty; rely on in-line knowledge checks or supply 5–10 items.",
+      "warn"
+    );
   }
 
   // Timing sanity (module-level)

@@ -1,6 +1,6 @@
 // backend/src/routes/admin.ts
-import express from "express";
-import pool from "../db";
+const express = require('express');
+const pool = require('../db');
 
 const router = express.Router();
 
@@ -198,4 +198,4 @@ router.get("/overview", async (_req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

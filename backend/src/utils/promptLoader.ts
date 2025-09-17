@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { StoryboardFormData } from '../types/storyboardTypesArchive';
+const fs = require('fs');
+const path = require('path');
+const { StoryboardFormData } = require('../types/storyboardTypesArchive');
 
 type PromptComponents = {
   module?: string;
@@ -18,7 +18,7 @@ const SUBFOLDER_MAP: Record<keyof PromptComponents, string> = {
   branding: 'branding',
 };
 
-export const buildSystemPrompt = (formData: StoryboardFormData): string => {
+exports.buildSystemPrompt = (formData: StoryboardFormData): string => {
   const components: PromptComponents = {
     module: formData.moduleType,
     level: formData.complexityLevel, // ✅ Fixed

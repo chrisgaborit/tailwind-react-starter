@@ -1,5 +1,5 @@
 // backend/src/db.ts
-import { Pool } from "pg";
+const { Pool } = require('pg');
 
 const CONN =
   process.env.DATABASE_URL ||
@@ -27,4 +27,4 @@ pool.on("error", (err) => {
   console.error("Postgres pool error:", err);
 });
 
-export default pool;
+module.exports = pool;

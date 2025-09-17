@@ -1,4 +1,4 @@
-import { StoryboardFormData } from "@/types";
+const { StoryboardFormData } = require('@/types');
 
 export function buildStoryboardPrompt(form: StoryboardFormData) {
   const {

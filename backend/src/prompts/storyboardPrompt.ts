@@ -1,5 +1,5 @@
 // backend/src/prompts/storyboardPrompt.ts
-export const storyboardSystem = `
+exports.storyboardSystem = `
 You are an elite Instructional Designer tasked with producing a Brandon Hall–level eLearning storyboard.
 Return ONLY valid JSON matching the provided TypeScript schema. Do not include commentary.
 Respect Level (1–4) expectations, accessibility best practices (WCAG), and adult learning principles.
@@ -7,7 +7,7 @@ Use the provided Project Brief (from RAG) verbatim for facts; if something is mi
 Keep scenes to a coherent arc; target 10–20 scenes unless specified.
 `;
 
-export const storyboardUser = ({
+exports.storyboardUser = ({
   projectBrief,
   formData,
   brand,

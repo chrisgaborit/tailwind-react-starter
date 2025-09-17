@@ -1,9 +1,9 @@
-import express, { Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
+const express, { Request, Response } = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 // Since pptx-parser caused Cloud Run issues, we safely removed it
 // And switched to a pure backend-safe solution
 
@@ -56,4 +56,4 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+module.exports = router;

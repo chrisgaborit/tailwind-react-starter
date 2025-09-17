@@ -1,4 +1,4 @@
-import { StoryboardFormData, StoryboardModule } from "../types";
+const { StoryboardFormData, StoryboardModule } = require('../types');
 
 function pad2(n: number) { return n.toString().padStart(2, "0"); }
 function isTitle(s?: string) { return /^(title|module\s*title)/i.test(s || ""); }

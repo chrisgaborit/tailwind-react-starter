@@ -1,5 +1,5 @@
 // backend/src/validation/storyboardSchema.ts
-import { z } from "zod";
+const { z } = require('zod');
 
 const VoiceParameters = z.object({
   persona: z.string().min(2),
@@ -184,7 +184,7 @@ const StoryboardMetadata = z
   })
   .passthrough();
 
-export const StoryboardModuleSchema = z.object({
+exports.StoryboardModuleSchema = z.object({
   moduleName: z.string().min(1),
   revisionHistory: z.array(RevisionHistoryItem).optional(),
   pronunciationGuide: z.array(PronunciationGuideItem).optional(),

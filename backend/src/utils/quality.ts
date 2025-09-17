@@ -1,5 +1,5 @@
 // backend/src/utils/quality.ts
-import type { StoryboardModule } from "../types";
+{ StoryboardModule } from "../types";
 
 export interface QualityIssue {
   sceneIndex?: number;

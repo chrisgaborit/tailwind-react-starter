@@ -1,5 +1,5 @@
 // backend/src/prompts/storyboardV2.ts
-import type { Request } from "express";
+{ Request } from "express";
 
 /**
  * Builds the system + user prompts and a strict response schema for AI-driven storyboard generation.

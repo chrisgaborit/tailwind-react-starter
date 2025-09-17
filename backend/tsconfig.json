@@ -13,37 +13,30 @@
     "skipLibCheck": true,
 
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
+    "paths": {
+      "@/*": ["src/*"]
+    },
 
     "types": ["node"],
     "strict": false,
     "forceConsistentCasingInFileNames": true
   },
 
-  "include": [
-    "src/server.ts",
-    "src/routes/**/*.ts",
-    "src/utils/parseDuration.ts",
-    "src/services/pdfRenderer.ts"
-  ],
+  "include": ["src/**/*.ts"],
 
   "exclude": [
-    "src/index.ts",
-    "src/routes/storyboardPdf.ts",
-    "src/services/assetQueue.ts",
-    "src/services/assetPromptService.ts",
-    "src/services/pdfService.ts",
-    "src/services/pdfTemplates.ts",
-    "src/services/storyboardGenerator.ts",
-    "src/validation/**",
+    "node_modules",
+    "dist",
     "src/types/__unused__/**",
-    "src/utils/ensureCoreScenes.ts",
+    "src/validation/**",
     "src/utils/pdfMapping.ts",
     "src/utils/quality.ts"
   ],
 
   "ts-node": {
     "transpileOnly": true,
-    "compilerOptions": { "module": "CommonJS" }
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
   }
 }

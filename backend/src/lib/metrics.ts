@@ -1,10 +1,10 @@
-import client from "prom-client";
+const client = require('prom-client');
 
-export const register = new client.Registry();
+exports.register = new client.Registry();
 register.setDefaultLabels({ service: "genesis-backend" });
 client.collectDefaultMetrics({ register });
 
-export const httpDuration = new client.Histogram({
+exports.httpDuration = new client.Histogram({
   name: "http_request_duration_seconds",
   help: "Duration of HTTP requests in seconds",
   labelNames: ["method", "route", "code"],

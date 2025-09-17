@@ -1,5 +1,5 @@
 // backend/src/services/pdfService.ts
-import type { StoryboardModule, StoryboardScene } from "@/types";
+{ StoryboardModule, StoryboardScene } from "@/types";
 
 /**
  * Renders a polished, print-ready HTML document for PDF export.
@@ -511,6 +511,6 @@ function esc(s: any) {
     .replace(/>/g, "&gt;");
 }
 
-export default {
+module.exports = {
   renderStoryboardAsHTML,
 };

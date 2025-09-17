@@ -1,17 +1,17 @@
-import express, { Express, NextFunction, Request, Response } from 'express';
-import dotenv from 'dotenv';
-import { StoryboardFormData, ModuleLevel } from './types/storyboardTypesArchive';
-import { generateStoryboardFromGemini } from './services/geminiService';
-import { generateImageFromPrompt } from './services/imageService';
-import storyboardRoute from './routes/storyboardRoute'; 
+const express, { Express, NextFunction, Request, Response } = require('express');
+const dotenv = require('dotenv');
+const { StoryboardFormData, ModuleLevel } = require('./types/storyboardTypesArchive');
+const { generateStoryboardFromGemini } = require('./services/geminiService');
+const { generateImageFromPrompt } = require('./services/imageService');
+const storyboardRoute = require('./routes/storyboardRoute'); 
 
-import {
+const {
   MODULE_TYPES,
   TONE_TYPES,
   SUPPORTED_LANGUAGES,
   FORM_ERROR_MESSAGE,
   GENERIC_ERROR_MESSAGE,
-} from './constants';
+} = require('./constants');
 
 dotenv.config();
 

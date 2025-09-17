@@ -1,33 +1,52 @@
 // backend/src/services/geminiService.ts
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { VertexAI } from '@google-cloud/vertexai';
-import { Storage } from '@google-cloud/storage';
-import { v4 as uuidv4 } from 'uuid';
-import dotenv from 'dotenv';
-import JSON5 from 'json5';
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { VertexAI } = require('@google-cloud/vertexai');
+const { Storage } = require('@google-cloud/storage');
+const { v4 as uuidv4 } = require('uuid');
+const dotenv = require('dotenv');
+const JSON5 = require('json5');
 dotenv.config();
 
-import { StoryboardFormData } from '../types/storyboardTypesArchive';
-import { StoryboardModule, StoryboardPage, Event as StoryboardEvent } from '../types';
-import { getLayoutTemplate } from '../utils/getLayoutTemplate';
-import { getBestStoryboards } from '../db/storyboardDb'; // ✅ Memory system
+const { StoryboardFormData } = require('../types/storyboardTypesArchive');
+const { StoryboardModule, StoryboardPage, Event as StoryboardEvent } = require('../types');
+const { getLayoutTemplate } = require('../utils/getLayoutTemplate');
+const { getBestStoryboards } = require('../db/storyboardDb'); // ✅ Memory system
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+/* =========================== CONFIG =========================== */
 
-const vertexAI = new VertexAI({
-  project: process.env.GOOGLE_CLOUD_PROJECT || '',
-  location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-});
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GCP_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || '';
+const GCP_LOCATION = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+const GCS_BUCKET_NAME = process.env.GCS_BUCKET_NAME || 'genesis-storyboard-images';
 
+// Toggle server-side image generation regardless of frontend flag (parity with backend index)
+const FORCE_GENERATE_IMAGES =
+  String(process.env.FORCE_GENERATE_IMAGES || '').trim().toLowerCase() === 'true';
+
+// Constrain pages roughly to duration (1 min ≈ 1 page)
+const PAGES_MIN = 8;
+const PAGES_MAX = 20;
+
+// Models (easy to swap later)
+const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-1.5-pro';
+const VERTEX_IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || 'imagegeneration@006';
+
+/* ========================= CLIENTS =========================== */
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const vertexAI = new VertexAI({ project: GCP_PROJECT, location: GCP_LOCATION });
 const storage = new Storage();
-const bucketName = process.env.GCS_BUCKET_NAME || 'genesis-storyboard-images';
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+/* ======================= SMALL HELPERS ======================= */
 
-/* -------------------------------------------
-   Duration helpers (accept string or number)
--------------------------------------------- */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function clampInt(n: number, lo: number, hi: number) {
+  n = Math.round(Number(n));
+  return Math.max(lo, Math.min(hi, n));
+}
+
 function parseDurationMins(input?: string | number): number {
   if (input === 0) return 0;
   if (input == null) return 20;
@@ -55,92 +74,201 @@ function parseDurationMins(input?: string | number): number {
   return Number.isNaN(fallback) ? 20 : fallback;
 }
 
-function clampInt(n: number, lo: number, hi: number) {
-  n = Math.round(n);
-  return Math.max(lo, Math.min(hi, n));
-}
-
-/* -------------------------------------------
-   JSON extraction (tolerant of fences)
--------------------------------------------- */
+/** Extracts a JSON block even if the model wrapped it in code fences or added prose. */
 function extractJsonBlock(text: string): string {
   if (typeof text !== 'string') return text as unknown as string;
-  const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/);
-  if (fenced) return fenced[1].trim();
 
-  // try to slice from first '{' to last '}'
+  // 1) ```json ... ```
+  const fencedJson = text.match(/```json\s*([\s\S]*?)```/i);
+  if (fencedJson) return fencedJson[1].trim();
+
+  // 2) ``` ... ```
+  const fencedAny = text.match(/```\s*([\s\S]*?)```/);
+  if (fencedAny) return fencedAny[1].trim();
+
+  // 3) first { ... last }
   const first = text.indexOf('{');
   const last = text.lastIndexOf('}');
-  if (first >= 0 && last > first) return text.slice(first, last + 1);
+  if (first >= 0 && last > first) return text.slice(first, last + 1).trim();
 
   return text.trim();
 }
 
-/* -------------------------------------------
-   GCS image upload + Vertex generation
--------------------------------------------- */
+/* =================== GCS + VERTEX IMAGES ===================== */
+
+/** Upload a PNG buffer to GCS (and make it public), return public URL. */
 async function uploadImageToGCS(imageBuffer: Buffer, prompt: string): Promise<string> {
   const filename = `image_${uuidv4()}.png`;
-  const file = storage.bucket(bucketName).file(filename);
+  const file = storage.bucket(GCS_BUCKET_NAME).file(filename);
 
   await file.save(imageBuffer, {
     metadata: { contentType: 'image/png', metadata: { prompt } },
-    public: true,
+    resumable: false,
   });
 
-  return `https://storage.googleapis.com/${bucketName}/${filename}`;
+  // Make publicly readable
+  try {
+    await file.makePublic();
+  } catch (err) {
+    console.warn('⚠️ makePublic failed; falling back to signed URL', err);
+    const [url] = await file.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+    return url;
+  }
+
+  return `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${filename}`;
 }
 
-async function generateImageFromPrompt(prompt: string): Promise<string> {
-  console.log(`🖼️ Generating image for prompt: "${prompt}"`);
+/**
+ * Robustly handle Vertex image model responses:
+ * - Prefer inlineData.data (base64)
+ * - Fallback to fileData.fileUri if it’s a data URL
+ * - Otherwise, try to fetch a GCS file if fileUri is gs:// (not implemented here by design)
+ */
+async function generateImageFromPromptVertex(prompt: string): Promise<string> {
+  console.log(`🖼️ Generating image with Vertex (${VERTEX_IMAGE_MODEL}) for prompt: "${prompt}"`);
   try {
-    const generativeModel = vertexAI.getGenerativeModel({ model: 'imagegeneration@006' });
+    const model = vertexAI.getGenerativeModel({ model: VERTEX_IMAGE_MODEL });
 
-    const resp = await generativeModel.generateContent({
+    const resp = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
     });
 
-    const base64Image =
-      // some transports return a data: URL; trim it if present
-      resp.response.candidates?.[0]?.content?.parts?.[0]?.fileData?.fileUri?.replace(
-        /^data:image\/png;base64,/i,
-        ''
-      );
+    const part = resp?.response?.candidates?.[0]?.content?.parts?.[0];
+    if (!part) throw new Error('No parts in Vertex response.');
 
-    if (!base64Image) {
-      console.error('No image data found in Vertex AI response:', resp.response);
-      throw new Error('No image data returned from Imagen.');
+    // inlineData preferred
+    const inlineBase64 = (part as any)?.inlineData?.data as string | undefined;
+    if (inlineBase64) {
+      const buf = Buffer.from(inlineBase64, 'base64');
+      return await uploadImageToGCS(buf, prompt);
     }
 
-    const imageBuffer = Buffer.from(base64Image, 'base64');
-    return await uploadImageToGCS(imageBuffer, prompt);
-  } catch (error) {
-    console.error('❌ Vertex AI Image generation error:', error);
+    // occasionally returned as a data URL in fileData.fileUri
+    const fileUri = (part as any)?.fileData?.fileUri as string | undefined;
+    if (fileUri && /^data:image\/png;base64,/i.test(fileUri)) {
+      const base64 = fileUri.replace(/^data:image\/png;base64,/i, '');
+      const buf = Buffer.from(base64, 'base64');
+      return await uploadImageToGCS(buf, prompt);
+    }
+
+    // If fileUri is gs:// you could add gs download logic here if desired
+    console.error('No usable image payload found in Vertex response:', JSON.stringify(part, null, 2));
+    throw new Error('No usable image payload found from Vertex.');
+  } catch (err) {
+    console.error('❌ Vertex AI Image generation error:', err);
     return '';
   }
 }
 
-// ===============================
-// 🎯 MEMORY-INTEGRATED GENERATION
-// ===============================
+/* ====================== VISUAL NORMALISERS ===================== */
+
+function buildPhotorealisticPrompt(
+  event: any,
+  brand?: { colours?: string[]; fonts?: string }
+) {
+  const vb = event?.aiProductionBrief?.visual ?? {};
+  const subject =
+    vb.subject || 'diverse professionals collaborating in a modern workplace';
+  const setting =
+    vb.setting || 'contemporary office or home office environments';
+  const composition =
+    vb.composition || 'natural candid composition with clear subject focus, 16:9';
+  const lighting = vb.lighting || 'soft natural daylight or warm practical lighting';
+  const mood = vb.mood || 'professional, inclusive, productive';
+  const palette = (brand?.colours || ['#0387E6', '#E63946', '#BC57CF', '#000000', '#FFFFFF']).join(', ');
+
+  const negative = [
+    'no vector art',
+    'no flat illustration',
+    'no cartoon',
+    'no clip art',
+    'no isometric illustration',
+    'no 3D render look',
+    'no exaggerated proportions',
+  ].join(', ');
+
+  const realismCues = [
+    'photorealistic',
+    'high-resolution',
+    'natural skin tones',
+    'realistic proportions',
+    'subtle depth of field',
+    'authentic textures',
+    'clean background bokeh when appropriate',
+  ].join(', ');
+
+  return [
+    `${subject} in ${setting}.`,
+    `Composition: ${composition}. Lighting: ${lighting}. Mood: ${mood}.`,
+    `Style: Photorealistic; ${realismCues}.`,
+    `Brand-aware accents (subtle): ${palette}.`,
+    `Avoid: ${negative}.`,
+  ].join(' ');
+}
+
+function normalizeVisualBrief(event: any) {
+  event.aiProductionBrief ||= {};
+  event.aiProductionBrief.visual ||= {};
+  const vb = event.aiProductionBrief.visual;
+
+  // Always image
+  vb.mediaType = 'image';
+
+  // Guard against non-photo styles
+  const style = String(vb.style || '').toLowerCase();
+  if (!style || /(vector|flat|illustration|isometric|cartoon)/i.test(style)) {
+    vb.style = 'Photorealistic';
+  } else if (!/photorealistic/i.test(style)) {
+    vb.style = `${vb.style} Photorealistic`.trim();
+  }
+
+  return vb;
+}
+
+/* ===================== RETRY WRAPPERS ====================== */
+
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, baseDelayMs = 600): Promise<T> {
+  let lastErr: any;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const backoff = baseDelayMs * Math.pow(2, i) + Math.floor(Math.random() * 150);
+      console.warn(`⚠️ Attempt ${i + 1} failed. Retrying in ~${backoff}ms...`);
+      await sleep(backoff);
+    }
+  }
+  throw lastErr;
+}
+
+/* ================== MAIN GENERATION FUNCTION ================= */
 
 export async function generateStoryboardFromGemini(
   formData: StoryboardFormData
 ): Promise<StoryboardModule> {
-  // ✅ Resolve duration to minutes internally (supports string "15 minutes" or numeric)
-  const durationMins = clampInt(
-  parseDurationMins((formData as any).durationMins ?? (formData as any).duration),
-  1, 90
-);
-  const targetPages = clampInt(durationMins, 8, 20); // aim for ~1 min/page, bounded [8,20]
+  if (!GEMINI_API_KEY) {
+    console.warn('⚠️ GEMINI_API_KEY missing; text generation will likely fail.');
+  }
 
-  const layoutDescription = getLayoutTemplate(formData.screenType || '');
+  // Resolve duration to minutes internally (supports string "15 minutes" or numeric)
+  const durationMins = clampInt(
+    parseDurationMins((formData as any).durationMins ?? (formData as any).duration),
+    1,
+    90
+  );
+  const targetPages = clampInt(durationMins, PAGES_MIN, PAGES_MAX);
+
+  const layoutDescription = getLayoutTemplate((formData as any).screenType || '');
 
   // === Fetch best examples for context injection ===
   const bestExamples = await getBestStoryboards(
-    [formData.moduleType],                     // tags: array of strings
-    Number(formData.complexityLevel),          // level: number
-    2                                          // limit
+    [formData.moduleType], // tags: array of strings
+    Number(formData.complexityLevel), // level: number
+    2 // limit
   );
 
   const bestExamplesText = bestExamples.length
@@ -152,7 +280,7 @@ export async function generateStoryboardFromGemini(
         .join('\n')
     : '\n(No prior best examples found for this module type/level.)';
 
-  // === Compose the system prompt with best examples injected ===
+  // === Compose the prompt with best examples injected ===
   const systemPrompt = `
 You are a meticulous and thorough "AI Multimedia Producer" and "Senior Prompt Engineer". Your persona is that of a director giving explicit, machine-readable commands to a suite of AI media generation tools. Your primary directive is to be exhaustive and complete.
 
@@ -175,7 +303,7 @@ ${bestExamplesText}
 
 🎯 DURATION & SCOPE:
 - Target duration: ${durationMins} minutes (UK English).
-- Aim for ~${targetPages} total pages (±2). Do not exceed 20 pages.
+- Aim for ~${targetPages} total pages (±2). Do not exceed ${PAGES_MAX} pages.
 
 📚 CRITICAL PROCESS ALGORITHM:
 1. Analyze the USER'S RAW CONTENT from beginning to end.
@@ -239,113 +367,59 @@ ${formData.content}
   let responseText = '';
 
   try {
-    const textModel = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-    const result = await textModel.generateContent({
-      contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
-    });
+    // === Generate JSON with retries
+    const textModel = genAI.getGenerativeModel({ model: GEMINI_TEXT_MODEL });
+    const result = await withRetry(() =>
+      textModel.generateContent({
+        contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
+      })
+    );
 
     responseText = result.response.text();
 
-    // Tolerant extraction: fenced or raw JSON
     const jsonString = extractJsonBlock(responseText);
     const parsed = JSON5.parse(jsonString);
 
-    if (!parsed.storyboardModule) {
+    if (!parsed?.storyboardModule) {
       throw new Error("Parsed JSON did not contain 'storyboardModule'.");
     }
 
-    // ✅ Ensure durationMins is present for downstream consumers
+    // Ensure duration on root (downstream consumers rely on this)
     parsed.storyboardModule.durationMins = durationMins;
 
-    // --- Helper: hard-enforce photorealistic visuals and build a rich prompt ---
-function buildPhotorealisticPrompt(event: any, brand?: { colours?: string[]; fonts?: string }) {
-  const vb = event?.aiProductionBrief?.visual ?? {};
-  const subject = vb.subject || "diverse professionals collaborating in a modern workplace";
-  const setting = vb.setting || "contemporary office or home office environments";
-  const composition = vb.composition || "natural candid composition with clear subject focus, 16:9";
-  const lighting = vb.lighting || "soft natural daylight or warm practical lighting";
-  const mood = vb.mood || "professional, inclusive, productive";
-  const palette = (brand?.colours || ["#0387E6", "#E63946", "#BC57CF", "#000000", "#FFFFFF"]).join(", ");
+    // === Enforce & generate images if requested/forced
+    const shouldGenerateImages =
+      FORCE_GENERATE_IMAGES || Boolean((formData as any).generateImages);
 
-  // Style guardrails (overwrite any vector/flat)
-  const style = "Photorealistic";
-  const negative = [
-    "no vector art",
-    "no flat illustration",
-    "no cartoon",
-    "no clip art",
-    "no isometric illustration",
-    "no 3D render look",
-    "no exaggerated proportions",
-  ].join(", ");
+    if (shouldGenerateImages && Array.isArray(parsed.storyboardModule.pages)) {
+      for (const page of parsed.storyboardModule.pages as StoryboardPage[]) {
+        for (const event of (page.events || []) as StoryboardEvent[]) {
+          const vb = normalizeVisualBrief(event);
+          const mediaType = String(vb.mediaType || '').toLowerCase();
+          if (mediaType !== 'image') continue;
 
-  // Camera/realism cues (kept tasteful/generic so any model can use them)
-  const realismCues = [
-    "photorealistic",
-    "high-resolution",
-    "natural skin tones",
-    "realistic proportions",
-    "subtle depth of field",
-    "authentic textures",
-    "clean background bokeh when appropriate",
-  ].join(", ");
+          const finalPrompt = buildPhotorealisticPrompt(event, parsed?.brand);
+          try {
+            const imageUrl = await generateImageFromPromptVertex(finalPrompt);
+            if (imageUrl) {
+              (event as any).generatedImageUrl = imageUrl;
+              (event as any).generatedImageMeta = {
+                styleEnforced: 'Photorealistic',
+                promptUsed: finalPrompt,
+                mediaType: vb.mediaType,
+                timestamp: new Date().toISOString(),
+                model: VERTEX_IMAGE_MODEL,
+              };
+            }
+          } catch (imgErr) {
+            console.error(`❌ Image gen failed on page ${page.pageNumber}, event ${(event as any)?.eventNumber}:`, imgErr);
+          }
 
-  // Build final prompt
-  return [
-    `${subject} in ${setting}.`,
-    `Composition: ${composition}. Lighting: ${lighting}. Mood: ${mood}.`,
-    `Style: ${style}; ${realismCues}.`,
-    `Brand-aware accents (subtle): ${palette}.`,
-    `Avoid: ${negative}.`,
-  ].join(" ");
-}
-
-// --- Helper: normalize brief in-place (enforce mediaType=image and style=Photorealistic) ---
-function normalizeVisualBrief(event: any) {
-  event.aiProductionBrief ||= {};
-  event.aiProductionBrief.visual ||= {};
-  const vb = event.aiProductionBrief.visual;
-
-  // Default/force mediaType
-  if (!vb.mediaType) vb.mediaType = "image";
-  if (String(vb.mediaType).toLowerCase() !== "image") vb.mediaType = "image";
-
-  // Overwrite any vector/flat signals
-  const style = String(vb.style || "").toLowerCase();
-  if (!style || /(vector|flat|illustration|isometric|cartoon)/i.test(style)) {
-    vb.style = "Photorealistic";
-  } else {
-    // Even if something else is present (e.g., "cinematic"), append Photorealistic
-    if (!/photorealistic/i.test(style)) vb.style = `${vb.style} Photorealistic`.trim();
-  }
-
-  return vb;
-}
-
-// ✅ Generate images for any image-type events (photorealism enforced)
-for (const page of parsed.storyboardModule.pages as StoryboardPage[]) {
-  for (const event of (page.events || []) as StoryboardEvent[]) {
-    // Normalise the brief and enforce photorealistic defaults
-    const vb = normalizeVisualBrief(event);
-
-    // Build an enriched, photorealistic prompt (optionally pass brand from module if you have it)
-    const finalPrompt = buildPhotorealisticPrompt(event, parsed?.brand);
-
-    const mediaType = String(vb.mediaType || "").toLowerCase();
-    if (finalPrompt && mediaType === "image") {
-      console.log("✅ Photorealistic image generation enforced");
-      (event as any).generatedImageUrl = await generateImageFromPrompt(finalPrompt /*, { size: "2048x1152" }*/);
-      // Save metadata for traceability/debugging
-      (event as any).generatedImageMeta = {
-        styleEnforced: "Photorealistic",
-        promptUsed: finalPrompt,
-        mediaType: vb.mediaType,
-        timestamp: new Date().toISOString(),
-      };
-      await sleep(2000);
+          // small pacing delay (avoid hammering)
+          await sleep(350);
+        }
+      }
     }
-  }
-}
 
     return parsed.storyboardModule as StoryboardModule;
   } catch (error: any) {

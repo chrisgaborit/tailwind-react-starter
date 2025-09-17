@@ -1,4 +1,4 @@
-import { create } from "jsondiffpatch";
+const { create } = require('jsondiffpatch');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const htmlFormatter = require("jsondiffpatch/formatters/html");
 

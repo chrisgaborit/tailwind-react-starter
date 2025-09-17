@@ -1,4 +1,4 @@
-import { StoryboardFormData } from '../types/storyboardTypesArchive';
+const { StoryboardFormData } = require('../types/storyboardTypesArchive');
 
 export function generateSystemInstruction(formData: StoryboardFormData): string {
   return `

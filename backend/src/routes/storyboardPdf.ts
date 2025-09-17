@@ -1,6 +1,6 @@
 // backend/src/routes/storyboardPdf.ts
-import express from "express";
-import puppeteer from "puppeteer";
+const express = require('express');
+const puppeteer = require('puppeteer');
 
 const router = express.Router();
 
@@ -55,4 +55,4 @@ router.get("/pdf", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

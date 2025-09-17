@@ -1,5 +1,5 @@
 // backend/src/services/assetPromptService.ts
-import type { StoryboardScene, StoryboardModule } from "@/types";
+{ StoryboardScene, StoryboardModule } from "@/types";
 
 /**
  * Build JSON prompts for downstream asset generators (images, audio, video, interactions).

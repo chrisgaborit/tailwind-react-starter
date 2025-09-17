@@ -1,5 +1,5 @@
 // backend/src/utils/pdfMapping.ts
-import type { StoryboardModule } from "../../types";
+{ StoryboardModule } from "../../types";
 
 const strip = (s?: string) => String(s || "").trim();
 

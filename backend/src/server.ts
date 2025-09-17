@@ -1,20 +1,20 @@
 // backend/src/server.ts
-import "dotenv/config";
-import express, { Request, Response, NextFunction } from "express";
-import morgan from "morgan";
-import multer from "multer";
-import pdf from "pdf-parse";
-import puppeteer from "puppeteer";
-import fs from "fs";
-import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
+const "dotenv/config";
+import express, { Request, Response, NextFunction } = require('express');
+const morgan = require('morgan');
+const multer = require('multer');
+const pdf = require('pdf-parse');
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const OpenAI = require('openai');
+const { createClient } = require('@supabase/supabase-js');
 
 // Our services & helpers already in your repo
-import {
+const {
   generateStoryboardFromOpenAI,
   resolveOpenAIModel,
-} from "./services/openaiService";
-import { normalizeToScenes } from "./utils/normalizeStoryboard";
+} = require('./services/openaiService');
+const { normalizeToScenes } = require('./utils/normalizeStoryboard');
 
 /* -----------------------------------------------------------
    Basic, local minimal types (keeps this file self‑contained)

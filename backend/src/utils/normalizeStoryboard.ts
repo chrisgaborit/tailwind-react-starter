@@ -1,10 +1,10 @@
 // backend/src/utils/normalizeStoryboard.ts
 
-import type {
+import {
   IDMethod,
   InstructionalTag,
   StoryboardModule,
-  StoryboardScene,
+  StoryboardScene
 } from "../types/storyboardTypes";
 
 /* ========================= Incoming (pages/events) shapes ========================= */
@@ -496,4 +496,4 @@ export function normalizeToScenes(
   } as StoryboardModule;
 }
 
-export default normalizeToScenes;
+module.exports = normalizeToScenes;

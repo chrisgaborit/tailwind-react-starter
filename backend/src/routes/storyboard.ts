@@ -1,10 +1,10 @@
 // backend/src/routes/storyboard.ts
-import { Router, Request, Response } from "express";
-import { normaliseDuration } from "../middleware/normaliseDuration";
-import openaiService from "../services/openaiService";
+const { Router, Request, Response } = require('express');
+const { normaliseDuration } = require('../middleware/normaliseDuration');
+const openaiService = require('../services/openaiService');
 
 // If you added the Zod schema as suggested:
-import { StoryboardModuleSchema } from "../validation/storyboardSchema";
+const { StoryboardModuleSchema } = require('../validation/storyboardSchema');
 
 const router = Router();
 
@@ -304,4 +304,4 @@ router.post("/generate/upgrade", normaliseDuration, async (req: Request, res: Re
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,17 +1,17 @@
 // backend/src/constants.ts
 
-import { ModuleLevel } from './types/storyboardTypesArchive';
+const { ModuleLevel } = require('./types/storyboardTypesArchive');
 
-export const GEMINI_MODEL_NAME = 'models/gemini-1.5-pro';
+exports.GEMINI_MODEL_NAME = 'models/gemini-1.5-pro';
 
-export const API_KEY_ERROR_MESSAGE =
+exports.API_KEY_ERROR_MESSAGE =
   'API_KEY environment variable not found. Please ensure it is set in your .env file for the backend server.';
-export const GENERIC_ERROR_MESSAGE = 'An unexpected error occurred while processing your request.';
-export const FORM_ERROR_MESSAGE = 'Invalid request body. Please ensure all required fields are provided and valid.';
-export const MODULE_TYPE_LOGIC_ERROR =
+exports.GENERIC_ERROR_MESSAGE = 'An unexpected error occurred while processing your request.';
+exports.FORM_ERROR_MESSAGE = 'Invalid request body. Please ensure all required fields are provided and valid.';
+exports.MODULE_TYPE_LOGIC_ERROR =
   'Internal server error: Could not find specific logic for the provided module type.';
 
-export const MODULE_TYPES = [
+exports.MODULE_TYPES = [
   'Compliance',
   'Onboarding & Induction',
   'Product Training',
@@ -24,7 +24,7 @@ export const MODULE_TYPES = [
   'Personal Development',
 ] as const;
 
-export const TONE_TYPES = [
+exports.TONE_TYPES = [
   'Professional',
   'Conversational',
   'Inspirational',
@@ -34,7 +34,7 @@ export const TONE_TYPES = [
   'Humorous',
 ] as const;
 
-export const SUPPORTED_LANGUAGES = [
+exports.SUPPORTED_LANGUAGES = [
   'English',
   'Spanish',
   'French',

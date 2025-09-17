@@ -143,7 +143,7 @@ function normaliseTypeHint(moduleType?: string | null): ModuleTypeHint {
 }
 
 /** Common distractor seeds used by the KC builder */
-export const GENERIC_DISTRACTOR_SEEDS = [
+exports.GENERIC_DISTRACTOR_SEEDS = [
   "Accountability",
   "Accessibility",
   "Accuracy",
@@ -159,7 +159,7 @@ export const GENERIC_DISTRACTOR_SEEDS = [
 ];
 
 /** Terms often confused with compliance/service principles */
-export const COMPLIANCE_CONFUSABLES = [
+exports.COMPLIANCE_CONFUSABLES = [
   "Expediency",
   "Persuasion",
   "Acquisition",

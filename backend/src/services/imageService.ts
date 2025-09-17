@@ -1,7 +1,7 @@
 // backend/src/services/imageService.ts
 
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 /**
  * Google AI Studio – Gemini 2.5 Flash Image (a.k.a. Nano Banana)

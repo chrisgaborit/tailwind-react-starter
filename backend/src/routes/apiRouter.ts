@@ -1,7 +1,7 @@
-import { Router } from "express";
-import storyboardRoute from "./storyboardRoute";
-import { storyboardGenRoute } from "./storyboardGenRoute";
-import assetsRouter from "./assets";
+const { Router } = require('express');
+const storyboardRoute = require('./storyboardRoute');
+const { storyboardGenRoute } = require('./storyboardGenRoute');
+const assetsRouter = require('./assets');
 
 const router = Router();
 
@@ -10,4 +10,4 @@ router.use("/storyboard", storyboardRoute);
 router.use("/storyboard-gen", storyboardGenRoute);
 router.use("/assets", assetsRouter);
 
-export default router;
+module.exports = router;

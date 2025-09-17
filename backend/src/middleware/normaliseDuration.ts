@@ -1,6 +1,6 @@
 // backend/src/middleware/normaliseDuration.ts
-import type { Request, Response, NextFunction } from "express";
-import { parseDurationMins } from "../utils/parseDuration";
+{ Request, Response, NextFunction } from "express";
+const { parseDurationMins } = require('../utils/parseDuration');
 
 // ✅ Allow 1–90 minutes instead of forcing min=5
 const MIN = 1;

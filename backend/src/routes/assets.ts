@@ -1,10 +1,10 @@
 // backend/src/routes/assets.ts
-import { Router, Request, Response } from "express";
-import { enqueueStoryboardAssets, getModuleQueueSnapshot } from "../services/assetQueue";
-import type { StoryboardModule } from "../types";
-import crypto from "crypto";
-import path from "path";
-import fs from "fs";
+const { Router, Request, Response } = require('express');
+const { enqueueStoryboardAssets, getModuleQueueSnapshot } = require('../services/assetQueue');
+{ StoryboardModule } from "../types";
+const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 
 const router = Router();
 
@@ -51,4 +51,4 @@ router.get("/download", (req: Request, res: Response) => {
   res.sendFile(resolved);
 });
 
-export default router;
+module.exports = router;

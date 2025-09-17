@@ -1,11 +1,148 @@
 // src/library/blueprintPrompt.ts
-import type { StoryboardModule } from "../types";
 
+// Use CommonJS-compatible type import
+import type { StoryboardModule, StoryboardScene } from "../types";
+
+export function ensureFirstFour(
+  story: StoryboardModule,
+  formData: any = {}
+): StoryboardModule {
+  const moduleName = formData.moduleName || story.moduleName || "Untitled Module";
+  const author = formData.author || "Learno Generator";
+  const storyboard = story; // Use a consistent name
+  let scenes: StoryboardScene[] = Array.isArray(story.scenes) ? [...story.scenes] : [];
+
+  // ✅ FIXED: The code that was stranded at the end of the file has been moved here,
+  // inside the function where it can access `formData` and `storyboard`.
+  const learningOutcomes = Array.isArray(formData?.learningOutcomes)
+    ? formData.learningOutcomes
+    : typeof formData?.learningOutcomes === "string"
+    ? formData.learningOutcomes.split(/\n|•|-|\*/).map(s => s.trim()).filter(Boolean)
+    : [];
+
+  const outcomeText = learningOutcomes.length
+    ? `By the end of this module, you'll be able to:\n• ${learningOutcomes.join("\n• ")}`
+    : "You'll explore key topics relevant to your role.";
+
+  // Slide 1: TOC (Internal Only)
+  const tocSlide: StoryboardScene = {
+    internalOnly: true,
+    layout: "Internal Table of Contents",
+    title: "INTERNAL: Table of Contents",
+    narration: "",
+    onScreenText: "",
+    visuals: "",
+    interactionType: "None",
+    knowledgeCheck: null,
+    metadata: {
+      type: "toc",
+      internal: true,
+      tags: ["internal", "toc", "metadata"],
+    },
+  };
+
+  // Slide 2: Pronunciation Guide (Internal Only)
+  const pronunciationSlide: StoryboardScene = {
+    internalOnly: true,
+    layout: "Internal Pronunciation Guide",
+    title: "INTERNAL: Pronunciation Guide",
+    narration: "",
+    onScreenText: "",
+    visuals: "",
+    interactionType: "None",
+    knowledgeCheck: null,
+    metadata: {
+      type: "pronunciation",
+      internal: true,
+      tags: ["internal", "pronunciation", "voiceover"],
+    },
+  };
+
+  // Slide 3: Title
+  const titleSlide: StoryboardScene = {
+    title: moduleName,
+    narration: `Welcome to the module titled "${moduleName}".`,
+    onScreenText: moduleName,
+    visuals: `Branded title image or animation with the text: ${moduleName}`,
+    layout: "Title Slide",
+    interactionType: "None",
+    knowledgeCheck: null,
+    metadata: {
+      type: "title",
+    },
+  };
+
+  // Slide 4: Hook
+  const hookSlide: StoryboardScene = {
+    title: "Why This Matters",
+    narration: "Before we begin, let's explore why this topic is relevant to your role.",
+    onScreenText: "Why This Matters",
+    visuals: "A metaphor or scenario that highlights the relevance of the topic.",
+    layout: "Hook Slide",
+    interactionType: "None",
+    knowledgeCheck: null,
+    metadata: {
+      type: "hook",
+    },
+  };
+
+  // Slide 5: Learning Outcomes
+  const learningSlide: StoryboardScene = {
+    title: "Learning Outcomes",
+    narration: "By the end of this module, you will be able to:",
+    onScreenText: outcomeText, // Use the generated text
+    visuals: "Bullet-point list of outcomes appearing with animation.",
+    layout: "Learning Outcomes",
+    interactionType: "None",
+    knowledgeCheck: null,
+    metadata: {
+      type: "outcomes",
+    },
+  };
+
+  // Logic: Insert at beginning ONLY if missing (based on metadata or type)
+  const existingTypes = scenes
+    .slice(0, 6)
+    .map((s) => s?.metadata?.type || s.title?.toLowerCase()?.trim() || "");
+
+  const newScenes: StoryboardScene[] = [];
+
+  if (!existingTypes.includes("toc")) newScenes.push(tocSlide);
+  if (!existingTypes.includes("pronunciation")) newScenes.push(pronunciationSlide);
+  if (!existingTypes.includes("title")) newScenes.push(titleSlide);
+  if (!existingTypes.includes("hook")) newScenes.push(hookSlide);
+  if (!existingTypes.includes("outcomes")) newScenes.push(learningSlide);
+
+  scenes = [...newScenes, ...scenes];
+
+  // ✅ FIXED: This logic was also stranded and is now correctly placed here.
+  const tocIndex = scenes.findIndex(s => s?.metadata?.type === 'outcomes');
+  if (tocIndex !== -1) {
+    const scene = scenes[tocIndex];
+    if (!scene.narration) scene.narration = outcomeText;
+    if (!scene.onScreenText) scene.onScreenText = outcomeText;
+  }
+  
+  // ✅ FIXED: And this metadata logic is now correctly placed.
+  storyboard.metadata = {
+    ...(storyboard.metadata || {}),
+    moduleTiming: `${scenes.length * 1.5} mins (approx.)`,
+    performanceSupport: ["Job aids included where applicable"],
+  };
+
+  return {
+    ...story,
+    moduleName,
+    author,
+    scenes: scenes, // Use the updated scenes array
+    metadata: storyboard.metadata, // Include updated metadata
+  };
+}
 /**
  * Text-only blueprint: structural & stylistic standards distilled from your human SBs.
  * Inject into the system prompt; key items are also enforced in code.
  */
-export const STORYBOARD_BLUEPRINT_V1 = `
+const STORYBOARD_BLUEPRINT_V1 = `
 << DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
 
 OPENING (FIRST FOUR, IN ORDER)
@@ -48,14 +185,16 @@ GOLDEN RATIOS
 - ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
 - KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
 
-SCHEMA REMINDERS
+SCHEMA REMINDER
 - Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
 `;
 
 /** Inject blueprint into any base system prompt. */
-export function injectBlueprint(baseSystemPrompt: string): string {
-  return `${baseSystemPrompt}\n\n---\n${STORYBOARD_BLUEPRINT_V1}\n---`;
+function injectBlueprint(prompt: string): string {
+  return `${STORYBOARD_BLUEPRINT_V1.trim()}\n\n${prompt.trim()}`;
 }
+
+// ❌ REMOVED: The old, duplicate `ensureFirstFour` function has been removed to prevent errors.
 
 /**
  * Minimal enforcement helpers that complement upstream guarantees.
@@ -73,6 +212,77 @@ export function ensureCapstoneAndClosing(
   const wantKCMin = Math.max(0, Number(opts?.minKnowledgeChecks ?? 0));
   const needActionPlan = !!opts?.requireActionPlan;
 
+  // ✅ FIXED: This block of logic was inside a different function (`ensureFirstFour`) in your original file.
+  // I have moved it here as it relates to closing/summary slides.
+  const hasRecap = scenes.some((s) =>
+    s.title?.toLowerCase().includes("summary") ||
+    s.title?.toLowerCase().includes("recap")
+  );
+
+  const hasCapstoneOriginal = scenes.some((s) => // Renamed to avoid conflict
+    s.title?.toLowerCase().includes("capstone") ||
+    (s.knowledgeCheck && s.knowledgeCheck.type !== "None")
+  );
+
+  const hasFinalCTA = scenes.some((s) =>
+    s.title?.toLowerCase().includes("next steps") ||
+    s.title?.toLowerCase().includes("apply what you've learned") ||
+    s.title?.toLowerCase().includes("congratulations") ||
+    s.title?.toLowerCase().includes("action plan")
+  );
+
+  const additions: any[] = [];
+
+  if (!hasRecap) {
+    additions.push({
+      title: "Summary & Key Takeaways",
+      narration: "Let's summarise the key takeaways from this module.",
+      onScreenText: "Summary",
+      visuals: "Bullet points highlighting the main messages from this module.",
+      interactionType: "None",
+      knowledgeCheck: null,
+    });
+  }
+
+  if (!hasCapstoneOriginal && wantKCMin > 0) {
+    additions.push({
+      title: "Capstone Scenario: Apply Your Knowledge",
+      narration: "Here's a final challenge. Based on what you've learned, choose the best response to the following situation.",
+      onScreenText: "Capstone Challenge",
+      visuals: "Scenario-based visual showing a real-world situation.",
+      interactionType: "Scenario Branching",
+      knowledgeCheck: {
+        type: "SingleSelect",
+        question: "What is the most effective way to handle this situation?",
+        options: [
+          { text: "Option A", correct: true, feedback: "Correct! This shows application of the key principle." },
+          { text: "Option B", correct: false, feedback: "This could work, but misses the key element discussed." },
+          { text: "Option C", correct: false, feedback: "Not quite. Remember the strategy we covered earlier." },
+        ],
+      },
+    });
+  }
+
+  if (!hasFinalCTA) {
+    additions.push({
+      title: needActionPlan ? "Action Plan: Your Next Steps" : "Next Steps: Put It Into Practice",
+      narration: needActionPlan
+        ? "Take a moment to write down how you'll apply these skills in your role. What will you do differently starting today?"
+        : "Now that you've completed this module, reflect on how you'll apply these insights in your daily work.",
+      onScreenText: needActionPlan ? "Create Your Action Plan" : "Next Steps",
+      visuals: "A person planning their day, checking a list, or having a conversation.",
+      interactionType: needActionPlan ? "OpenText" : "None",
+      knowledgeCheck: needActionPlan
+        ? { type: "OpenText", question: "Describe one thing you'll do differently as a result of this module." }
+        : null,
+    });
+  }
+  
+  // Apply additions from the first block
+  scenes.push(...additions);
+
+  // ✅ FIXED: All of the code below was "stranded" outside the function. It is now correctly placed inside.
+  
   // Helper: simple KC detector
   const isKC = (s: any) => {
     const t = String(s?.interactionType || "").toLowerCase();
@@ -404,5 +614,23 @@ export function ensureCapstoneAndClosing(
   // 5) Re-number sceneNumber to reflect any insertions/appends
   (scenes as any[]).forEach((s, i) => (s.sceneNumber = i + 1));
   story.scenes = scenes;
+  
   return story;
+} // ✅ FIXED: The closing brace for `ensureCapstoneAndClosing` is now here, at the correct end of the function.
+
+// ✅ FIXED: This function definition is now correctly placed.
+function ensureTOCAndMetadata(
+  story: StoryboardModule,
+  formData: any = {}
+): StoryboardModule {
+  return ensureFirstFour(story, formData);
 }
+
+
+// ✅ Exports block at the very end — OUTSIDE any function
+module.exports = {
+  injectBlueprint,
+  ensureFirstFour,
+  ensureTOCAndMetadata,
+  ensureCapstoneAndClosing,
+};

@@ -1,5 +1,5 @@
 // backend/src/validation/lintStoryboard.ts
-import type { StoryboardModule } from "../types";
+{ StoryboardModule } from "../types";
 
 export type LintResult = { ok: boolean; errors: string[]; warnings: string[] };
 

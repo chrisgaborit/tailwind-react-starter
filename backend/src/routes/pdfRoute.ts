@@ -1,17 +1,17 @@
 // backend/src/routes/pdfRoute.ts
-import { Router, type Request, type Response } from "express";
-import crypto from "crypto";
-import {
+const { Router, type Request, type Response } = require('express');
+const crypto = require('crypto');
+const {
   supabaseServer,
   verifyUser,
   getOrgIdForUser,
-} from "../services/supabase"; // server-side client (service role) + helpers
-import { renderStoryboardAsHTML } from "../services/pdfService";
-import { htmlToPdfBuffer } from "../services/pdfRenderer";
+} = require('../services/supabase'); // server-side client (service role) + helpers
+const { renderStoryboardAsHTML } = require('../services/pdfService');
+const { htmlToPdfBuffer } = require('../services/pdfRenderer');
 
 const BUCKET = (process.env.SUPABASE_BUCKET || "storyboards").trim();
 
-export const pdfRouter = Router();
+exports.pdfRouter = Router();
 
 /**
  * POST /api/storyboards/:id/pdf
@@ -96,4 +96,4 @@ pdfRouter.post("/storyboards/:id/pdf", async (req: Request, res: Response) => {
   }
 });
 
-export default pdfRouter;
+module.exports = pdfRouter;

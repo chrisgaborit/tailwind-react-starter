@@ -1,4 +1,4 @@
-import type { StoryboardModuleV2 } from "../index";
+{ StoryboardModuleV2 } from "../index";
 
 export type ValidationOptions = {
   minScenes?: number;

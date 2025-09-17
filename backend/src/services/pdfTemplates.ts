@@ -1,6 +1,6 @@
 // backend/src/services/pdfTemplates.ts
-import type { StoryboardModule, StoryboardScene } from "@/types";
-import { BrandTheme, defaultTheme, escapeHTML, clampWords } from "./formatting";
+{ StoryboardModule, StoryboardScene } from "@/types";
+const { BrandTheme, defaultTheme, escapeHTML, clampWords } = require('./formatting');
 
 /**
  * Decide which scene template to use and render HTML.

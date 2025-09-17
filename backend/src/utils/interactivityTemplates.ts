@@ -1,4 +1,4 @@
-import { InteractivityInstructionBlock } from '../types/storyboardTypesArchive';
+const { InteractivityInstructionBlock } = require('../types/storyboardTypesArchive');
 
 export const interactivityTemplates: InteractivityInstructionBlock[] = [
   {

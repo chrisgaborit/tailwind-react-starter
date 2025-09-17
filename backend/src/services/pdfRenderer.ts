@@ -1,4 +1,4 @@
-import puppeteer, { type PDFOptions } from "puppeteer";
+const puppeteer, { type PDFOptions } = require('puppeteer');
 
 /**
  * Convert an HTML string into a print-ready PDF buffer.

@@ -1,14 +1,38 @@
-// src/lib/api.ts
-const API_BASE = import.meta.env.VITE_BACKEND_URL;
+// frontend/src/lib/api.ts
 
-/* -------------------------- helpers -------------------------- */
+// Base URL for the backend:
+//  - In dev, leave VITE_BACKEND_URL undefined and Vite proxy will use "/api"
+//  - In prod, set VITE_BACKEND_URL (e.g., "https://your-host.com/api")
+const API_BASE = (import.meta.env.VITE_BACKEND_URL || "/api").replace(/\/$/, "");
+
+/* -------------------------- tiny helpers -------------------------- */
+
+// Safe URL joiner (avoids double slashes)
+function joinUrl(...parts: Array<string | undefined>): string {
+  const cleaned = parts
+    .filter(Boolean)
+    .map((p) => String(p).replace(/^\/+|\/+$/g, ""));
+  return cleaned.length ? `/${cleaned.join("/")}` : "/";
+}
+
+async function parseOrThrow(res: Response) {
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${text || "No body"}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Non-JSON: ${text.slice(0, 400)}`);
+  }
+}
 
 function normalizeSceneImages(sb: any) {
   if (!sb || !Array.isArray(sb.scenes)) return sb;
   sb.scenes = sb.scenes.map((s: any, i: number) => ({
     sceneNumber: s?.sceneNumber ?? i + 1,
     ...s,
-    // Ensure flat mirrors exist for UI (cards/grid) and PDF builder
+    // Ensure flat mirrors for UI cards/grid & PDF
     imageUrl: s?.imageUrl || s?.visual?.generatedImageUrl || null,
     imageParams: s?.imageParams || s?.visual?.imageParams || null,
   }));
@@ -17,10 +41,11 @@ function normalizeSceneImages(sb: any) {
 
 function normalizeEnvelope(json: any) {
   if (!json) return json;
-  // Common shapes we return from the backend:
+
+  // Accept several backend envelopes:
   // { success, data: { storyboardModule } }
   // { storyboardModule }
-  // (fallback) { data } that IS the storyboard
+  // { data } where data itself is the storyboard
   const sb =
     json?.data?.storyboardModule ||
     json?.storyboardModule ||
@@ -31,7 +56,7 @@ function normalizeEnvelope(json: any) {
     if (json?.data?.storyboardModule) json.data.storyboardModule = sb;
     else if (json?.storyboardModule) json.storyboardModule = sb;
     else if (json?.data?.scenes) json.data = sb;
-    else if (json?.scenes) return sb; // rare case: response is the storyboard itself
+    else if (json?.scenes) return sb; // response is the storyboard itself
   }
   return json;
 }
@@ -43,7 +68,8 @@ function normalizeEnvelope(json: any) {
  * Always requests image generation by setting generateImages: true.
  */
 export async function generateFromText(formData: any) {
-  const res = await fetch(`${API_BASE}/api/v1/generate-from-text?raw=1`, {
+  const url = API_BASE + joinUrl("v1", "generate-from-text") + "?raw=1";
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -53,17 +79,7 @@ export async function generateFromText(formData: any) {
       },
     }),
   });
-
-  const text = await res.text();
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${text || "No body"}`);
-
-  let json: any;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    throw new Error(`Non-JSON: ${text.slice(0, 400)}`);
-  }
-
+  const json = await parseOrThrow(res);
   return normalizeEnvelope(json);
 }
 
@@ -78,24 +94,12 @@ export async function generateFromFiles(formData: any, files: File[]) {
     JSON.stringify({
       ...formData,
       generateImages: true, // request images
-    }),
+    })
   );
   for (const f of files) fd.append("files", f, f.name);
 
-  const res = await fetch(`${API_BASE}/api/v1/generate-from-files?raw=1`, {
-    method: "POST",
-    body: fd,
-  });
-
-  const text = await res.text();
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${text || "No body"}`);
-
-  let json: any;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    throw new Error(`Non-JSON: ${text.slice(0, 400)}`);
-  }
-
+  const url = API_BASE + joinUrl("v1", "generate-from-files") + "?raw=1";
+  const res = await fetch(url, { method: "POST", body: fd });
+  const json = await parseOrThrow(res);
   return normalizeEnvelope(json);
 }

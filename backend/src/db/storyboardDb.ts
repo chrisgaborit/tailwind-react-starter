@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import { Storyboard } from '../models/Storyboard';
+const { Pool } = require('pg');
+const { Storyboard } = require('../models/Storyboard');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

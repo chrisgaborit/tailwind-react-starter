@@ -1,14 +1,14 @@
-import { Queue, Worker, Job, QueueEvents } from "bullmq";
-import IORedis from "ioredis";
-import { logger } from "./lib/logger";
-import { generateStoryboardFromOpenAI } from "./services/openaiService";
+const { Queue, Worker, Job, QueueEvents } = require('bullmq');
+const IORedis = require('ioredis');
+const { logger } = require('./lib/logger');
+const { generateStoryboardFromOpenAI } = require('./services/openaiService');
 
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
-export const connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
+exports.connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
 
-export const genQueueName = "storyboard-generation";
-export const genQueue = new Queue(genQueueName, { connection });
-export const genEvents = new QueueEvents(genQueueName, { connection });
+exports.genQueueName = "storyboard-generation";
+exports.genQueue = new Queue(genQueueName, { connection });
+exports.genEvents = new QueueEvents(genQueueName, { connection });
 
 export async function enqueueGenJob(payload: any) {
   return genQueue.add("generate", payload, {
