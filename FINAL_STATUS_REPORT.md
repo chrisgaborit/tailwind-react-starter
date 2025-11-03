@@ -2,7 +2,7 @@
 
 **Date**: October 27, 2025  
 **Session Duration**: ~4 hours  
-**AI Engine**: DeepSeek (switched from ChatGPT)
+**AI Engine**: OpenAI ChatGPT (migrated from DeepSeek)
 
 ---
 
@@ -13,12 +13,12 @@
 - **Backend**: http://localhost:8080  
 - **Status**: Fully functional and stable
 
-### **2. DeepSeek AI Integration** ✅
+### **2. OpenAI ChatGPT Integration** ✅
 - **API Key**: Configured and working
-- **Model**: deepseek-chat
-- **Base URL**: https://api.deepseek.com/v1
+- **Model**: gpt-4o-mini
+- **Base URL**: https://api.openai.com/v1
 - **Status**: Successfully generating storyboards
-- **Performance**: 50-120 seconds per storyboard (3-4x slower than ChatGPT)
+- **Performance**: 35-90 seconds per storyboard
 
 ### **3. Storyboard Generation** ✅
 - **Scene Count**: 9-25 scenes per module
@@ -50,7 +50,7 @@
 
 **What It Does:**
 - Extracts specific models, techniques, examples from training material
-- Uses DeepSeek to analyze and extract content
+- Uses OpenAI ChatGPT to analyze and extract content
 - Passes extracted content to teaching agents
 
 **Test Results:**
@@ -291,5 +291,4 @@ curl -X POST http://localhost:8080/api/v2/storyboards \
 ---
 
 **🎉 Your Genesis AI Storyboard App is LIVE and WORKING!** 🎉
-
 

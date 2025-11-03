@@ -32,8 +32,7 @@ export function normaliseStoryboardForUI(input: any): StoryboardModule {
   // Ensure scenes are coerced into detailed shape
   sb.scenes = sb.scenes.map((s: any, i: number) => coerceScene(s, i));
 
-  // Guarantee first 4 header scenes
-  sb.scenes = ensureFirstFourScenes(sb.scenes);
+  // Note: Backend now handles internal pages enforcement
 
   // Back-fill moduleTiming if missing
   const perSceneSecs = sb.scenes.map((s) => Number(s?.timing?.estimatedSeconds || 60));
@@ -181,25 +180,7 @@ function coerceScene(raw: any, idx: number): StoryboardScene {
   return scene;
 }
 
-function ensureFirstFourScenes(scenes: StoryboardScene[]): StoryboardScene[] {
-  const need = [
-    "Title",
-    "Pronunciation Guide",
-    "Table of Contents",
-    "Welcome & Learning Objectives",
-  ];
-  const out = [...scenes];
-
-  for (let i = 0; i < 4; i++) {
-    const s = out[i];
-    if (!s) {
-      out[i] = makeHeaderScene(i + 1, need[i]);
-      continue;
-    }
-    out[i] = { ...s, sceneNumber: i + 1, pageTitle: s.pageTitle || need[i] };
-  }
-  return out.map((s, i) => ({ ...s, sceneNumber: i + 1 }));
-}
+// Note: ensureFirstFourScenes function removed - backend now handles internal pages enforcement
 
 function makeHeaderScene(n: number, title: string): StoryboardScene {
   return {
