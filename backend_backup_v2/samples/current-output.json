@@ -1,0 +1,101 @@
+{
+  "document_title": "Pegasus Navigation",
+  "project_code": "EFX-Pegasus-Nav",
+  "company": "{{COMPANY_NAME}}",
+  "created_by": "Learno / TLF",
+  "revision_history": [
+    {
+      "date": "2020-02-26",
+      "task": "Final Client Feedback Round",
+      "by": "EFX",
+      "version": "6.00"
+    }
+  ],
+  "slides": [
+    {
+      "slide_number": "1.0",
+      "slide_title": "Module Launch",
+      "page_number_in_document": "5",
+      "type": "Informational",
+      "events": [
+        {
+          "event_number": 1,
+          "audio_script": "Welcome to the Pegasus Navigation learning module. I'm Christine and I\u2019ll be your guide. To navigate, use the arrows, play/pause buttons, and the resources tab.",
+          "on_screen_text": {
+            "title": "Pegasus Navigation",
+            "body_text": [
+              "Welcome to the Pegasus Navigation learning module.",
+              "It will take approximately 20 minutes to complete.",
+              "Put your headphones on or follow the transcript."
+            ],
+            "bullet_points": [
+              "Use the arrows to navigate.",
+              "Click Resources for activity sheets.",
+              "Complete the knowledge checks to pass."
+            ]
+          },
+          "internal_development_notes": "Animate arrows, play/pause icons, and resource tab in sync with narration. Use Christine avatar, neutral-to-smiling.",
+          "screen_media_treatment": "Corporate character (Christine), GUI layout, {{COMPANY_NAME}} branding. Use background ID: 1088363297.",
+          "assets": [
+            {
+              "type": "image",
+              "source": "stock-photo-id-1088363297",
+              "description": "{{COMPANY_NAME}} GUI background image"
+            }
+          ],
+          "review_feedback": []
+        }
+      ]
+    },
+    {
+      "slide_number": "2.0",
+      "slide_title": "Overview",
+      "page_number_in_document": "6",
+      "type": "Informational",
+      "events": [
+        {
+          "event_number": 1,
+          "audio_script": "This module covers how to navigate Pegasus, search for files, and combine or cross-reference them.",
+          "on_screen_text": {
+            "title": "Overview",
+            "body_text": [
+              "You will learn to:",
+              "\u2022 Navigate the Pegasus system",
+              "\u2022 Search and retrieve records",
+              "\u2022 Combine and cross-reference files"
+            ]
+          },
+          "internal_development_notes": "Use {{COMPANY_NAME}} brand style. Animate bullet points as they are narrated.",
+          "screen_media_treatment": "Static image with {{COMPANY_NAME}} character and layout icons. Slide in text with bullet animations.",
+          "assets": [],
+          "review_feedback": []
+        }
+      ]
+    },
+    {
+      "slide_number": "3.0",
+      "slide_title": "Learning Objectives",
+      "page_number_in_document": "9",
+      "type": "Informational",
+      "events": [
+        {
+          "event_number": 1,
+          "audio_script": "By the end of this training, you will be able to describe Pegasus\u2019 purpose, access the system, and perform essential tasks.",
+          "on_screen_text": {
+            "title": "Learning Objectives",
+            "bullet_points": [
+              "Describe the importance of Pegasus to Equifax",
+              "Understand how to access the system",
+              "Identify ways to search for files",
+              "Understand when to combine or cross-reference files"
+            ]
+          },
+          "internal_development_notes": "Use blurred white box overlay with fade-in bullets. Use Christine smiling pose.",
+          "screen_media_treatment": "Use {{COMPANY_NAME}} colours and fonts. Display learning outcomes with matching icons.",
+          "assets": [],
+          "review_feedback": []
+        }
+      ]
+    }
+  ]
+}

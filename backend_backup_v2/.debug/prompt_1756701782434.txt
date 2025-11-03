@@ -1,0 +1,297 @@
+MODEL: gpt-4o
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order** hints.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE (keep all fields; mirror legacy fields for compatibility):
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  // NEW (structured layout; also mirror a short string in legacy "screenLayout"):
+  "screenLayout": string | {
+    "description": string,
+    "elements": Array<Record<string, any>>
+  },
+
+  "templateId": string,
+  "screenId": string,
+
+  // Structured audio + legacy mirror
+  "audio": {
+    "script": string,
+    "voiceParameters": {
+      "persona": string,
+      "gender"?: "Female" | "Male" | "Neutral" | string,
+      "pace": string,
+      "tone": string,
+      "emphasis": string
+    },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  // Short OST + optional style block
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: {
+      "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+      "color"?: string, "alignment"?: string, "position"?: string,
+      "animation"?: string
+    }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+
+    // AI Visual Generation Brief (hyper-specific) + legacy aiPrompt
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],      // HEX codes expected
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,       // e.g., "30% top-right"
+      "assetId"?: string
+    },
+    "overlayElements"?: Array<{
+      "elementType": "TitleText" | "Logo" | "Button" | "DynamicText" | "VectorIcon" | string,
+      "content"?: string,
+      "style"?: {
+        "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string,
+        "color"?: string, "alignment"?: string, "position"?: string,
+        "padding"?: string, "border"?: string, "animation"?: string
+      },
+      "aiGenerationDirective"?: string
+    }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  // Detailed interaction + legacy mirrors
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>, // choice-level outcomes
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- Align total scene count to **target scenes** from brief (±2); DO NOT hardcode by level.
+- Ensure **≥5 distinct interaction types** across the module.
+- Provide **≥3 branching decision points** with consequences + coaching feedback.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment**.
+- Every scene must include: structured audio, ≤70w OST, **AI visual brief** (composition, lighting, brand integration, HEX palette, mood, negativeSpace), overlay Elements (with style + AI directive), interaction details (if applicable) with explicit **feedback logic, retries, xAPI**, and **timing**.
+- Accessibility: captions ON, alt text, keyboard path & focus order, reduced-motion fallback.
+
+---
+
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include progress note)
+4) Welcome & Learning Objectives (3–5 objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words, never a verbatim VO copy.
+- Visuals: Provide AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space); alt text required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / two-sided cards
+  • process/timeline → Stepper/Timeline
+  • components → Hotspots
+  • nice-to-know → Accordion / Learn More pop-up
+
+KNOWLEDGE CHECKS
+- Place a KC every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Option-level feedback + retry (1–2 attempts before reveal).
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; xAPI verbs: responded/experienced.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+
+CROSS-CUTTING
+- Brand fonts/colours referenced in visuals & OST where relevant.
+- Accessibility: captions ON; keyboard path + focus order; WCAG AA contrast; reduced-motion fallback.
+- Timing metadata per scene; module roll-up in metadata.moduleTiming.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+---
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG – Storyboards) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Coates Industrial Solutions\nStoryboard Script\nDocument Objectives:\nThis document provides insight into the proposed content outline, design approach and the estimated seat time.\nCustomer Name: Coates\nProject/Course Name: Product Introduction\nModule Number: M2\nProject Manager: Rashida\nID: Majid Sheikh\nPOC: NA\nVersion History\nDate\nVersion Number\nAuthor/Reviewer\nDescription\n26th Aug 2021\n Jul, 2021\nV1.0\nMajid Sheikh\nSB creation\nProject brief/requirement\nSeat time: 10 mins\nLanguage: - U.K English\nInteraction levels: - Level 2\nInput documents for creating this document: Product Introduction - Coates Industrial Services - Final\nSource: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/Product Introduction - Coates Industrial Services - Final.pptx\nAudio: Articulate Rise formats do not have scope for audio except multimedia sections. In this course, audio has only been used in one video.\nNumber of VO artists: 1\nVideo: Yes\nAssessment and number of questions: NA\nAuthoring Tool: Articulate Rise\nList with names of characters used: NA\nDiversity in characters: NA\nImage type: Real images + Icons\nOpen Note:\n Client wants simple and general eLearning course.\nTemplates have been chosen from scaffold.\nThe yellow highlighted words are for the understanding of graphics team, they will not be a part of on-screen text.\nColor code used for updates: Alpha Edits; Beta Edits; Final Edits\nTable of Contents\nTopic 0: Module Landing Screen\t4\nScreen 1: Welcome\t4\nTopic 1: Introduction\t5\nScreen 1: Module Overview\t5\nTopic 2: Shutdowns – Tool Stores\t12\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\t12\nTopic 3: Value Proposition, Resources and Specialisations\t14\nScreen 1: Value Proposition\t14\nScreen 2: Resources & Specialisations\t14\nScreen 3: Coming Up\t15\nTopic 4: Market Segments and Customers\t15\nScreen 1: What Market Segments use Coates Industrial Solutions?\t15\nScreen 2: What Customers use Coates Industrial Solutions?\t17\nScreen 3: Coming Up\t18\nTopic 5: Key Services and Areas of Expertise\t18\nScreen 1: Key Services Offered\t18\nScreen 2: Areas of Expertise\t20\nScreen 3: Coming Up\t21\nTopic 6: Uncovering Business Opportunities\t22\nScreen 1: Questions to Ask Customers to Uncover Business Opportunities\t22\nScreen 2: Check Your Understanding\t23\nScreen 4: Check Your Understanding\t24\nScreen 5: Coming Up\t25\nTopic 7: Module Summary\t25\nScreen 1: Key Messages\t25\nScreen 2: Additional Information\t26\nScreen 3: Thank You\t27\nTopic 0: Module Landing Screen\nScreen 1: Welcome\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nCoates Industrial Solutions\nSTART MODULE\n                                         Details\nObjectives of this Module\nBuild your knowledge of Coates Industrial Solutions\nUnderstand the value proposition, resources and specialisations of Coates Industrial Solutions\nAssist you in understanding the services and offerings that Coates Industrial Solutions provide\nIdentify the questions to be asked to customers to uncover the opportunities for business growth\nYou will need around 10 minutes to complete this course.\nImage:\nImage from: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Coates-Hire-Solutions-Project-Planning.png\nOn selecting Details, the following topics will be displayed.\nIntroduction\nShutdowns – Tool Stores\nValue Proposition, Resources and Specialisations\nMarket Segments and Customers\nKey Services and Areas of Expertise\nUncovering Business Opportunities\nModule Summary\nTopic 1: Introduction\nScreen 1: Module Overview\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nStart the video below to learn more about Coates Industrial Solutions.\nNo Audio here\nThis will be a video.\nVideo launch image:\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Kalgoorlie Toolstore 5.jpg\nCoates Industrial Solutions - One stop solution for industrial shutdowns or maintenance events\nCoates Industrial Solutions is the one stop solution for industrial shutdowns or maintenance events.\nBring this image first in synch with the audio ‘for industrial shutdowns’\n872042966\nBring this image in synch with the audio ‘maintenance events’.\n1094009946\nEnd-to-end tailor-made solutions\nIt provides end-to-end tailor-made solutions …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nLatest in equipment offerings\nwith the latest in equipment offerings for any project.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTemporary 24/7 operational services\nCoates Industrial Solutions provides customers with temporary 24/7 operational services.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nSite Maintenance and Shutdown\nThese services include:\nSite Maintenance and Shutdown, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTool Store Management\nTool Store Management, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nOnsite Facilities\nOnsite Facilities, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Management Service\nEquipment Management Service, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Hire and Fleet\nEquipment Hire and Fleet, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nConsumables\nConsumables, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nAsset Management\nAsset Management and …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nDrones, Refuelling and Productivity Tracking\nOther services including Drones, Refuelling and productivity Tracking.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nThis module will give you a complete overview of Coates Industrial Solutions\nThis module will give you a complete overview of Coates Industrial Solutions. Let’s continue to learn more.\n1291620198\nTopic 2: Shutdowns – Tool Stores\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nLet’s look at the reasons why customers need tool stores for shutdowns.\nTimeline 1\nSupport Day-to-Day Operations\nGenerally, a client is setup for day-to-day operations, which may mean having a tool store to support a crew of 100-200 people, this is where Industrial Solutions can manage the ‘resident’ tool store.\nTimeline 2\nSupport Shutdown or a Maintenance Event\nFrom time-to-time, clients have a shutdown or event where they need to support a larger crew e.g., 400-600 people, for a short duration and it’s not commercially viable for the customer to procure, so they call in Coates Industrial Solutions to support the project.\nTimeline 3\nTools an
+
+[…truncated…]
+--- END CONTEXT ---
+
+--- INTERACTION BLUEPRINTS (RAG – Chunks) ---
+No chunk-level RAG available.
+--- END BLUEPRINTS ---
+
+INTERACTIVITY PROFILE (adhere strictly)
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection, Interactive Video
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Managing Remote Teams
+Module Type: eLearning
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: General staff
+Tone: Professional, encouraging
+Output Language: English (UK)
+Organisation: Not specified
+Learning Outcomes (desired): Author to propose 3–5 outcomes aligned to the brief.
+Instructional Purpose: Not specified
+Preferred Instructional Design Methodology: Not specified
+Brand Guidelines: None provided
+Colours: Default
+Fonts: Default
+Company Images (binary uploaded or URLs):
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+Short outline about remote team principles and async rituals.
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 Learning Outcomes** aligned to the brief and duration (~20 min).
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** with composition + lighting + HEX palette + mood + brand integration + negativeSpace, **overlayElements** with styles + AI directives, interaction details (logic/xAPI), and **timing**.
+- Include **captions ON** by default, keyboard path hints and focus order.
+- Use **UK English** throughout.
+- Aim for Brandon Hall calibre: scenario practice, spaced retrieval, meaningful feedback, authentic language, practicality.
+
+SPECIFICATION TEMPLATES (adapt as needed):
+- visual.visualGenerationBrief must include:
+  sceneDescription, style (Photorealistic / Vector / 3D Render / Flat), subject (who/what/action), setting, composition (camera/framing), lighting (type + temp), colorPalette (HEX), mood, brandIntegration, negativeSpace, assetId placeholder.
+- overlayElements[]:
+  { elementType, content, style { fontFamily, fontWeight, fontSize, color, alignment, position, padding, border, animation }, aiGenerationDirective }
+- audio:
+  full script + voiceParameters (persona, pace, tone, emphasis), optional backgroundMusic, and aiGenerationDirective.
+- interactionDetails:
+  aiActions, aiDecisionLogic (per-choice feedback + branching), retryLogic, completionRule, xAPI events[].
+- timing.estimatedSeconds per scene; module-level rollup in metadata.moduleTiming.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above and include the first four scenes in order.
+- Populate **both** the new structured fields and the legacy fields (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string) for compatibility with existing UI.
+
+---
+
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include progress note)
+4) Welcome & Learning Objectives (3–5 objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words, never a verbatim VO copy.
+- Visuals: Provide AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space); alt text required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / two-sided cards
+  • process/timeline → Stepper/Timeline
+  • components → Hotspots
+  • nice-to-know → Accordion / Learn More pop-up
+
+KNOWLEDGE CHECKS
+- Place a KC every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Option-level feedback + retry (1–2 attempts before reveal).
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; xAPI verbs: responded/experienced.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+
+CROSS-CUTTING
+- Brand fonts/colours referenced in visuals & OST where relevant.
+- Accessibility: captions ON; keyboard path + focus order; WCAG AA contrast; reduced-motion fallback.
+- Timing metadata per scene; module roll-up in metadata.moduleTiming.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+---

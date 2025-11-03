@@ -1,0 +1,130 @@
+MODEL: gpt-5
+
+SYSTEM:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+You are an expert instructional designer. Your task is to create a detailed e-learning storyboard. You must output a valid JSON object and nothing else. Adhere strictly to the provided JSON schema.
+
+USER:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+Please generate a storyboard for the following module:
+- Title: Managing Remote Teams
+- Audience: undefined
+- Target Duration: 20 minutes.
+- Complexity: Level 3
+
+Based on this source content:
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Coates Industrial Solutions\nStoryboard Script\nDocument Objectives:\nThis document provides insight into the proposed content outline, design approach and the estimated seat time.\nCustomer Name: Coates\nProject/Course Name: Product Introduction\nModule Number: M2\nProject Manager: Rashida\nID: Majid Sheikh\nPOC: NA\nVersion History\nDate\nVersion Number\nAuthor/Reviewer\nDescription\n26th Aug 2021\n Jul, 2021\nV1.0\nMajid Sheikh\nSB creation\nProject brief/requirement\nSeat time: 10 mins\nLanguage: - U.K English\nInteraction levels: - Level 2\nInput documents for creating this document: Product Introduction - Coates Industrial Services - Final\nSource: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/Product Introduction - Coates Industrial Services - Final.pptx\nAudio: Articulate Rise formats do not have scope for audio except multimedia sections. In this course, audio has only been used in one video.\nNumber of VO artists: 1\nVideo: Yes\nAssessment and number of questions: NA\nAuthoring Tool: Articulate Rise\nList with names of characters used: NA\nDiversity in characters: NA\nImage type: Real images + Icons\nOpen Note:\n Client wants simple and general eLearning course.\nTemplates have been chosen from scaffold.\nThe yellow highlighted words are for the understanding of graphics team, they will not be a part of on-screen text.\nColor code used for updates: Alpha Edits; Beta Edits; Final Edits\nTable of Contents\nTopic 0: Module Landing Screen\t4\nScreen 1: Welcome\t4\nTopic 1: Introduction\t5\nScreen 1: Module Overview\t5\nTopic 2: Shutdowns – Tool Stores\t12\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\t12\nTopic 3: Value Proposition, Resources and Specialisations\t14\nScreen 1: Value Proposition\t14\nScreen 2: Resources & Specialisations\t14\nScreen 3: Coming Up\t15\nTopic 4: Market Segments and Customers\t15\nScreen 1: What Market Segments use Coates Industrial Solutions?\t15\nScreen 2: What Customers use Coates Industrial Solutions?\t17\nScreen 3: Coming Up\t18\nTopic 5: Key Services and Areas of Expertise\t18\nScreen 1: Key Services Offered\t18\nScreen 2: Areas of Expertise\t20\nScreen 3: Coming Up\t21\nTopic 6: Uncovering Business Opportunities\t22\nScreen 1: Questions to Ask Customers to Uncover Business Opportunities\t22\nScreen 2: Check Your Understanding\t23\nScreen 4: Check Your Understanding\t24\nScreen 5: Coming Up\t25\nTopic 7: Module Summary\t25\nScreen 1: Key Messages\t25\nScreen 2: Additional Information\t26\nScreen 3: Thank You\t27\nTopic 0: Module Landing Screen\nScreen 1: Welcome\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nCoates Industrial Solutions\nSTART MODULE\n                                         Details\nObjectives of this Module\nBuild your knowledge of Coates Industrial Solutions\nUnderstand the value proposition, resources and specialisations of Coates Industrial Solutions\nAssist you in understanding the services and offerings that Coates Industrial Solutions provide\nIdentify the questions to be asked to customers to uncover the opportunities for business growth\nYou will need around 10 minutes to complete this course.\nImage:\nImage from: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Coates-Hire-Solutions-Project-Planning.png\nOn selecting Details, the following topics will be displayed.\nIntroduction\nShutdowns – Tool Stores\nValue Proposition, Resources and Specialisations\nMarket Segments and Customers\nKey Services and Areas of Expertise\nUncovering Business Opportunities\nModule Summary\nTopic 1: Introduction\nScreen 1: Module Overview\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nStart the video below to learn more about Coates Industrial Solutions.\nNo Audio here\nThis will be a video.\nVideo launch image:\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Kalgoorlie Toolstore 5.jpg\nCoates Industrial Solutions - One stop solution for industrial shutdowns or maintenance events\nCoates Industrial Solutions is the one stop solution for industrial shutdowns or maintenance events.\nBring this image first in synch with the audio ‘for industrial shutdowns’\n872042966\nBring this image in synch with the audio ‘maintenance events’.\n1094009946\nEnd-to-end tailor-made solutions\nIt provides end-to-end tailor-made solutions …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nLatest in equipment offerings\nwith the latest in equipment offerings for any project.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTemporary 24/7 operational services\nCoates Industrial Solutions provides customers with temporary 24/7 operational services.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nSite Maintenance and Shutdown\nThese services include:\nSite Maintenance and Shutdown, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTool Store Management\nTool Store Management, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nOnsite Facilities\nOnsite Facilities, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Management Service\nEquipment Management Service, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Hire and Fleet\nEquipment Hire and Fleet, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nConsumables\nConsumables, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nAsset Management\nAsset Management and …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nDrones, Refuelling and Productivity Tracking\nOther services including Drones, Refuelling and productivity Tracking.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nThis module will give you a complete overview of Coates Industrial Solutions\nThis module will give you a complete overview of Coates Industrial Solutions. Let’s continue to learn more.\n1291620198\nTopic 2: Shutdowns – Tool Stores\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nLet’s look at the reasons why customers need tool stores for shutdowns.\nTimeline 1\nSupport Day-to-Day Operations\nGenerally, a client is setup for day-to-day operations, which may mean having a tool store to support a crew of 100-200 people, this is where Industrial Solutions can manage the ‘resident’ tool store.\nTimeline 2\nSupport Shutdown or a Maintenance Event\nFrom time-to-time, clients have a shutdown or event where they need to support a larger crew e.g., 400-600 people, for a short duration and it’s not commercially viable for the customer to procure, so they call in Coates Industrial Solutions to support the project.\nTimeline 3\nTools and Equipment Management\nIndustrial Solutions customers are specialists in producing oil and gas, electricity, iron ore, nickel etc. but they are not specialists in tools and equipment management! Coates Industrial Solutions c",
+  "filename": "CH_PI_M11_Industrial_Solutions_SB_v1.0.docx"
+}
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+{
+  "text": "Pre-Session Responsibilities\n45 minutes prior to delivery\nArrive at the broadcast venue.\nVerify the following:\nTechnical support staff members (Elluminate & client) are standing by.\nThe training database (if required) is available and the data has been refreshed since the previous session.\nYou have the session participant list (roll) (register).\nYou have the online resources link for participant handout downloads.\nYou have the post-training survey link.\n30 minutes prior to delivery\nJoin the session room\nRun the audio wizard.\nLoad the session plan and activated it.\nSetup break-out rooms and load instructions into each.\nModify the ‘Welcome’ slide to show the actual session start time.\nModify the ‘Your trainer’ slide to include your photo and name.\n25 minutes prior to delivery\nGo to the toilet.\nFill up your water bottle.\nSwitch your telephones to silent mode. If your desk phone has no silent capabilities, turn it off.\nHang/display/wear your‘Do Not Disturb’ sign.\n15 minutes prior to delivery\nBroadcast the ‘Welcome’ slide.\nCommence the regular countdown ‘sound checks’ to welcome recently joined participants. Remind them of the start time and to complete the Audio Setup Wizard if they haven’t already done so.\nChat with early participants.\n2 minutes prior to delivery\nBroadcast the ‘Audio setup’ slide.\nContinue the regular countdown ‘sound checks’ to welcome recently joined participants.\nVirtual Classroom Capabilities Featured in this Session\nApplication Sharing\nX\nBreakout Rooms\nX\nChat\nX\nEmoticons\nX\nInteractive Whiteboard\nX\nSimultaneous Speakers\nX\nPolls\nX\nSession Recording\nQuizzes\nX\nWeb Tour\nList of Polls (with links if prepared)\nPoll one\nPoll two\nPoll three\nPoll four\nPoll five\nPoll six\nList to Handouts\nHandout one\nHandout two\nhandout three\nWorkplace Assignment(s)\nDetails of the assignment(s) go here. Include any special requirements.\nUseful Contacts\nThe Learning Factor\nVicki Kossoff:\t02 8211 0440\nChris Gaborit:\t02 8211 0440\nVirtual Classroom Technical Help\nContact name and phone number\nContact name and phone number\nSubject Matter Experts\nContact name and phone number\nContact name and phone number\nContact name and phone number\nProject Training Coordinator\nContact name and phone number\nRow Number\nDuration\nTime Segment\nLearning Content\nMethod\nGraphic orThumbnail\nTalk Track\nInteraction\nIntended Response\nResponse Method\nPlan B\nPre-session\nThis is the standard pre-session segment. Fifteen minutes prior to the scheduled session start time, participants will be able to access the classroom.\n1\n13 min\n-2 min\nDisplay the Welcome slide on the WBD.\nEvery minute or so welcome  any new participants to the session, remind them of the official start time\nNote: Commence an audio ‘countdown’ 5 minutes prior to start and repeat approximately every 30 seconds.\n“Thanks for joining. We’re just getting settled in and we’ll officially begin at <insert start time>.\nWhilst you are waiting, if you haven’t already done so, take a moment to run the Audio Setup Wizard to configure your headphone and microphone settings.”\n2\n1 min\n-1 min\nHave participants close all non essential applications.\nDisplay the Reminder slide on the WBD.\n“All right everyone, let’s get started.\nAs usual we will be using a significant number of system resources today, so to minimise the impact on the network and your local PC, please close all applications other than the virtual classroom.\nGo ahead and save anything that you were working on. Then please close all programs except this one.”\n3\n1 min\n-1 min\nPerform a housekeeping check of the audio.\nDisplay on the WBD:\nIs everyone ready?\n“Before we get underway, I’d like to make sure that everyone’s audio is working.\nIf you can hear me, please click the green tick on the toolbar now.”\nClick the appropriate Yes/No icon on the toolbar to register a polling result.\nMostly Ticks and a few Crosses.\nYes/No poll\nAudio Resolutions:\nchat privately\ntake into a breakout room\ncall them\nOpening\nThis is the standard opening to be used for all sessions with obvious inclusion of course specific ‘Purpose and Topics’, ‘Prerequisites’, ‘Learning Outcomes’ and ‘Key Changes’ segments\n4\n1 min\n1 min\nOpening Segment: introduces you as the presenter\nDisplay on WBD:‘Your presenter’\n“Hello and welcome everyone, my name is [insert your name] and I’ll be your presenter and tour guide today.\nIn this session we will cover a range of topics relating to The Art of Coaching.”\n5\n1 min\n2 min\nPrerequisites\nDisplay on WBD ‘Prerequisites’\nRead and highlight the prerequisites and make sure that any ‘show stoppers’ are highlighted\nHave the participants use the voting buttons to indicate whether they satisfy the prerequisites.\nHave your co-moderator invite any participant that fails to meet the prerequisites into a breakout room, where they can ascertain whether the participant can continue with the course.\n“Before we begin, please take a look at the course prerequisites.\nIf you meet these requirements, please click on the green tick. If you do not meet these requirements, please click on the red cross.\nI will ask my co-moderator [insert name] to help anyone who does not meet some or all of the prerequisites for this course.”\nTicks (or crosses) in the participant window.\nMostly ticks with maybe 1 or 2 crosses\nVoting buttons\nIf cross selected, use chat to determine if the participant should remain in the session.\nIf not, arrange rescheduling.\n6\n1 min\n3 min\nOrientation to virtual classroom via instructor led navigation around the various panels on the screen and their usage.\nDisplay on WBD:‘Elluminate Basics’\n“At this time I’d like to remind you that today’s session is being recorded.\nAfter the session is done, I’ll send each of you an email containing a link to the recording.”\n7\n1 min\n4 min\nDisplay on WBD:‘Regional NSW’’\nMention some of the areas as they are being highlighted by the participants\n“Before we get underway, let’s see where everyone is joining the session from today.\nIf you are joining from a regional or country centre, select your Laser Pointer from the whiteboard tools and click on the map to place a blinking red dot showing us where you are.\nIf you are in the metropolitan area you’ll get a chance in a minute.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n8\n1 min\n5 min\nDisplay on WBD:‘Metro Area’\nLook for and mention any areas showing ‘clusters’ of participants\n“OK, now it’s time for everyone joining the session from somewhere in the Sydney metropolitan area to show us where they are.\nPlease select your Laser Pointer from the Whiteboard Tools and click on the map to show us where you are.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n9\n1 min\n6 min\nPurpose & Topics\nDisplay on WBD: Overview: The Art of Coaching\n“Now let’s look at the purpose of today’s session.\nIn this session, you will be introduced to the coaching concept.\nThe skills for coaching excellence will be identified and discussed.\nThe four steps of the coaching model will be presented.\nAfterwards, we’ll talk about the characteristics of effective feedback.\nLater, we’ll take a look at the four stages of a coaching session and how to determine if a session was successful.\nFinally, we’ll cover how to manage coaching challenges.”\n10\n1 min\n7 min\nIntroduction to Topic 1\nDisplay on WBDTopic 1\n“In Topic 1 we will examine the coaching concepts.\nWe’ll take a look at what coaching is and what it isn’t.\nWe’ll examine the five approaches to coaching and how to use those approaches appropriately.\nFinally, we’ll discuss various behaviours that are associated with those approaches.”\n11\n1 min\n8 min\nIntro",
+  "filename": "Session Storyboard - The Art of Coaching - First Draft Compressed.docx"
+}
+--- END OF EXAMPLE 2 ---
+
+## HIGH-VALUE INTERACTION BLUEPRINTS (use as patterns, not verbatim)
+
+### CHUNK 1 • Informative (Knowledge Activation)  sim=0.369
+
+### CHUNK 2 • Informative (Knowledge Activation)  sim=0.356
+
+### CHUNK 3 • Informative (Knowledge Activation)  sim=0.356
+
+### CHUNK 4 • Informative (Knowledge Activation)  sim=0.274
+
+### CHUNK 5 • Informative (Knowledge Activation)  sim=0.259
+
+### CHUNK 6 • Informative (Knowledge Activation)  sim=0.259

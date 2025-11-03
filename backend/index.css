@@ -1,0 +1,104 @@
+/* ✅ Import fonts FIRST (required before Tailwind) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@600;700&display=swap');
+
+/* ✅ Tailwind core utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Custom Fonts */
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* ✅ Body styling */
+body {
+  @apply bg-brandDark text-white min-h-screen m-0 font-body flex justify-center items-start pt-12 px-4;
+}
+
+/* ✅ Headings */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-brilliantBlue;
+}
+
+/* ✅ Inputs, Textareas, Selects */
+input,
+textarea,
+select {
+  @apply bg-brandField text-white border border-brandGray rounded-md p-3 w-full h-14;
+}
+
+textarea {
+  @apply min-h-[120px];
+}
+
+input::placeholder,
+textarea::placeholder {
+  @apply text-gray-400;
+}
+
+/* ✅ Links */
+a {
+  @apply text-brilliantBlue underline;
+}
+a:hover {
+  @apply text-blue-400;
+}
+
+/* ✅ Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2c2c2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 6px;
+  border: 2px solid #2c2c2e;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2c2c2e;
+}
+
+/*
+ * =========================================
+ * PRINT STYLES
+ * These rules only apply when printing or exporting to PDF.
+ * =========================================
+ */
+@media print {
+  /* Hide everything on the page by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Then, display the printable area and everything inside it */
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+
+  /* Position the printable area at the top-left of the page for a clean export */
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide any elements (like buttons) that shouldn't be in the final PDF */
+  .no-print {
+    display: none !important; /* Use !important to ensure it's hidden */
+  }
+}

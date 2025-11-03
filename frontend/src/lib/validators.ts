@@ -17,3 +17,23 @@ export function validateStoryboardScenes(scenes: any[], { ostLimit = 70 } = {}) 
   });
   return warnings;
 }
+
+export function validateStoryboardCoverage(storyboard: any) {
+  // Basic coverage validation
+  const issues = [];
+  if (!storyboard?.scenes?.length) {
+    issues.push("No scenes found");
+  }
+  if (!storyboard?.moduleName) {
+    issues.push("Missing module name");
+  }
+  return {
+    isValid: issues.length === 0,
+    issues
+  };
+}
+
+export function extractStoryboardModule(data: any) {
+  // Extract storyboard module from API response
+  return data?.storyboardModule || data?.storyboard || data;
+}

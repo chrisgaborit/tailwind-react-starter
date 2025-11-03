@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmitOnError": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/index.ts",
+    "src/services/openaiService.ts",
+    "src/utils/normalizeStoryboard.ts",
+    "src/utils/parseDuration.ts",
+    "src/utils/levelClassifier.ts"
+  ],
+  "exclude": []
+}

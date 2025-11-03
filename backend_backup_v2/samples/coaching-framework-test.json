@@ -1,0 +1,35 @@
+{
+  "moduleName": "The Art of Coaching",
+  "strategicCategory": "Leadership & Management Development",
+  "businessImpact": {
+    "metric": "Team performance improvement",
+    "targetImprovement": 15,
+    "timeframe": 90,
+    "successDefinition": "Managers apply coaching skills in weekly 1:1s, leading to measurable team performance improvements"
+  },
+  "innovationStrategies": ["Adaptive Learning Paths", "Social Learning Community"],
+  "measurementApproaches": ["Behavior observation", "Business impact tracking"],
+  "learningOutcomes": [
+    "Recognise and apply five approaches to coaching",
+    "Demonstrate behaviours of effective leader coach", 
+    "Implement 4-step coaching process",
+    "Conduct coaching sessions with 4 components"
+  ],
+  "targetAudience": "New and experienced managers",
+  "tone": "Professional and supportive",
+  "moduleType": "Leadership",
+  "complexityLevel": "Level 3",
+  "durationMins": 20
+}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,611 @@
+MODEL: gpt-5
+
+SYSTEM:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order**; **reduced-motion fallback** noted.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "idMethod": "ADDIE" | "SAM" | "MERRILL" | "GAGNE" | "BACKWARD" | "BLOOM",
+  "scenes": Scene[]
+}
+
+USER:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+You are designing a Brandon-Hall quality storyboard.
+
+--- CONTEXT EXAMPLES (RAG) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Coates Industrial Solutions\nStoryboard Script\nDocument Objectives:\nThis document provides insight into the proposed content outline, design approach and the estimated seat time.\nCustomer Name: Coates\nProject/Course Name: Product Introduction\nModule Number: M2\nProject Manager: Rashida\nID: Majid Sheikh\nPOC: NA\nVersion History\nDate\nVersion Number\nAuthor/Reviewer\nDescription\n26th Aug 2021\n Jul, 2021\nV1.0\nMajid Sheikh\nSB creation\nProject brief/requirement\nSeat time: 10 mins\nLanguage: - U.K English\nInteraction levels: - Level 2\nInput documents for creating this document: Product Introduction - Coates Industrial Services - Final\nSource: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/Product Introduction - Coates Industrial Services - Final.pptx\nAudio: Articulate Rise formats do not have scope for audio except multimedia sections. In this course, audio has only been used in one video.\nNumber of VO artists: 1\nVideo: Yes\nAssessment and number of questions: NA\nAuthoring Tool: Articulate Rise\nList with names of characters used: NA\nDiversity in characters: NA\nImage type: Real images + Icons\nOpen Note:\n Client wants simple and general eLearning course.\nTemplates have been chosen from scaffold.\nThe yellow highlighted words are for the understanding of graphics team, they will not be a part of on-screen text.\nColor code used for updates: Alpha Edits; Beta Edits; Final Edits\nTable of Contents\nTopic 0: Module Landing Screen\t4\nScreen 1: Welcome\t4\nTopic 1: Introduction\t5\nScreen 1: Module Overview\t5\nTopic 2: Shutdowns – Tool Stores\t12\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\t12\nTopic 3: Value Proposition, Resources and Specialisations\t14\nScreen 1: Value Proposition\t14\nScreen 2: Resources & Specialisations\t14\nScreen 3: Coming Up\t15\nTopic 4: Market Segments and Customers\t15\nScreen 1: What Market Segments use Coates Industrial Solutions?\t15\nScreen 2: What Customers use Coates Industrial Solutions?\t17\nScreen 3: Coming Up\t18\nTopic 5: Key Services and Areas of Expertise\t18\nScreen 1: Key Services Offered\t18\nScreen 2: Areas of Expertise\t20\nScreen 3: Coming Up\t21\nTopic 6: Uncovering Business Opportunities\t22\nScreen 1: Questions to Ask Customers to Uncover Business Opportunities\t22\nScreen 2: Check Your Understanding\t23\nScreen 4: Check Your Understanding\t24\nScreen 5: Coming Up\t25\nTopic 7: Module Summary\t25\nScreen 1: Key Messages\t25\nScreen 2: Additional Information\t26\nScreen 3: Thank You\t27\nTopic 0: Module Landing Screen\nScreen 1: Welcome\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nCoates Industrial Solutions\nSTART MODULE\n                                         Details\nObjectives of this Module\nBuild your knowledge of Coates Industrial Solutions\nUnderstand the value proposition, resources and specialisations of Coates Industrial Solutions\nAssist you in understanding the services and offerings that Coates Industrial Solutions provide\nIdentify the questions to be asked to customers to uncover the opportunities for business growth\nYou will need around 10 minutes to complete this course.\nImage:\nImage from: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Coates-Hire-Solutions-Project-Planning.png\nOn selecting Details, the following topics will be displayed.\nIntroduction\nShutdowns – Tool Stores\nValue Proposition, Resources and Specialisations\nMarket Segments and Customers\nKey Services and Areas of Expertise\nUncovering Business Opportunities\nModule Summary\nTopic 1: Introduction\nScreen 1: Module Overview\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nStart the video below to learn more about Coates Industrial Solutions.\nNo Audio here\nThis will be a video.\nVideo launch image:\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Kalgoorlie Toolstore 5.jpg\nCoates Industrial Solutions - One stop solution for industrial shutdowns or maintenance events\nCoates Industrial Solutions is the one stop solution for industrial shutdowns or maintenance events.\nBring this image first in synch with the audio ‘for industrial shutdowns’\n872042966\nBring this image in synch with the audio ‘maintenance events’.\n1094009946\nEnd-to-end tailor-made solutions\nIt provides end-to-end tailor-made solutions …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nLatest in equipment offerings\nwith the latest in equipment offerings for any project.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTemporary 24/7 operational services\nCoates Industrial Solutions provides customers with temporary 24/7 operational services.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nSite Maintenance and Shutdown\nThese services include:\nSite Maintenance and Shutdown, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTool Store Management\nTool Store Management, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nOnsite Facilities\nOnsite Facilities, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Management Service\nEquipment Management Service, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Hire and Fleet\nEquipment Hire and Fleet, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nConsumables\nConsumables, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nAsset Management\nAsset Management and …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nDrones, Refuelling and Productivity Tracking\nOther services including Drones, Refuelling and productivity Tracking.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nThis module will give you a complete overview of Coates Industrial Solutions\nThis module will give you a complete overview of Coates Industrial Solutions. Let’s continue to learn more.\n1291620198\nTopic 2: Shutdowns – Tool Stores\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nLet’s look at the reasons why customers need tool stores for shutdowns.\nTimeline 1\nSupport Day-to-Day Operations\nGenerally, a client is setup for day-to-day operations, which may mean having a tool store to support a crew of 100-200 people, this is where Industrial Solutions can manage the ‘resident’ tool store.\nTimeline 2\nSupport Shutdown or a Maintenance Event\nFrom time-to-time, clients have a shutdown or event where they need to support a larger crew e.g., 400-600 people, for a short duration and it’s not commercially viable for the customer to procure, so they call in Coates Industrial Solutions to support the project.\nTimeline 3\nTools and Equipment Management\nIndustrial Solutions customers are specialists in producing oil and gas, electricity, iron ore, nickel etc. but they are not specialists in tools and equipment management! Coates Industrial Solutions c",
+  "filename": "CH_PI_M11_Industrial_Solutions_SB_v1.0.docx"
+}
+--- END OF EXAMPLE 1 ---
+
+--- START OF EXAMPLE 2 ---
+{
+  "text": "Pre-Session Responsibilities\n45 minutes prior to delivery\nArrive at the broadcast venue.\nVerify the following:\nTechnical support staff members (Elluminate & client) are standing by.\nThe training database (if required) is available and the data has been refreshed since the previous session.\nYou have the session participant list (roll) (register).\nYou have the online resources link for participant handout downloads.\nYou have the post-training survey link.\n30 minutes prior to delivery\nJoin the session room\nRun the audio wizard.\nLoad the session plan and activated it.\nSetup break-out rooms and load instructions into each.\nModify the ‘Welcome’ slide to show the actual session start time.\nModify the ‘Your trainer’ slide to include your photo and name.\n25 minutes prior to delivery\nGo to the toilet.\nFill up your water bottle.\nSwitch your telephones to silent mode. If your desk phone has no silent capabilities, turn it off.\nHang/display/wear your‘Do Not Disturb’ sign.\n15 minutes prior to delivery\nBroadcast the ‘Welcome’ slide.\nCommence the regular countdown ‘sound checks’ to welcome recently joined participants. Remind them of the start time and to complete the Audio Setup Wizard if they haven’t already done so.\nChat with early participants.\n2 minutes prior to delivery\nBroadcast the ‘Audio setup’ slide.\nContinue the regular countdown ‘sound checks’ to welcome recently joined participants.\nVirtual Classroom Capabilities Featured in this Session\nApplication Sharing\nX\nBreakout Rooms\nX\nChat\nX\nEmoticons\nX\nInteractive Whiteboard\nX\nSimultaneous Speakers\nX\nPolls\nX\nSession Recording\nQuizzes\nX\nWeb Tour\nList of Polls (with links if prepared)\nPoll one\nPoll two\nPoll three\nPoll four\nPoll five\nPoll six\nList to Handouts\nHandout one\nHandout two\nhandout three\nWorkplace Assignment(s)\nDetails of the assignment(s) go here. Include any special requirements.\nUseful Contacts\nThe Learning Factor\nVicki Kossoff:\t02 8211 0440\nChris Gaborit:\t02 8211 0440\nVirtual Classroom Technical Help\nContact name and phone number\nContact name and phone number\nSubject Matter Experts\nContact name and phone number\nContact name and phone number\nContact name and phone number\nProject Training Coordinator\nContact name and phone number\nRow Number\nDuration\nTime Segment\nLearning Content\nMethod\nGraphic orThumbnail\nTalk Track\nInteraction\nIntended Response\nResponse Method\nPlan B\nPre-session\nThis is the standard pre-session segment. Fifteen minutes prior to the scheduled session start time, participants will be able to access the classroom.\n1\n13 min\n-2 min\nDisplay the Welcome slide on the WBD.\nEvery minute or so welcome  any new participants to the session, remind them of the official start time\nNote: Commence an audio ‘countdown’ 5 minutes prior to start and repeat approximately every 30 seconds.\n“Thanks for joining. We’re just getting settled in and we’ll officially begin at <insert start time>.\nWhilst you are waiting, if you haven’t already done so, take a moment to run the Audio Setup Wizard to configure your headphone and microphone settings.”\n2\n1 min\n-1 min\nHave participants close all non essential applications.\nDisplay the Reminder slide on the WBD.\n“All right everyone, let’s get started.\nAs usual we will be using a significant number of system resources today, so to minimise the impact on the network and your local PC, please close all applications other than the virtual classroom.\nGo ahead and save anything that you were working on. Then please close all programs except this one.”\n3\n1 min\n-1 min\nPerform a housekeeping check of the audio.\nDisplay on the WBD:\nIs everyone ready?\n“Before we get underway, I’d like to make sure that everyone’s audio is working.\nIf you can hear me, please click the green tick on the toolbar now.”\nClick the appropriate Yes/No icon on the toolbar to register a polling result.\nMostly Ticks and a few Crosses.\nYes/No poll\nAudio Resolutions:\nchat privately\ntake into a breakout room\ncall them\nOpening\nThis is the standard opening to be used for all sessions with obvious inclusion of course specific ‘Purpose and Topics’, ‘Prerequisites’, ‘Learning Outcomes’ and ‘Key Changes’ segments\n4\n1 min\n1 min\nOpening Segment: introduces you as the presenter\nDisplay on WBD:‘Your presenter’\n“Hello and welcome everyone, my name is [insert your name] and I’ll be your presenter and tour guide today.\nIn this session we will cover a range of topics relating to The Art of Coaching.”\n5\n1 min\n2 min\nPrerequisites\nDisplay on WBD ‘Prerequisites’\nRead and highlight the prerequisites and make sure that any ‘show stoppers’ are highlighted\nHave the participants use the voting buttons to indicate whether they satisfy the prerequisites.\nHave your co-moderator invite any participant that fails to meet the prerequisites into a breakout room, where they can ascertain whether the participant can continue with the course.\n“Before we begin, please take a look at the course prerequisites.\nIf you meet these requirements, please click on the green tick. If you do not meet these requirements, please click on the red cross.\nI will ask my co-moderator [insert name] to help anyone who does not meet some or all of the prerequisites for this course.”\nTicks (or crosses) in the participant window.\nMostly ticks with maybe 1 or 2 crosses\nVoting buttons\nIf cross selected, use chat to determine if the participant should remain in the session.\nIf not, arrange rescheduling.\n6\n1 min\n3 min\nOrientation to virtual classroom via instructor led navigation around the various panels on the screen and their usage.\nDisplay on WBD:‘Elluminate Basics’\n“At this time I’d like to remind you that today’s session is being recorded.\nAfter the session is done, I’ll send each of you an email containing a link to the recording.”\n7\n1 min\n4 min\nDisplay on WBD:‘Regional NSW’’\nMention some of the areas as they are being highlighted by the participants\n“Before we get underway, let’s see where everyone is joining the session from today.\nIf you are joining from a regional or country centre, select your Laser Pointer from the whiteboard tools and click on the map to place a blinking red dot showing us where you are.\nIf you are in the metropolitan area you’ll get a chance in a minute.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n8\n1 min\n5 min\nDisplay on WBD:‘Metro Area’\nLook for and mention any areas showing ‘clusters’ of participants\n“OK, now it’s time for everyone joining the session from somewhere in the Sydney metropolitan area to show us where they are.\nPlease select your Laser Pointer from the Whiteboard Tools and click on the map to show us where you are.”\nLots of blinking dots on the map of NSW\nYou may also see a variety of the other laser pointer symbols like smiles, hands etc.\nParticipants will place an X or circle on the map to represent where they are joining the session from.\nWhiteboard mark-up\nEnter responses in Chat\n9\n1 min\n6 min\nPurpose & Topics\nDisplay on WBD: Overview: The Art of Coaching\n“Now let’s look at the purpose of today’s session.\nIn this session, you will be introduced to the coaching concept.\nThe skills for coaching excellence will be identified and discussed.\nThe four steps of the coaching model will be presented.\nAfterwards, we’ll talk about the characteristics of effective feedback.\nLater, we’ll take a look at the four stages of a coaching session and how to determine if a session was successful.\nFinally, we’ll cover how to manage coaching challenges.”\n10\n1 min\n7 min\nIntroduction to Topic 1\nDisplay on WBDTopic 1\n“In Topic 1 we will examine the coaching concepts.\nWe’ll take a look at what coaching is and what it isn’t.\nWe’ll examine the five approaches to coaching and how to use those approaches appropriately.\nFinally, we’ll discuss various behaviours that are associated with those approaches.”\n11\n1 min\n8 min\nIntro",
+  "filename": "Session Storyboard - The Art of Coaching - First Draft Compressed.docx"
+}
+--- END OF EXAMPLE 2 ---
+
+## HIGH-VALUE INTERACTION BLUEPRINTS (use as patterns, not verbatim)
+
+### CHUNK 1 • Informative (Knowledge Activation)  sim=0.369
+
+### CHUNK 2 • Informative (Knowledge Activation)  sim=0.356
+
+### CHUNK 3 • Informative (Knowledge Activation)  sim=0.356
+
+### CHUNK 4 • Informative (Knowledge Activation)  sim=0.274
+
+### CHUNK 5 • Informative (Knowledge Activation)  sim=0.259
+
+### CHUNK 6 • Informative (Knowledge Activation)  sim=0.259
+
+--- END CONTEXT ---
+
+INTERACTIVITY PROFILE
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection
+
+--- USER BRIEF ---
+Module Name: Managing Remote Teams
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Managers
+Preferred Instructional Design Methodology (idMethod): ADDIE
+
+--- SOURCE CONTENT ---
+--- CONTENT FROM FILE: Facilitator Guide Managing Remote Teams (v.100812).pdf ---
+
+Facilitator Guide
+Managing Remote Teams
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       1
+Managing Remote Teams for Levels 4, 5 & 6 Bankwest Managers
+Timing
+:9.00am to 5.00pm
+Objectives:  Participants will be able to:
+1.   Identify the key issues in managing remote staff, and explore the constraints associated with 
+remote management
+2.   Outline the factors that contribute to a well-managed remote team 
+3.   Identify approaches and strategies to increase their success in effectively managing and 
+leading remote teams
+4.   Select appropriate remote technologies to assist practical and effective management of a 
+remote team
+5.   Describe ways in which to sensitively and successfully support remote staff through change 
+and uncertainty 
+Resources:
+Materials
+Blu-tac
+Possible prizes for 
+group with most tips in 
+Remote Technology 
+session
+Pre-prepared Flipcharts
+3 x blank F/cs, posted around the room, titled: (1) impacts on 
+the business, (2) key priorities to manage, (3) organisational 
+constraints – for use in Intro Activity
+3 x F/c paper, posted around the room, titled: (1) 
+Telephone/Teleconferencing, (2) Email, (3) Other (video 
+conferencing, voice mail, fax, texting/SMS’ing, real-time 
+messaging) – cover until ready for use in the Remote 
+Technology session
+Miscellaneous
+3 different coloured markers (eg black, blue, green) for 
+Remote Technology session
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       2
+Agenda
+TimeMinsItemActivity
+9.00-9.5050 minWorkshop Introduction
+10 minOpening: 
+Facilitator intro
+Overview, rationale, agenda
+40 minGroup intro’s: Identify (1) impacts on the 
+business, (2) key priorities to manage, (3) 
+organisational constraints
+Activity: small 
+group 
+discussion – 3 
+issues of 
+remote 
+management
+9.50-10.2030 minRemote Management Skills
+10 minDo you have a team?
+20 minLeadership skills
+Management skills – traditional vs 
+virtual leadership
+Activity: Small 
+groups identify 
+necessary 
+leadership skills 
+for remote 
+managing
+10.20-10.3010 minStrategies for Building Trust (pre-break)
+10.20-10.3010 minTrust quizActivity: 
+Rotating trust 
+quiz
+10.30-10.4515 minBREAK
+10.45-12.301 hr
+45 min
+Strategies for Building Trust – contd (post 
+break)
+10.45-11.0015 minTask-based and interpersonal-based 
+trust
+Truisms
+Introduce 7 strategies
+Story
+10.55-12.3025 min
+15 min
+Establish clear direction
+Create ground rules
+Team Charter
+Reviewing charter components
+Activity: 
+Elevator 
+speeches
+Exercise: 
+Review of 
+Team Charter
+10 minManaging workload
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       3
+TimeMinsItemActivity
+15 min
+20 min
+Provide social interaction
+Demonstrate cultural sensitivity
+Activity: 
+brainstorm 
+social 
+interactions 
+possibilities
+Activity: Discuss 
+cultrl sensvty 
+factors
+12.30-1.301 hrLUNCH
+1.30-3.001hr 
+30min
+Strategies for Building Trust - contd
+1.30-2.0030 minTechnology of remotenessActivity: 
+moving 
+brainstorm to 
+identify ways to 
+maximise use of 
+technologies
+2.00-3.0060 minCase Study 
+Group discussions
+Activity: case 
+study
+3.00-3.1515 minBREAK
+3.15-3.4530 min Case Study - contd
+Reports
+3.45-4.4560 minStrategies for Building Trust – contd
+Communicate, communicate, 
+communicate - specific applications for 
+communication
+Assessing and giving feedback 
+on the remote mgt process
+Motivation/Promote unity/team 
+building
+Performance Management and 
+Coaching
+Activity: Sml 
+grp 
+discsn/reports 
+on best 
+practices for 
+remote 
+commnctn
+4.45-4.5510 minAction PlanningActivity: 
+Determine a 
+course of 
+action
+4.55-5.005 minCourse conclusion
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       4
+SessionTimingPagePPT Slide/FCDetail
+WORKSHOP INTRODUCTION
+50 min
+Opening3 minPPT Slide 1
+Title
+Facilitator introduction
+2 minHousekeeping
+Phones – toilets – breaks/finish time – lunch arrangements – punctuality – workbooks – toys
+1 min
+PPT Slide 2
+Objctvs 
+Just as the personal computer revolutionised the workplace throughout the 1980’s and 1990’s, 
+recent developments in information and communication technology are forging the 
+foundations of another new workplace.  This workplace is largely unconstrained by geography, 
+time and organisational boundaries.  It is a virtual workplace, where productivity, flexibility and 
+collaboration may unprecedented levels.
+More and more, organisations are finding that their operations are decentralising, localising, 
+regionalising and globalising.  
+In the USA, for example, the International Telework Association and Council estimates 
+that more than 28 million workers in the US – that’s more than 20% of all workers – now 
+work remotely.  
+In a 2007 study by the Economist Intelligence Unit (IU), almost half the firms surveyed 
+reported having remote workforces; within 5 years this will be 70%. 
+Course objectives
+Group intro’s, 
+challenges
+5 min
+Pg 7PPT Slide 3-4
+Qns mgrs ask
+As prework you were asked to identify the key challenges you face when managing your 
+remote teams.  Your specific challenges may or may not be reflected in common questions 
+virtual managers ask:
+[Show ppt of questions asked by remote managers; same questions are also listed in wkbk]
+Let’s use the discussion of your challenges and these questions as a way to get to know each 
+other better, focusing on 3 issues of remote management...
+35 min
+PPT Slide 5
+INTRO ACTIVITY: small groups + whole group discussion
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       5
+SessionTimingPagePPT Slide/FCDetail
+RM – your 
+views
+3 x Prepared 
+F/cs: (1) 
+impacts on 
+the business, 
+(2) key 
+priorities to 
+manage, (3) 
+organisation
+al constraints
+Form small groups to consider current issues/concerns around management of remote staff.  
+Include input of survey data also.
+Assign each group to a F/c with one of 3 titles:
+1.   Impacts of remote mgt on the business (pro’s and con’s)
+2.   Organisational constraints of managing remotely (eg budget, time, time differences, 
+culture)
+3.   Key priorities to manage
+Have each group spend 7 minutes at each F/c, brainstorming their views on the topic 
+specified.
+DEBRIEF:
+Q.  What patterns emerge about the key issues of remote managing?
+Facilitator note: Link proposed content of day to issues raised.
+Facilitator note:  if the issue of trust does not arise, bring it up yourself to be added to the list.
+Facilitator note:  Stimulus material for the ‘pro’s’ of remote managing could include the
+following:
+Potential "pluses" of remote managing to the business:
+Local knowledge 
+Wider talent pool, greater diversity of approaches and expertise 
+Efficiencies in time/money on travel
+Can grow understanding of how to work collaboratively together
+Can leverage differences to trigger breakthrough thinking and innovation 
+Potential benefits to the individual of being in a remote team:
+An increase in colleague job satisfaction
+Reduced likelihood of employee turnover
+Reduced role stressors
+Increased satisfaction with supervisors (who improve their management skills)
+Increased commitment to the organisation
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       6
+SessionTimingPagePPT Slide/FCDetail
+Pg 4PPT Slide 6
+Potential 
+benefits
+Wkbk 
+Potential benefits listed on ppt and in wkbk.
+As part of this workshop, we are going to be testing the validity of these assumptions in your 
+own remote management context.
+Summary1 minManaging remote teams which, though it is more complex than managing a co-located 
+group, has strong benefits for the business.  We have identified some of the challenges a 
+remote manager faces in realising these benefits, a key one being the matter of trust.
+TransitionIn discussing these issues, we’ve assumed we are talking about remote managing a team.  
+Let’s query that assumption... 
+SKILLS FOR MANAGING A REMOTE TEAM
+30 min
+What is a
+team?
+10 minAll of you are here because you manage people from a distance ...
+Q.  Taking the new Bankwest value of “One team” into consideration, what differentiates a 
+team from a work group?
+Both a team and a work group are working towards shared goals, and have some level 
+of inter-connectedness between members
+A work group works more inter-dependently, with regular interactions and inter-
+connectedness between team members to carry out the tasks required to achieve 
+goals
+A team is a broader collection of people, all of whom are stakeholders in some way in 
+the achievement of the goals; though not necessarily directly involved in carrying out 
+tasks, these stakeholders must be linked by effective communication, influenced to 
+support goals and involved in varied ways to ensure success.
+Q.  Would you say you actually have an efficient work group?  A team?  Why/not?
+Q.  What is the value of clarifying these concepts for 
+yourpeople?  
+Self identifying as a member of a work group/team can give remote colleagues a sense 
+of involvement and purpose that may be missing if they operate by simply “doing the 
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       7
+SessionTimingPagePPT Slide/FCDetail
+job”
+Q.  What do you think is the maximum optimal size of a remote work group?
+The literature suggests maximum 10 people  (from the Corporate Leadership Council, 
+January 2009)
+Leadership 
+skills
+2 min
+PPT Slide 7
+Two sets of 
+skills – 2 loops 
+You would all be aware that, for any team, a leader must possess a standard set of 
+management skills to achieve team objectives.  To be as successful as managers of co-
+located teams, a remote manager needs to expand upon traditional leadership qualities.
+PPT Slide 8
+Traditional 
+skills
+Some of the main, traditional team leadership skills would be:
+1.   Developing and articulating the group’s mission and objectives
+2.   Mentoring team members
+3.   Ensuring clear lines of communication
+4.   Updating the team regularly on progress
+5.   Measuring performance
+PPT Slide 9
+Remote skills
+Some suggested management practices/skills necessary for remote managing (extending the 
+tried and tested formula that works for co-located management, REACH):
+1.   Emphasise 
+Responsiveness – make yourself as available to remote team members as to 
+local ones (eg strive to build trust from a distance)
+2.   Use 
+Empathy – attuning to and accepting others’ feelings and perspectives; best 
+demonstrated by acknowledging – verbally or otherwise – the validity of others’ ideas, 
+concerns etc (eg ‘cultural’ awareness/intelligence)
+3.   Accelerate 
+Accountability – building a sense of ownership for results in team members 
+and the team as a whole
+4.   Create 
+Connection – building links between team members, the rest of the team and 
+the organisation as a whole (eg precision in communication, technical know-
+how/aptitude)
+5.
+Help – providing support for individuals’ and team’s success (eg logistical/organisational 
+skills)
+17 min
+ACTIVITY – discussion on virtual team skills
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       8
+SessionTimingPagePPT Slide/FCDetail
+Pg 12
+F/c
+Wkbk 
+Form 5 small groups, assign each group to one of the REACH practices, to discuss:
+What virtual team management skills are necessary, or which of the traditional skills 
+need amplifying, to feed into the assigned REACH practice?
+They will note these on F/c.  Before finishing, they are to identify the top 3 virtual skills on their 
+list.
+Allow 12 min.
+DEBRIEF – 5 min
+Whip round all groups for their top 3 virtual leadership/management skills.  Don’t mention any 
+stated by previous small groups.
+Facilitator note: See the Effective Practices for Remote Leaders in wkbk for further resources.
+Transition We said earlier that trust is important to a remote team.  All these REACH practices aid the 
+development of trust.  Let’s investigate further by means of a quick True/False quiz...
+STRATEGIES FOR BUILDING TRUST
+10 min (pre-break)
+Trust quiz
+10 min
+We’ve agreed trust is important to remote relationships.  This quick group quiz will check your 
+own trust-building notions...
+ACTIVITY – rotating quiz on building trust
+This activity is a rotating, verbal true/false quiz.  Move it along quickly.
+Have participants work in small groups.  
+A group will be asked a T/F question and given 20 seconds (max) to answer.  If they take too 
+long, the question passes to the next group.  
+Though the answers to questions must come quickly, you can allow for discussion between 
+questions if appropriate to the group.  
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       9
+SessionTimingPagePPT Slide/FCDetail
+Facilitator note: The “correct” T/F response can be varied if the group gives a good reason for
+their response.
+Questions to be asked (with suggested answers):
+TrueFalse
+1.Besides being costly and, sometimes, impractical, too many team 
+meetings conducted face-to-face discourage the individuals from 
+developing distance communication skills.
+
+2.Explain yourself - make your actions as transparent as possible.
+
+3.Beware too much team input on decisions.  This can confuse 
+issues.
+
+4.Carefully plan the “trickle down” effect when you communicate 
+with team members.  Understand the opinion leaders and
+influence-peddlers.  It is wise not to communicate simultaneously 
+with everyone.
+
+5.“Seeing is believing” - sighting colleagues in person is crucial in
+developing more accurate impressions of others’ trustworthiness.
+
+6.Disseminate as much information to as many team members as 
+possible.  Information overload can be managed.
+
+7.Be accessible and responsive.  Their priorities should become your 
+priorities.
+
+8.Let relationships between team members grow naturally through 
+your various remote meetings – do not push for sharing of non-
+work related information.
+
+9.Provide photos of team members for all to see.  It helps to have a 
+visual image of who you’re talking to.
+
+10.  Feel free to explain and provide information on team operations 
+to all interested outside parties.
+
+11.  Have team members create profiles of their personal interests, 
+hobbies and areas of expertise.  
+
+12.  Agree on norms for what information can be shared within and 
+outside the team.
+
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       10
+SessionTimingPagePPT Slide/FCDetail
+Transition
+Trust is an important element in remote managing.  We’ll continue with this aspect of 
+managing a remote team after the break.  
+BREAK - 15 min
+STRATEGIES FOR BUILDING TRUST
+1 hour 50 min (post-break)
+About trust –
+self reflection
+10 minPPT Slide 10
+Trust
+Truisms about trust:
+Is a key component in any successful relationship
+Develops over time
+Once lost, is hard to regain
+Is related to what others need and expect
+Includes giving something of yourself, being genuinely interested in the other person 
+and seeing communication as a shared experience
+Is best built by face-to-face interactions, the very activity that remote teams eliminate or 
+severely constrain  
+We’re talking about trust as a very personal phenomenon that, in management, also needs to 
+apply across many people.
+Thinking about how 
+youcome to trust someone or something...
+Q.  What is necessary for trust to develop?
+Q.  What do you base your answer on?
+Q.  What other comments have you about the nature of trust?
+Thinking about your remote team...
+Q.  How does your thinking change, if at all, when the trust needs to be built in a remote 
+context, when the parties are separated by geography?
+Q.  How can you cope when your team is not easily accessible, so they may not know why you 
+
+Managing Remote Teams Facilitator Guide © 2009 The Learning Factor       11
+SessionTimingPagePPT Slide/FCDetail
+do what you do?
+Task-based 
+and 
+interpersonal-
+based trust
+2 minFortunately, though face-to-face interactions may be the best trust-building approach, trust is 
+not always dependent on social bonds.  It can also be founded on performanc
+
+[…truncated…]
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide 3–5 SMART Learning Outcomes.
+- Each scene must have structured audio, OST ≤ 70w, and a detailed AI Visual Generation Brief.
+- Use UK English.
+
+OUTPUT RULES
+- Return a single JSON object only.
+- Use the exact schema from the system prompt.

@@ -1,0 +1,148 @@
+{
+  "blueprintVersion": "1.0",
+  "config": {
+    "totalPageCount": 36,
+    "narrationSpeedWPM": 140
+  },
+  "promptPreamble": "Act as an expert Instructional Designer. Your task is to create a complete, {{PAGE_COUNT}}-page e-learning storyboard for a course on the topic of '{{TOPIC}}'. The target audience for this course is '{{AUDIENCE}}'.\n\nThe storyboard must meticulously follow the structure, formatting, and level of detail outlined below. This includes generating all on-screen text, audio narration scripts, detailed internal development notes, and placeholder comments for stakeholder review.\n\nTo achieve a {{DURATION}} runtime, the total audio narration word count should be approximately {{WORD_COUNT}} words (based on a {{NARRATION_SPEED}} WPM pace). Distribute this word count logically across the pages.\n\nThe final output should be a single, continuous document, formatted page by page.\n\n**General Formatting Rules for Each Page:**\n1. Page Header: Every page from page 5 onwards must begin with a header containing Page Title, Type, and Number (e.g., p05).\n2. Main Table: The core of each content page is a table with four columns: Event, Audio, On-Screen Text (OST), and Internal Development Notes.\n\nFollow this precise page-by-page structure:",
+  "pages": [
+    {
+      "pageNumber": "1",
+      "title": "Storyboard Revision History",
+      "type": "Administrative",
+      "instructions": "Create a table with columns: Date, Task, By, Version. Populate it with 4 plausible entries showing the storyboard's development lifecycle (e.g., Initial Draft, Internal Review, Subject Matter Expert (SME) Review, Final Version). Use placeholder initials for the 'By' column."
+    },
+    {
+      "pageNumber": "2",
+      "title": "Pronunciation Guide",
+      "type": "Administrative",
+      "instructions": "Create a table with columns: Word or Phrase and Pronunciation. Identify 5-7 key acronyms or technical jargon from the topic of '{{TOPIC}}' and provide simple, phonetic pronunciations. Include a 'Note to SME/Stakeholder' at the top asking them to validate the pronunciations."
+    },
+    {
+      "pageNumber": "3-4",
+      "title": "Table of Contents",
+      "type": "Administrative",
+      "instructions": "Generate a detailed Table of Contents for the course, listing approximately 15-17 sections with corresponding page numbers. The structure should include sections for Introduction, Core Content (e.g., Key Principles), Interactive sections (e.g., Scenarios), Assessments, and a Summary."
+    },
+    {
+      "pageNumber": "5",
+      "title": "Introduction",
+      "type": "Course Launch Page",
+      "instructions": "Design a standard launch screen with the course title '{{TOPIC}}', a 'Get Started' button, and an Internal Development Note to show a relevant, high-quality background image."
+    },
+    {
+      "pageNumber": "6",
+      "title": "Overview",
+      "type": "Text + Image/Graphic",
+      "instructions": "Create three sequential Event rows. 1. Introduce the purpose of the course. 2. State the organization's commitment to the principles of '{{TOPIC}}'. 3. Define the target audience for the module, listing 2-3 specific roles from '{{AUDIENCE}}'. Include Internal Development Notes to show an image, then an icon, then clear the screen for the target audience list."
+    },
+    {
+      "pageNumber": "7",
+      "title": "Learning Objectives",
+      "type": "Text + Image/Graphic",
+      "instructions": "State 'At the end of this module, you will be able to:'. List 3-4 specific, action-oriented learning objectives relevant to '{{TOPIC}}'. Use verbs like 'Explain,' 'Identify,' 'Apply,' 'Differentiate.' Include Internal Development Notes to show a relevant 'goals' icon."
+    },
+    {
+      "pageNumber": "8-9",
+      "title": "Background/History",
+      "type": "Timeline Interactivity",
+      "instructions": "Create an introductory text explaining the importance of the history or evolution of '{{TOPIC}}'. Design a 3-point interactive timeline. For each clickable point, provide the pop-up text that will be displayed, representing a key milestone. Internal Development Notes must specify this is a clickable timeline and how the pop-ups should function."
+    },
+    {
+      "pageNumber": "10-11",
+      "title": "Key Focus Areas",
+      "type": "Text + Image/Graphic",
+      "instructions": "Introduce the key functional areas of '{{TOPIC}}'. Design a list-based graphic organiser with 6 items. For each item, provide a title and an Internal Development Note specifying a relevant icon and a placeholder stock photo ID."
+    },
+    {
+      "pageNumber": "12-14",
+      "title": "Core Principles/Concepts",
+      "type": "Interactive Graphic",
+      "instructions": "Design an interactive graphic that visually represents 4-6 core principles of '{{TOPIC}}'. The main page should have an intro script and OST. For each principle, create a separate pop-up layer containing its title and a short explanation. Internal Development Notes must specify clickable icons for each principle. Include a placeholder SME comment: 'Commented [A1]: We've drafted the core principles for {{TOPIC}}. Could you please validate these?'"
+    },
+    {
+      "pageNumber": "15-18",
+      "title": "Key Processes and Procedures",
+      "type": "Tabbed Interactivity",
+      "instructions": "Design a 3-tab interactive element to explain key processes. Label tabs appropriately for '{{TOPIC}}' (e.g., 'Initial Assessment,' 'Ongoing Management'). For each tab, create a workflow or list of steps, detailing actions and timeframes (e.g., 'Acknowledge request - within 5 business days'). Internal Development Notes must include a detailed note to the SME asking them to validate the process segregation and sequence."
+    },
+    {
+      "pageNumber": "19-20",
+      "title": "Applying a Key Process",
+      "type": "Text + Image/Graphic",
+      "instructions": "Recap a critical process from the previous section. State minimum standards/timeframes. Create a second section titled 'Best practices' and list 2-3 key best practices. Internal Development Notes should instruct the developer to use specific icons to visually separate the minimum standards from the best practices."
+    },
+    {
+      "pageNumber": "21-22",
+      "title": "Knowledge Check 1",
+      "type": "MCQ",
+      "contentInstructions": {
+        "level_2": "Write one clear multiple-choice question that tests a foundational concept from the first part of the course. Provide one correct answer and two plausible but incorrect distractors. Write detailed feedback for both Correct and Incorrect answers, explaining the reasoning.",
+        "level_3": "Write one clear multiple-choice question that tests a foundational concept, but frame it with a mini-scenario or a practical context. Provide one correct answer and two plausible but incorrect distractors. Write detailed feedback for both Correct and Incorrect answers, explaining the reasoning by referencing a course concept."
+      }
+    },
+    {
+      "pageNumber": "23",
+      "title": "Knowledge Check 2",
+      "type": "MRQ",
+      "instructions": "Write one multiple-response question asking learners to identify several correct items from a list (e.g., 'Which of the following are core principles of {{TOPIC}}?'). Provide 4-5 options, of which 2-3 are correct. Provide generic feedback for correct and incorrect responses that restates the correct answers."
+    },
+    {
+      "pageNumber": "24",
+      "title": "Choose Your Path",
+      "type": "Interactive - Branching",
+      "instructions": "Design a menu screen that allows learners to choose a role-based or situation-based path for the upcoming scenarios. Include a title 'Choose your pathway.' Provide 3 distinct pathway options relevant to '{{AUDIENCE}}'. Include a 'Note to SME' box: 'This screen will be designed as per the content provided for the next scenario-based page.'"
+    },
+    {
+      "pageNumber": "25",
+      "title": "Scenario Pathways",
+      "type": "Scenario-based",
+      "instructions": "Create a placeholder page. The Internal Development Notes section must contain a large red box with the text: 'Note to SME: This page will be developed as per the content provided by you for the scenarios.' The rest of the page (Audio, OST) should be filled with dashes or 'TBD'."
+    },
+    {
+      "pageNumber": "26",
+      "title": "Handling Special Cases / Advanced Topics",
+      "type": "Interactive",
+      "instructions": "Create another placeholder page for a specialized topic. The Internal Development Notes section must contain a large red box with the text: 'Note to SME: This page will be developed as per the content provided by you for this topic.'"
+    },
+    {
+      "pageNumber": "27-29",
+      "title": "Managing Non-Compliance / Critical Incidents",
+      "type": "Interactive- Click-to-Reveal",
+      "instructions": "Introduce and define a 'critical incident' or 'breach' as it relates to '{{TOPIC}}'. Create two clickable tabs labeled 'Incident Tracking' and 'Incidents and Breaches'. For 'Incident Tracking,' provide bullet points on how incidents are recorded. For 'Incidents and Breaches,' detail the process of reviewing incidents. Internal Development Notes should specify using clickable tabs and a placeholder SME comment to provide a link to a relevant handbook."
+    },
+    {
+      "pageNumber": "30",
+      "title": "Escalation Pathway",
+      "type": "Text + Image/Graphic",
+      "instructions": "Design a simple, vertical, hierarchical graphic showing an escalation path. Create 4-5 levels, from 'Staff member' up to an 'External evaluation team'. The Audio script should walk the learner through this process."
+    },
+    {
+      "pageNumber": "31-32",
+      "title": "Knowledge Check 3",
+      "type": "MCQ",
+      "contentInstructions": {
+        "level_2": "Write a multiple-choice question that asks the learner to identify the correct first step in a process covered in the course. Provide one correct answer and two plausible but incorrect distractors. Write detailed feedback for both Correct and Incorrect answers.",
+        "level_3": "Write a short, scenario-based question that requires the learner to apply their knowledge to a situation. For example, 'A client reports X. Based on the escalation pathway, what is your immediate next step?'. Provide three options. Provide detailed feedback that references a specific rule from the course to justify the correct answer."
+      }
+    },
+    {
+      "pageNumber": "33-34",
+      "title": "Knowledge Check 4",
+      "type": "Interactive Multi-select",
+      "instructions": "Write a question asking, 'What are some of the actions you could take after an incident has been identified?'. Provide a list of 4-5 potential actions, of which 2 are correct. In the Internal Development Notes, state 'Correct answers are marked in bold.' Provide detailed feedback for the correct answer and generic 'Try again' feedback for incorrect answers."
+    },
+    {
+      "pageNumber": "35",
+      "title": "Summary",
+      "type": "Text + Image/Graphic",
+      "instructions": "Create a final summary page titled 'Key messages.' The Audio script should be a brief recap. The OST should list 3-4 bullet points summarizing the most critical takeaways from the entire module. Internal Development Notes should instruct the developer to show an icon and add a scrollbar if needed."
+    },
+    {
+      "pageNumber": "36",
+      "title": "Final Page",
+      "type": "Static",
+      "instructions": "Create a blank final page of the storyboard, containing only the header '{{TOPIC}}' and the page number 'Page 36 of 36'."
+    }
+  ]
+}

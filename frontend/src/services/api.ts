@@ -1,34 +1,33 @@
 // frontend/src/services/api.ts
-import axios from 'axios';
-import type { StoryboardFormData, StoryboardScene } from '@/types/storyboardTypes';
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "/api";
 
-// Tip: switch to import.meta.env.VITE_API_URL for prod if you like
-// AFTER
-const API_URL = import.meta.env.VITE_BACKEND_URL; // This will be "/api" in development // ✅ Local backend URL
-
-// Extend locally to allow aiModel without touching global types
-type StoryboardFormDataWithAI = StoryboardFormData & {
-  aiModel?: string; // "gpt-4-turbo" | "gpt-5" | "gpt-4o"
-};
-
-export const generateStoryboard = async (
-  formData: StoryboardFormDataWithAI
-): Promise<StoryboardScene[]> => {
-  try {
-    const response = await axios.post(
-  `${API_-URL}/v1/generate-storyboard`,
-      {
-        ...formData,
-        aiModel: formData.aiModel || 'gpt-4-turbo', // ✅ default if none selected
-      }
-    );
-
-    // Backend might return { storyboard: [...] } or just [...]
-    return response.data.storyboard || response.data;
-  } catch (error: any) {
-    console.error('API Error:', error);
-    throw new Error(
-      error.response?.data?.message || 'Something went wrong generating the storyboard'
-    );
+async function handleResponse(res: Response) {
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${text || "No body"}`);
   }
-};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+export async function fetchStoryboard(id: string) {
+  const res = await fetch(`${API_BASE}/storyboard/${id}`);
+  return handleResponse(res);
+}
+
+export async function saveStoryboard(storyboard: any) {
+  const res = await fetch(`${API_BASE}/storyboard`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(storyboard),
+  });
+  return handleResponse(res);
+}
+
+export async function listStoryboards() {
+  const res = await fetch(`${API_BASE}/storyboards`);
+  return handleResponse(res);
+}

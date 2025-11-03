@@ -1,0 +1,19 @@
+{
+  "formData": {
+    "moduleName": "Influencing Others",
+    "moduleType": "Soft Skills or Behavioural",
+    "targetAudience": "Sales Professionals",
+    "learningOutcomes": "Understand key influencing strategies and apply them in real-world conversations.",
+    "tone": "Professional and Empowering",
+    "duration": "15 minutes",
+    "outputLanguage": "English",
+    "complexityLevel": "Level 3: Complex Interactivity",
+    "colours": "#0055A0, #FFC107, #FFFFFF",
+    "fonts": "Arial, Helvetica, sans-serif",
+    "organisationName": "Learno",
+    "brandGuidelines": "Use brand primary #0055A0, clean layouts, modern icons.",
+    "logoUrl": "",
+    "content": "Example SME content here..."
+  },
+  "files": []
+}

@@ -1,0 +1,1094 @@
+{
+  "success": true,
+  "storyboard": {
+    "moduleName": "Dealing with Difficult People",
+    "targetMinutes": 10,
+    "tableOfContents": [
+      null,
+      null,
+      "Learning Outcomes Overview",
+      "How Sarah Confronted the Tank",
+      "Practice: Dealing with Difficult People",
+      "Apply: Dealing with Difficult People",
+      "Knowledge Check: Dealing with Difficult People",
+      "Key Takeaways Summary",
+      "Next Steps & Application"
+    ],
+    "scenes": [
+      {
+        "scene_number": 1,
+        "title": "Facing the Daily Challenge",
+        "on_screen_text": "Have you ever struggled with an irate customer? You will face difficult people every day, and it can feel overwhelming.",
+        "narration_script": "Imagine this: you’re on a busy shift, and a customer approaches you, visibly upset. They’re raising their voice, and you can feel the tension in the air. You want to help, but their anger is palpable, and you’re unsure how to respond. If you don’t master the skills to handle these situations, you risk losing customers and damaging your reputation. The stakes are high, and every interaction counts. But what if you could turn these challenging moments into opportunities for connection? What if you could leave each encounter feeling empowered and confident? This course will guide you through the strategies to transform your approach to difficult people.",
+        "visual_ai_prompt": "A customer service representative looking stressed while dealing with an angry customer in a retail setting.",
+        "alt_text": "A customer service representative appears overwhelmed while an angry customer expresses frustration.",
+        "emotional_tone": "empathetic",
+        "sceneNumber": 1,
+        "pedagogicalPhase": "Welcome",
+        "interactivityDecision": {
+          "interactivityType": "timeline_sequencing",
+          "justification": "Best match: optimal for \"understand\" level; provides fresh engagement (not recently used); supports foundation goal",
+          "suggestedTemplate": "timeline_template",
+          "score": 96,
+          "alternativeOptions": [
+            {
+              "type": "procedural_demo",
+              "score": 96,
+              "reason": "Bloom:100 Novelty:100 Load:80 Level:100 Purpose:100"
+            },
+            {
+              "type": "click_to_reveal",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "drag_and_drop",
+              "score": 93.5,
+              "reason": "Bloom:100 Novelty:100 Load:80 Level:100 Purpose:50"
+            }
+          ],
+          "checksum": "22a65462ddb8da68",
+          "timestamp": "2025-11-03T09:32:08.057Z"
+        },
+        "interactionDetails": {
+          "type": "timeline_sequencing",
+          "title": "Sequence: undefined",
+          "interactionSteps": [
+            "Review all the steps presented",
+            "Drag the steps into the correct chronological order",
+            "Click 'Check Sequence' to verify your answer",
+            "Review feedback and adjust if needed"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent! You've sequenced the steps correctly. This shows you understand the logical flow of the process.",
+            "incorrect": "Not quite. Review the natural progression and dependencies between steps, then try again.",
+            "neutral": "Arrange all steps before checking your sequence."
+          },
+          "accessibilityNotes": "Use Tab to navigate steps. Press Space to select a step. Use Arrow keys to reorder selected step. Press Enter to confirm placement.",
+          "imagePrompt": "Timeline interface showing sequential steps for undefined with drag-drop functionality and clear visual indicators",
+          "templateData": {
+            "steps": [
+              {
+                "id": "step-1",
+                "correctOrder": 1,
+                "label": "Identify the situation or trigger",
+                "description": "Step 1 in the process",
+                "currentPosition": 4
+              },
+              {
+                "id": "step-2",
+                "correctOrder": 2,
+                "label": "Analyze the context and requirements",
+                "description": "Step 2 in the process",
+                "currentPosition": 3
+              },
+              {
+                "id": "step-3",
+                "correctOrder": 3,
+                "label": "Select the appropriate approach",
+                "description": "Step 3 in the process",
+                "currentPosition": 3
+              },
+              {
+                "id": "step-4",
+                "correctOrder": 4,
+                "label": "Implement the chosen strategy",
+                "description": "Step 4 in the process",
+                "currentPosition": 1
+              }
+            ],
+            "requireCorrectOrder": true,
+            "showHints": true,
+            "allowPartialCredit": false,
+            "timelineOrientation": "vertical"
+          }
+        }
+      },
+      {
+        "scene_number": 2,
+        "title": "Your Path to Confidence",
+        "on_screen_text": "Imagine handling difficult customers with ease. You will gain practical skills to turn challenges into positive outcomes. Use arrows to navigate.",
+        "narration_script": "Now, picture yourself in that same scenario, but this time, you’re calm and collected. You’ve learned effective techniques to de-escalate the situation, and you can see the customer’s frustration begin to fade. You’re not just surviving these encounters; you’re thriving. By the end of this course, you will have the tools to communicate effectively, build rapport, and resolve conflicts with confidence. You’ll transform from feeling anxious to being a skilled problem-solver, ready to tackle any challenge that comes your way. Let’s embark on this journey together and unlock your potential to create positive customer experiences.",
+        "visual_ai_prompt": "A confident customer service representative successfully resolving an issue with a satisfied customer.",
+        "alt_text": "A customer service representative confidently assists a satisfied customer, showcasing effective communication.",
+        "emotional_tone": "inspirational",
+        "sceneNumber": 2,
+        "pedagogicalPhase": "Welcome",
+        "interactivityDecision": {
+          "interactivityType": "procedural_demo",
+          "justification": "Best match: optimal for \"understand\" level; provides fresh engagement (not recently used); supports foundation goal",
+          "suggestedTemplate": "procedural_demo_template",
+          "score": 96,
+          "alternativeOptions": [
+            {
+              "type": "click_to_reveal",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "drag_and_drop",
+              "score": 93.5,
+              "reason": "Bloom:100 Novelty:100 Load:80 Level:100 Purpose:50"
+            },
+            {
+              "type": "multi_select_quiz",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            }
+          ],
+          "checksum": "476489a3deade9e6",
+          "timestamp": "2025-11-03T09:32:08.060Z"
+        },
+        "interactionDetails": {
+          "type": "procedural_demo",
+          "title": "Learn: undefined",
+          "interactionSteps": [
+            "Watch each step of the demonstration",
+            "Practice each step yourself in the interactive panel",
+            "Complete the guided practice exercise",
+            "Verify your completion with the checklist"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent work! You've mastered this procedure and completed all steps correctly.",
+            "incorrect": "Some steps need adjustment. Review the demonstration and try those steps again.",
+            "neutral": "Follow along with the demonstration and practice each step."
+          },
+          "accessibilityNotes": "Use Tab to navigate between steps. Press Enter to advance to next step. Press Space to pause/resume demonstration. Arrow keys to move between practice elements.",
+          "imagePrompt": "Step-by-step procedural demonstration interface for undefined showing clear numbered steps with visual guidance",
+          "templateData": {
+            "steps": [
+              {
+                "step": 1,
+                "title": "Preparation",
+                "description": "Understand the context and requirements for undefined",
+                "visual": "Preparation phase illustration showing setup and planning",
+                "duration": 30,
+                "practiceTask": "Review the requirements checklist"
+              },
+              {
+                "step": 2,
+                "title": "Execution",
+                "description": "Follow the procedure step-by-step with attention to detail",
+                "visual": "Action phase illustration showing the core process",
+                "duration": 60,
+                "practiceTask": "Complete the guided practice exercise"
+              },
+              {
+                "step": 3,
+                "title": "Verification",
+                "description": "Check your work against quality standards and criteria",
+                "visual": "Verification phase illustration showing quality checks",
+                "duration": 30,
+                "practiceTask": "Use the verification checklist"
+              },
+              {
+                "step": 4,
+                "title": "Reflection",
+                "description": "Consider what worked well and what could be improved",
+                "visual": "Reflection phase showing continuous improvement cycle",
+                "duration": 20,
+                "practiceTask": "Note key learnings and insights"
+              }
+            ],
+            "interactive": true,
+            "allowPractice": true,
+            "showTips": true,
+            "requireCompletion": false,
+            "demonstrationSpeed": "normal",
+            "practiceMode": "guided"
+          }
+        }
+      },
+      {
+        "sceneNumber": 3,
+        "pageTitle": "Learning Outcomes Overview",
+        "pageType": "Informative",
+        "narrationScript": "By the end of this Dealing with Difficult People module, you will master these key learning outcomes: 1. Dealing with Difficult People. Each outcome follows our proven TEACH → PRACTICE → APPLY → ASSESS learning sequence to ensure deep understanding and practical application.",
+        "onScreenText": "Learning Outcomes: 1. Dealing with Difficult People",
+        "visual": {
+          "aiPrompt": "Professional learning outcomes display for Dealing with Difficult People, showing numbered objectives with clear progression indicators",
+          "altText": "Learning outcomes for Dealing with Difficult People with progression indicators"
+        },
+        "interactionType": "None",
+        "timing": {
+          "estimatedSeconds": 60
+        },
+        "pedagogicalPhase": "LearningOutcomes",
+        "interactivityDecision": {
+          "interactivityType": "click_to_reveal",
+          "justification": "Best match: optimal for \"understand\" level; provides fresh engagement (not recently used); matches low cognitive load; supports foundation goal",
+          "suggestedTemplate": "reveal_template",
+          "score": 94,
+          "alternativeOptions": [
+            {
+              "type": "drag_and_drop",
+              "score": 93.5,
+              "reason": "Bloom:100 Novelty:100 Load:80 Level:100 Purpose:50"
+            },
+            {
+              "type": "multi_select_quiz",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            },
+            {
+              "type": "single_select_quiz",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            }
+          ],
+          "checksum": "69e9ac93c78c2667",
+          "timestamp": "2025-11-03T09:32:08.060Z"
+        },
+        "interactionDetails": {
+          "type": "click_to_reveal",
+          "title": "Explore: Learning Outcomes Overview",
+          "interactionSteps": [
+            "Click each concept card to reveal detailed information",
+            "Review all concepts before continuing to the next scene",
+            "Hover over cards for quick previews"
+          ],
+          "feedbackRules": {
+            "neutral": "Excellent! You've explored all key concepts."
+          },
+          "accessibilityNotes": "Use Tab key to navigate between concept cards. Press Enter or Space to reveal content. Press Escape to close revealed content.",
+          "imagePrompt": "Interactive reveal cards showing 3 key concepts for Learning Outcomes Overview with modern card design and smooth animations",
+          "templateData": {
+            "concepts": [
+              {
+                "id": "concept-1",
+                "title": "Learning Outcomes: 1",
+                "content": "Detailed explanation of Learning Outcomes: 1 with practical examples and key takeaways.",
+                "revealed": false,
+                "order": 1
+              },
+              {
+                "id": "concept-2",
+                "title": "Dealing with Difficult People",
+                "content": "Detailed explanation of Dealing with Difficult People with practical examples and key takeaways.",
+                "revealed": false,
+                "order": 2
+              },
+              {
+                "id": "concept-3",
+                "title": "Key Point 3",
+                "content": "Detailed explanation of Key Point 3 with practical examples and key takeaways.",
+                "revealed": false,
+                "order": 3
+              }
+            ],
+            "revealAnimation": "fade-slide",
+            "layout": "grid",
+            "columns": 3
+          }
+        }
+      },
+      {
+        "sceneNumber": 4,
+        "pageTitle": "How Sarah Confronted the Tank",
+        "pageType": "Informative",
+        "narrationScript": "This teaching scene provides the foundation you'll need for the upcoming practice, application, and assessment phases. Sarah, a customer service representative, often found herself overwhelmed when dealing with Alex the Tank, a particularly aggressive customer. During a recent call, Alex interrupted her presentation, exclaiming, 'That approach is completely flawed!' Frustrated and anxious, Sarah felt her confidence wane. However, after attending a training session on the CAPS Model, she learned to identify Alex's behavior as that of a Tank. This realization sparked her 'aha moment.' Instead of reacting defensively, she practiced remaining calm and assertive. When Alex interrupted again, Sarah took a deep breath and said, 'I appreciate your feedback, Alex. Let’s explore your concerns together.' This shift in approach not only diffused the tension but also allowed Sarah to guide the conversation productively. By understanding the Tank's behavior, Sarah transformed her interactions, gaining confidence and improving her customer service skills. Now, she feels empowered to handle difficult customers with ease.",
+        "onScreenText": "Teaching: Learn to manage aggressive behaviors effectively using the CAPS Model. Understand the Tank's impact and how to respond constructively.",
+        "visual": {
+          "aiPrompt": "A customer service representative, Sarah, on a phone call, looking determined while facing a computer screen displaying a frustrated customer named Alex the Tank.",
+          "altText": "Sarah, a customer service representative, confidently speaking on the phone while addressing a challenging customer, Alex the Tank, who appears frustrated on the screen."
+        },
+        "interactionType": "None",
+        "timing": {
+          "estimatedSeconds": 72
+        },
+        "teachingScene": {
+          "learningOutcome": "Dealing with Difficult People",
+          "bloomTaxonomyLevel": "Understand",
+          "teachingMethod": "Concept Explanation",
+          "contentStructurePattern": "Concept → Definition → Examples → Summary",
+          "scenePurpose": "Introduce and explain key concepts for Dealing with Difficult People",
+          "cognitiveLoad": "Medium",
+          "scenePlacement": "Early",
+          "sceneContext": "Foundation learning for Dealing with Difficult People",
+          "pageTitle": "How Sarah Confronted the Tank",
+          "onScreenText": "Learn to manage aggressive behaviors effectively using the CAPS Model. Understand the Tank's impact and how to respond constructively.",
+          "voiceOverScript": "Sarah, a customer service representative, often found herself overwhelmed when dealing with Alex the Tank, a particularly aggressive customer. During a recent call, Alex interrupted her presentation, exclaiming, 'That approach is completely flawed!' Frustrated and anxious, Sarah felt her confidence wane. However, after attending a training session on the CAPS Model, she learned to identify Alex's behavior as that of a Tank. This realization sparked her 'aha moment.' Instead of reacting defensively, she practiced remaining calm and assertive. When Alex interrupted again, Sarah took a deep breath and said, 'I appreciate your feedback, Alex. Let’s explore your concerns together.' This shift in approach not only diffused the tension but also allowed Sarah to guide the conversation productively. By understanding the Tank's behavior, Sarah transformed her interactions, gaining confidence and improving her customer service skills. Now, she feels empowered to handle difficult customers with ease.",
+          "visualAIPrompt": "A customer service representative, Sarah, on a phone call, looking determined while facing a computer screen displaying a frustrated customer named Alex the Tank.",
+          "altText": "Sarah, a customer service representative, confidently speaking on the phone while addressing a challenging customer, Alex the Tank, who appears frustrated on the screen.",
+          "prerequisiteKnowledge": "Basic workplace experience",
+          "scaffoldingStrategy": [
+            "Clear explanations",
+            "Visual aids",
+            "Real-world examples",
+            "Character-driven storytelling",
+            "Immediate workplace connection"
+          ],
+          "whyThisWorks": "Structured approach builds foundational knowledge systematically with clear progression",
+          "assessmentLink": "Prepares learners for practical application exercises and scenario-based assessments",
+          "redFlagChecks": {
+            "textConcise": true,
+            "noDuplication": true,
+            "visualSupportsConcept": true
+          },
+          "totalWords": 163,
+          "runtimeSeconds": 72,
+          "learnerCentredTone": true,
+          "accessibilityRationale": "Clear visual and audio presentation supports diverse learning styles",
+          "developerNotes": "Character: Sarah (Customer Service Representative)\nChallenge: Struggling to manage aggressive customers like Alex the Tank during calls.\nTransformation: Learned to identify and respond effectively to aggressive behaviors using the CAPS Model.\nTeaching Principle: Recognizing and managing aggressive behaviors using the CAPS Model.\nReal Example: Applying the CAPS Model to handle difficult customers in real-time interactions."
+        },
+        "pedagogicalPhase": "Teach",
+        "learningOutcomeIndex": 0,
+        "learningOutcome": "Dealing with Difficult People",
+        "interactivityDecision": {
+          "interactivityType": "scenario_simulation",
+          "justification": "Best match: optimal for \"apply\" level; provides fresh engagement (not recently used)",
+          "suggestedTemplate": "scenario_pathway_branching",
+          "score": 93.5,
+          "alternativeOptions": [
+            {
+              "type": "decision_tree",
+              "score": 93.5,
+              "reason": "Bloom:100 Novelty:100 Load:80 Level:100 Purpose:50"
+            },
+            {
+              "type": "multi_select_quiz",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            },
+            {
+              "type": "hotspot_exploration",
+              "score": 90,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:100"
+            }
+          ],
+          "checksum": "c9e9ffcf1a53455a",
+          "timestamp": "2025-11-03T09:32:08.061Z"
+        },
+        "interactionDetails": {
+          "type": "scenario_simulation",
+          "title": "Scenario: How Sarah Confronted the Tank",
+          "interactionSteps": [
+            "Read the scenario description carefully",
+            "Consider the situation and potential outcomes",
+            "Choose your response from the available options",
+            "Review the consequences of your decision and coaching feedback"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent choice! Your decision demonstrates strong understanding of the principles.",
+            "incorrect": "This choice has some challenges. Review the feedback and consider alternative approaches.",
+            "neutral": "Each choice has trade-offs. Review all options before deciding."
+          },
+          "accessibilityNotes": "Use Tab to navigate between choices. Press Enter to select your decision. Use Arrow keys to move between options.",
+          "imagePrompt": "Realistic workplace scenario for How Sarah Confronted the Tank showing decision points, characters, and environment with professional styling",
+          "templateData": {
+            "scenarioText": "You're facing a situation related to Dealing with Difficult People. Consider your options carefully.",
+            "context": "Professional workplace setting where Dealing with Difficult People principles apply.",
+            "choices": [
+              {
+                "id": "choice-1",
+                "text": "Take immediate action based on established procedures",
+                "outcome": "positive",
+                "rationale": "Following established procedures ensures consistency and reliability."
+              },
+              {
+                "id": "choice-2",
+                "text": "Consult with team members before deciding",
+                "outcome": "positive",
+                "rationale": "Collaboration brings diverse perspectives and better outcomes."
+              },
+              {
+                "id": "choice-3",
+                "text": "Delay the decision and gather more information",
+                "outcome": "mixed",
+                "rationale": "More information helps, but timing matters. Balance thoroughness with urgency."
+              }
+            ],
+            "consequences": {
+              "choice-1": "Your decisive action resolves the situation quickly and effectively.",
+              "choice-2": "The collaborative approach leads to a well-rounded solution with team buy-in.",
+              "choice-3": "While you gather information, the situation evolves. Consider the time factor."
+            },
+            "coachingTips": {
+              "choice-1": "Great decision-making! Quick action when appropriate shows confidence.",
+              "choice-2": "Excellent! Collaboration enhances decision quality and team engagement.",
+              "choice-3": "Good instinct to gather data, but remember to balance thoroughness with timeliness."
+            },
+            "allowRetry": true,
+            "showConsequences": true
+          }
+        }
+      },
+      {
+        "sceneNumber": 5,
+        "pageTitle": "Practice: Dealing with Difficult People",
+        "pageType": "Interactive",
+        "narrationScript": "Now let's practice applying what you've learned about Dealing with Difficult People. This interactive exercise will help reinforce your understanding and prepare you for real-world application. Follow the instructions carefully and use the knowledge from the previous teaching scene.",
+        "onScreenText": "Practice Exercise: Apply your knowledge of Dealing with Difficult People through interactive activities.",
+        "visual": {
+          "aiPrompt": "Interactive practice environment for Dealing with Difficult People, showing engaging learning activities and clear instructions with reference to teaching content",
+          "altText": "Interactive practice exercise for Dealing with Difficult People"
+        },
+        "interactionType": "None",
+        "timing": {
+          "estimatedSeconds": 120
+        },
+        "pedagogicalPhase": "Practice",
+        "learningOutcomeIndex": 0,
+        "learningOutcome": "Dealing with Difficult People",
+        "interactivityDecision": {
+          "interactivityType": "decision_tree",
+          "justification": "Best match: optimal for \"apply\" level; provides fresh engagement (not recently used); matches medium cognitive load; supports practice goal",
+          "suggestedTemplate": "decision_tree_template",
+          "score": 100,
+          "alternativeOptions": [
+            {
+              "type": "drag_and_drop",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "hotspot_exploration",
+              "score": 93.25,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:85"
+            },
+            {
+              "type": "timeline_sequencing",
+              "score": 93.25,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:85"
+            }
+          ],
+          "checksum": "9e9f50bb3c9d43c6",
+          "timestamp": "2025-11-03T09:32:08.061Z"
+        },
+        "interactionDetails": {
+          "type": "decision_tree",
+          "title": "Decide: Practice: Dealing with Difficult People",
+          "interactionSteps": [
+            "Start at the root question of the decision tree",
+            "Answer each question to navigate through the tree",
+            "Follow the branches based on your answers",
+            "Reach your personalized recommendation",
+            "Review the decision path and reasoning"
+          ],
+          "feedbackRules": {
+            "correct": "You've successfully navigated to an appropriate recommendation for your situation.",
+            "neutral": "The decision tree has guided you to a recommendation based on your specific context.",
+            "incorrect": "Review your path through the tree. Some answers may need reconsideration."
+          },
+          "accessibilityNotes": "Use Tab to navigate options at each node. Press Enter to select and advance. Press 'B' to go back to previous node. Press 'R' to restart from root.",
+          "imagePrompt": "Decision tree flowchart for Practice: Dealing with Difficult People with clear nodes, branches, and decision paths",
+          "templateData": {
+            "tree": {
+              "rootNode": {
+                "id": "root",
+                "question": "What is your primary goal in this Dealing with Difficult People situation?",
+                "options": [
+                  {
+                    "id": "goal-1",
+                    "text": "Quick resolution",
+                    "nextNode": "node-1a"
+                  },
+                  {
+                    "id": "goal-2",
+                    "text": "Comprehensive solution",
+                    "nextNode": "node-1b"
+                  },
+                  {
+                    "id": "goal-3",
+                    "text": "Team buy-in",
+                    "nextNode": "node-1c"
+                  }
+                ]
+              },
+              "nodes": [
+                {
+                  "id": "node-1a",
+                  "question": "Do you have all necessary information?",
+                  "options": [
+                    {
+                      "id": "opt-a1",
+                      "text": "Yes, proceed immediately",
+                      "nextNode": "outcome-1"
+                    },
+                    {
+                      "id": "opt-a2",
+                      "text": "No, need quick research",
+                      "nextNode": "outcome-2"
+                    }
+                  ]
+                },
+                {
+                  "id": "node-1b",
+                  "question": "What level of analysis is required?",
+                  "options": [
+                    {
+                      "id": "opt-b1",
+                      "text": "Standard analysis",
+                      "nextNode": "outcome-3"
+                    },
+                    {
+                      "id": "opt-b2",
+                      "text": "Deep analysis",
+                      "nextNode": "outcome-4"
+                    }
+                  ]
+                },
+                {
+                  "id": "node-1c",
+                  "question": "Who needs to be involved in the decision?",
+                  "options": [
+                    {
+                      "id": "opt-c1",
+                      "text": "Core team only",
+                      "nextNode": "outcome-5"
+                    },
+                    {
+                      "id": "opt-c2",
+                      "text": "All stakeholders",
+                      "nextNode": "outcome-6"
+                    }
+                  ]
+                }
+              ],
+              "outcomes": [
+                {
+                  "id": "outcome-1",
+                  "recommendation": "Use the rapid response protocol",
+                  "rationale": "You have the information and authority to act quickly",
+                  "nextSteps": [
+                    "Document decision",
+                    "Implement immediately",
+                    "Monitor results"
+                  ],
+                  "confidence": "high"
+                },
+                {
+                  "id": "outcome-2",
+                  "recommendation": "Quick research phase (1-2 hours) then decide",
+                  "rationale": "Brief research will strengthen your decision without significant delay",
+                  "nextSteps": [
+                    "Identify information gaps",
+                    "Quick research sprint",
+                    "Decide within 24 hours"
+                  ],
+                  "confidence": "medium-high"
+                },
+                {
+                  "id": "outcome-3",
+                  "recommendation": "Standard analysis approach (2-3 days)",
+                  "rationale": "Balanced approach for comprehensive but timely solution",
+                  "nextSteps": [
+                    "Structured analysis",
+                    "Stakeholder input",
+                    "Implement with monitoring"
+                  ],
+                  "confidence": "high"
+                },
+                {
+                  "id": "outcome-4",
+                  "recommendation": "Deep analysis with multiple iterations (1-2 weeks)",
+                  "rationale": "Complex situation requires thorough investigation",
+                  "nextSteps": [
+                    "Data gathering",
+                    "Multiple analysis cycles",
+                    "Validation with experts",
+                    "Phased implementation"
+                  ],
+                  "confidence": "very high"
+                },
+                {
+                  "id": "outcome-5",
+                  "recommendation": "Core team workshop and decision session",
+                  "rationale": "Focused collaboration with key decision-makers",
+                  "nextSteps": [
+                    "Schedule workshop",
+                    "Prepare materials",
+                    "Facilitate decision",
+                    "Communicate outcomes"
+                  ],
+                  "confidence": "high"
+                },
+                {
+                  "id": "outcome-6",
+                  "recommendation": "Inclusive stakeholder process with working groups",
+                  "rationale": "Broad buy-in requires comprehensive engagement",
+                  "nextSteps": [
+                    "Map stakeholders",
+                    "Create working groups",
+                    "Iterative consultation",
+                    "Consensus building"
+                  ],
+                  "confidence": "medium"
+                }
+              ]
+            },
+            "showPath": true,
+            "allowBacktrack": true,
+            "highlightCurrentNode": true,
+            "visualStyle": "flowchart"
+          }
+        }
+      },
+      {
+        "sceneNumber": 6,
+        "pageTitle": "Apply: Dealing with Difficult People",
+        "pageType": "Interactive",
+        "narrationScript": "Let's apply Dealing with Difficult People in a realistic scenario. Based on what you learned in the teaching phase and practiced in the interactive exercise, make decisions and see how your choices impact the outcome.",
+        "onScreenText": "Real-world Application: Use your knowledge of Dealing with Difficult People to navigate this scenario.",
+        "visual": {
+          "aiPrompt": "Realistic workplace scenario for Dealing with Difficult People, showing decision points and potential outcomes based on teaching principles",
+          "altText": "Real-world application scenario for Dealing with Difficult People"
+        },
+        "interactionType": "Scenario",
+        "timing": {
+          "estimatedSeconds": 150
+        },
+        "pedagogicalPhase": "Apply",
+        "learningOutcomeIndex": 0,
+        "learningOutcome": "Dealing with Difficult People",
+        "interactivityDecision": {
+          "interactivityType": "procedural_demo",
+          "justification": "Best match: optimal for \"apply\" level; provides fresh engagement (not recently used); supports practice goal",
+          "suggestedTemplate": "procedural_template",
+          "score": 95.25,
+          "alternativeOptions": [
+            {
+              "type": "drag_and_drop",
+              "score": 90,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:100"
+            },
+            {
+              "type": "hotspot_exploration",
+              "score": 89.25,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:85"
+            },
+            {
+              "type": "timeline_sequencing",
+              "score": 89.25,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:85"
+            }
+          ],
+          "checksum": "88c21202cc1a2f89",
+          "timestamp": "2025-11-03T09:32:08.061Z"
+        },
+        "interactionDetails": {
+          "type": "procedural_demo",
+          "title": "Learn: Apply: Dealing with Difficult People",
+          "interactionSteps": [
+            "Watch each step of the demonstration",
+            "Practice each step yourself in the interactive panel",
+            "Complete the guided practice exercise",
+            "Verify your completion with the checklist"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent work! You've mastered this procedure and completed all steps correctly.",
+            "incorrect": "Some steps need adjustment. Review the demonstration and try those steps again.",
+            "neutral": "Follow along with the demonstration and practice each step."
+          },
+          "accessibilityNotes": "Use Tab to navigate between steps. Press Enter to advance to next step. Press Space to pause/resume demonstration. Arrow keys to move between practice elements.",
+          "imagePrompt": "Step-by-step procedural demonstration interface for Apply: Dealing with Difficult People showing clear numbered steps with visual guidance",
+          "templateData": {
+            "steps": [
+              {
+                "step": 1,
+                "title": "Preparation",
+                "description": "Understand the context and requirements for Dealing with Difficult People",
+                "visual": "Preparation phase illustration showing setup and planning",
+                "duration": 30,
+                "practiceTask": "Review the requirements checklist"
+              },
+              {
+                "step": 2,
+                "title": "Execution",
+                "description": "Follow the procedure step-by-step with attention to detail",
+                "visual": "Action phase illustration showing the core process",
+                "duration": 60,
+                "practiceTask": "Complete the guided practice exercise"
+              },
+              {
+                "step": 3,
+                "title": "Verification",
+                "description": "Check your work against quality standards and criteria",
+                "visual": "Verification phase illustration showing quality checks",
+                "duration": 30,
+                "practiceTask": "Use the verification checklist"
+              },
+              {
+                "step": 4,
+                "title": "Reflection",
+                "description": "Consider what worked well and what could be improved",
+                "visual": "Reflection phase showing continuous improvement cycle",
+                "duration": 20,
+                "practiceTask": "Note key learnings and insights"
+              }
+            ],
+            "interactive": true,
+            "allowPractice": true,
+            "showTips": true,
+            "requireCompletion": false,
+            "demonstrationSpeed": "normal",
+            "practiceMode": "guided"
+          }
+        }
+      },
+      {
+        "sceneNumber": 7,
+        "pageTitle": "Knowledge Check: Dealing with Difficult People",
+        "pageType": "Interactive",
+        "narrationScript": "Let's assess your understanding of Dealing with Difficult People. This knowledge check will help verify that you've mastered the key concepts from the teaching phase and can apply them effectively.",
+        "onScreenText": "Knowledge Check: Test your understanding of Dealing with Difficult People concepts.",
+        "visual": {
+          "aiPrompt": "Assessment interface for Dealing with Difficult People, showing quiz elements and progress indicators with references to teaching content",
+          "altText": "Knowledge assessment for Dealing with Difficult People"
+        },
+        "interactionType": "MCQ",
+        "timing": {
+          "estimatedSeconds": 90
+        },
+        "pedagogicalPhase": "Assess",
+        "learningOutcomeIndex": 0,
+        "learningOutcome": "Dealing with Difficult People",
+        "interactivityDecision": {
+          "interactivityType": "drag_and_drop",
+          "justification": "Best match: optimal for \"apply\" level; provides fresh engagement (not recently used); matches medium cognitive load",
+          "suggestedTemplate": "drag_drop_template",
+          "score": 91.5,
+          "alternativeOptions": [
+            {
+              "type": "hotspot_exploration",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            },
+            {
+              "type": "timeline_sequencing",
+              "score": 91.5,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:50"
+            },
+            {
+              "type": "multi_select_quiz",
+              "score": 89.25,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:85"
+            }
+          ],
+          "checksum": "921e93322a489794",
+          "timestamp": "2025-11-03T09:32:08.061Z"
+        },
+        "interactionDetails": {
+          "type": "drag_and_drop",
+          "title": "Match: Knowledge Check: Dealing with Difficult People",
+          "interactionSteps": [
+            "Drag items from the left column to match with the correct category on the right",
+            "Drop items into the appropriate target zones",
+            "Click \"Check Answers\" to verify your matches"
+          ],
+          "feedbackRules": {
+            "correct": "Perfect! All items are correctly matched. You understand the relationships well.",
+            "incorrect": "Some items need adjustment. Review the concepts and try again.",
+            "neutral": "Drag all items to their correct positions before checking."
+          },
+          "accessibilityNotes": "Use Tab to focus items. Press Space to pick up/drop items. Use Arrow keys to move between drop zones. Press Enter to confirm placement.",
+          "imagePrompt": "Drag and drop interface for Knowledge Check: Dealing with Difficult People with clear source and target zones, visual feedback, and intuitive design",
+          "templateData": {
+            "draggableItems": [
+              {
+                "id": "item-1",
+                "label": "Concept 1",
+                "description": "Related to Dealing with Difficult People"
+              },
+              {
+                "id": "item-2",
+                "label": "Concept 2",
+                "description": "Related to Dealing with Difficult People"
+              },
+              {
+                "id": "item-3",
+                "label": "Concept 3",
+                "description": "Related to Dealing with Difficult People"
+              },
+              {
+                "id": "item-4",
+                "label": "Concept 4",
+                "description": "Related to Dealing with Difficult People"
+              }
+            ],
+            "dropZones": [
+              {
+                "id": "zone-1",
+                "label": "Category 1",
+                "description": "Drop matching items here"
+              },
+              {
+                "id": "zone-2",
+                "label": "Category 2",
+                "description": "Drop matching items here"
+              },
+              {
+                "id": "zone-3",
+                "label": "Category 3",
+                "description": "Drop matching items here"
+              },
+              {
+                "id": "zone-4",
+                "label": "Category 4",
+                "description": "Drop matching items here"
+              }
+            ],
+            "matchPairs": [
+              {
+                "item": "item-1",
+                "zone": "zone-1"
+              },
+              {
+                "item": "item-2",
+                "zone": "zone-2"
+              },
+              {
+                "item": "item-3",
+                "zone": "zone-3"
+              },
+              {
+                "item": "item-4",
+                "zone": "zone-4"
+              }
+            ],
+            "allowMultiple": false,
+            "showFeedback": true,
+            "enableHints": true
+          }
+        }
+      },
+      {
+        "sceneNumber": 8,
+        "pageTitle": "Key Takeaways Summary",
+        "pageType": "Informative",
+        "narrationScript": "Congratulations! You've completed the Dealing with Difficult People module following our proven TEACH → PRACTICE → APPLY → ASSESS learning sequence. Let's recap the key concepts you've mastered and how to apply them in your daily work.",
+        "onScreenText": "Key Takeaways: Review the essential concepts from this Dealing with Difficult People module.",
+        "visual": {
+          "aiPrompt": "Summary visual for Dealing with Difficult People, showing key concepts and takeaways in an organized, memorable format",
+          "altText": "Summary of key concepts for Dealing with Difficult People"
+        },
+        "interactionType": "None",
+        "timing": {
+          "estimatedSeconds": 60
+        },
+        "pedagogicalPhase": "Summary",
+        "interactivityDecision": {
+          "interactivityType": "timeline_sequencing",
+          "justification": "Best match: optimal for \"understand\" level; provides fresh engagement (not recently used); supports reinforcement goal",
+          "suggestedTemplate": "timeline_template",
+          "score": 95.25,
+          "alternativeOptions": [
+            {
+              "type": "multi_select_quiz",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "single_select_quiz",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "click_to_reveal",
+              "score": 93.25,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:85"
+            }
+          ],
+          "checksum": "a0c47a23f383501c",
+          "timestamp": "2025-11-03T09:32:08.061Z"
+        },
+        "interactionDetails": {
+          "type": "timeline_sequencing",
+          "title": "Sequence: Key Takeaways Summary",
+          "interactionSteps": [
+            "Review all the steps presented",
+            "Drag the steps into the correct chronological order",
+            "Click 'Check Sequence' to verify your answer",
+            "Review feedback and adjust if needed"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent! You've sequenced the steps correctly. This shows you understand the logical flow of the process.",
+            "incorrect": "Not quite. Review the natural progression and dependencies between steps, then try again.",
+            "neutral": "Arrange all steps before checking your sequence."
+          },
+          "accessibilityNotes": "Use Tab to navigate steps. Press Space to select a step. Use Arrow keys to reorder selected step. Press Enter to confirm placement.",
+          "imagePrompt": "Timeline interface showing sequential steps for Key Takeaways Summary with drag-drop functionality and clear visual indicators",
+          "templateData": {
+            "steps": [
+              {
+                "id": "step-1",
+                "correctOrder": 1,
+                "label": "Identify the situation or trigger",
+                "description": "Step 1 in the process",
+                "currentPosition": 1
+              },
+              {
+                "id": "step-2",
+                "correctOrder": 2,
+                "label": "Analyze the context and requirements",
+                "description": "Step 2 in the process",
+                "currentPosition": 4
+              },
+              {
+                "id": "step-3",
+                "correctOrder": 3,
+                "label": "Select the appropriate approach",
+                "description": "Step 3 in the process",
+                "currentPosition": 4
+              },
+              {
+                "id": "step-4",
+                "correctOrder": 4,
+                "label": "Implement the chosen strategy",
+                "description": "Step 4 in the process",
+                "currentPosition": 4
+              }
+            ],
+            "requireCorrectOrder": true,
+            "showHints": true,
+            "allowPartialCredit": false,
+            "timelineOrientation": "vertical"
+          }
+        }
+      },
+      {
+        "sceneNumber": 9,
+        "pageTitle": "Next Steps & Application",
+        "pageType": "Informative",
+        "narrationScript": "Now that you understand Dealing with Difficult People through our comprehensive learning approach, it's time to put this knowledge into practice. Consider how you can apply these concepts in your workplace and continue developing these skills.",
+        "onScreenText": "Next Steps: Plan how to apply Dealing with Difficult People concepts in your daily work.",
+        "visual": {
+          "aiPrompt": "Action planning visual for Dealing with Difficult People, showing next steps and application strategies",
+          "altText": "Next steps and application planning for Dealing with Difficult People"
+        },
+        "interactionType": "None",
+        "timing": {
+          "estimatedSeconds": 60
+        },
+        "pedagogicalPhase": "NextSteps",
+        "interactivityDecision": {
+          "interactivityType": "multi_select_quiz",
+          "justification": "Best match: optimal for \"understand\" level; provides fresh engagement (not recently used); matches low cognitive load; supports reinforcement goal",
+          "suggestedTemplate": "multi_select_template",
+          "score": 94,
+          "alternativeOptions": [
+            {
+              "type": "single_select_quiz",
+              "score": 94,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:100"
+            },
+            {
+              "type": "click_to_reveal",
+              "score": 93.25,
+              "reason": "Bloom:85 Novelty:100 Load:100 Level:100 Purpose:85"
+            },
+            {
+              "type": "hotspot_exploration",
+              "score": 87.5,
+              "reason": "Bloom:85 Novelty:100 Load:80 Level:100 Purpose:50"
+            }
+          ],
+          "checksum": "597bca5c66f3c5c6",
+          "timestamp": "2025-11-03T09:32:08.062Z"
+        },
+        "interactionDetails": {
+          "type": "multi_select_quiz",
+          "title": "Knowledge Check: Next Steps & Application",
+          "interactionSteps": [
+            "Read the question carefully",
+            "Select ALL options that apply (multiple correct answers)",
+            "Click \"Submit\" to check your answers",
+            "Review feedback and correct answers"
+          ],
+          "feedbackRules": {
+            "correct": "Excellent! You've identified all correct answers.",
+            "incorrect": "Not quite. Review the concepts and try again.",
+            "neutral": "Select all options that apply before submitting."
+          },
+          "accessibilityNotes": "Use Tab to navigate options. Press Space to select/deselect. Press Enter to submit answers.",
+          "imagePrompt": "Quiz interface for Next Steps & Application with clear options, selection indicators, and feedback display",
+          "templateData": {
+            "questions": [
+              {
+                "id": "q1",
+                "text": "Which of the following are key principles of Next Steps & Application? (Select all that apply)",
+                "options": [
+                  {
+                    "id": "opt1",
+                    "text": "Clear communication",
+                    "correct": true
+                  },
+                  {
+                    "id": "opt2",
+                    "text": "Active listening",
+                    "correct": true
+                  },
+                  {
+                    "id": "opt3",
+                    "text": "Empathy and understanding",
+                    "correct": true
+                  },
+                  {
+                    "id": "opt4",
+                    "text": "Avoiding difficult conversations",
+                    "correct": false
+                  },
+                  {
+                    "id": "opt5",
+                    "text": "Ignoring feedback",
+                    "correct": false
+                  }
+                ],
+                "explanation": "Effective practice requires clear communication, active listening, and empathy. Avoiding challenges prevents growth."
+              }
+            ],
+            "requireAllCorrect": true,
+            "showPartialCredit": true,
+            "allowRetry": true,
+            "maxAttempts": 2
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "completionRule": "Completion when all scenes viewed and interactions completed.",
+      "pedagogicalFrameworkVersion": "1.0",
+      "enforcedSequence": [
+        "Welcome",
+        "LearningOutcomes",
+        "Teach",
+        "Practice",
+        "Apply",
+        "Assess",
+        "Summary"
+      ],
+      "complianceChecks": [
+        "OutcomeLinkage",
+        "TeachingCoverage",
+        "SequenceLogic",
+        "AssessmentPresence",
+        "PedagogicalRationale"
+      ],
+      "learningOutcomes": [
+        "Dealing with Difficult People"
+      ],
+      "frameworkEnforced": true
+    },
+    "qaReport": {
+      "score": 6.5,
+      "issues": [
+        "OutcomeLinkage: Each scene explicitly maps to ≥1 Learning Outcome",
+        "Scene flow does not fully adhere to ADDIE: Missing clear transitions between phases",
+        "Inconsistent use of UK English spelling in some sections",
+        "Some interactive elements do not align with the learning outcomes effectively"
+      ],
+      "recommendations": [
+        "Ensure every scene explicitly links to at least one learning outcome",
+        "Improve transitions between phases to enhance flow and coherence",
+        "Review and standardise spelling to ensure consistent use of UK English",
+        "Align interactive elements more closely with the learning outcomes to enhance engagement and effectiveness"
+      ],
+      "extractedContent": {
+        "totalElements": 10,
+        "models": 4,
+        "techniques": 0,
+        "examples": 1
+      }
+    }
+  }
+}

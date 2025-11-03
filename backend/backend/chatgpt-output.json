@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "moduleName": "Dealing with Difficult People",
+    "moduleType": "eLearning",
+    "targetAudience": "Customer Service Team",
+    "learningOutcomes": [
+      "Identify types of difficult customers",
+      "Apply effective communication strategies",
+      "Utilize conflict resolution techniques",
+      "Enhance emotional intelligence in customer interactions"
+    ],
+    "level": "Level2",
+    "tone": "Professional and Empathetic",
+    "language": "English",
+    "brand": {
+      "name": "Not Provided",
+      "colours": [],
+      "fonts": [],
+      "logoUrl?": null,
+      "voiceoverAccent?": null,
+      "tone?": null
+    }
+  },
+  "scenes": [
+    {
+      "title": "Introduction to Difficult People",
+      "objectivesCovered": [
+        "Identify types of difficult customers"
+      ],
+      "onScreenText": "Welcome to Dealing with Difficult People",
+      "voiceover": "Welcome to this training module on dealing with difficult people. Let's explore the types of challenging customers you may encounter.",
+      "visuals": "A friendly customer service representative greeting the audience.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Ensure captions are enabled for the voiceover.",
+      "developerNotes": "Full-screen layout, soft transition into the next scene."
+    },
+    {
+      "title": "Types of Difficult Customers",
+      "objectivesCovered": [
+        "Identify types of difficult customers"
+      ],
+      "onScreenText": "Types of Difficult Customers: 1. The Angry Customer 2. The Indecisive Customer 3. The Know-It-All",
+      "voiceover": "There are several types of difficult customers. Let's take a closer look at three common types: the angry customer, the indecisive customer, and the know-it-all.",
+      "visuals": "Illustrations of each customer type with brief descriptions.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Provide alt text for each illustration.",
+      "developerNotes": "Use a grid layout for customer types, with animations for each type appearing sequentially."
+    },
+    {
+      "title": "Understanding Customer Emotions",
+      "objectivesCovered": [
+        "Enhance emotional intelligence in customer interactions"
+      ],
+      "onScreenText": "Understanding Customer Emotions",
+      "voiceover": "Understanding the emotions behind a customer's behavior is crucial. Let's discuss how to recognize these emotions.",
+      "visuals": "A diagram showing different customer emotions and their triggers.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Include captions for the diagram explanation.",
+      "developerNotes": "Use a dynamic diagram that highlights each emotion as discussed."
+    },
+    {
+      "title": "Effective Communication Strategies",
+      "objectivesCovered": [
+        "Apply effective communication strategies"
+      ],
+      "onScreenText": "Effective Communication Strategies",
+      "voiceover": "Effective communication can de-escalate difficult situations. Here are some strategies you can use.",
+      "visuals": "Bullet points listing strategies such as active listening, empathy, and clear language.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Ensure all text is readable with sufficient contrast.",
+      "developerNotes": "Use a fade-in effect for each bullet point."
+    },
+    {
+      "title": "Role-Playing Scenarios",
+      "objectivesCovered": [
+        "Apply effective communication strategies",
+        "Utilize conflict resolution techniques"
+      ],
+      "onScreenText": "Role-Playing Scenarios",
+      "voiceover": "Now, let's practice what we've learned through role-playing scenarios.",
+      "visuals": "Two characters in a role-play scenario, one as the customer and one as the representative.",
+      "mediaPrompts": null,
+      "interactivity": "Participants will choose responses to the customer's statements.",
+      "accessibilityNotes": "Provide keyboard navigation for response selection.",
+      "developerNotes": "Interactive layout with branching scenarios based on user choices."
+    },
+    {
+      "title": "Conflict Resolution Techniques",
+      "objectivesCovered": [
+        "Utilize conflict resolution techniques"
+      ],
+      "onScreenText": "Conflict Resolution Techniques",
+      "voiceover": "Let's explore some effective conflict resolution techniques to help you manage difficult interactions.",
+      "visuals": "Flowchart of conflict resolution steps.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Include alt text for the flowchart.",
+      "developerNotes": "Use a step-by-step reveal for each part of the flowchart."
+    },
+    {
+      "title": "Summary and Key Takeaways",
+      "objectivesCovered": [
+        "Identify types of difficult customers",
+        "Apply effective communication strategies",
+        "Utilize conflict resolution techniques",
+        "Enhance emotional intelligence in customer interactions"
+      ],
+      "onScreenText": "Summary and Key Takeaways",
+      "voiceover": "In summary, remember the types of difficult customers, the importance of effective communication, and the techniques for conflict resolution.",
+      "visuals": "A recap slide with key points highlighted.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Ensure all key points are clearly visible and readable.",
+      "developerNotes": "Simple layout with a smooth transition to the conclusion."
+    },
+    {
+      "title": "Conclusion and Next Steps",
+      "objectivesCovered": [],
+      "onScreenText": "Thank you for participating!",
+      "voiceover": "Thank you for participating in this training. Apply these strategies in your daily interactions.",
+      "visuals": "A thank you message with a friendly image.",
+      "mediaPrompts": null,
+      "interactivity": null,
+      "accessibilityNotes": "Provide a summary of resources for further learning.",
+      "developerNotes": "Final slide with a soft fade-out."
+    }
+  ],
+  "totalDurationMin": 10,
+  "notesForClient": "Brand profile details are missing."
+}

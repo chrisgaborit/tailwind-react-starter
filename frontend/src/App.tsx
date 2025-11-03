@@ -14,6 +14,7 @@ import UsersPage from "./routes/admin/UsersPage";
 import StoryboardsPage from "./routes/admin/StoryboardsPage";
 import BillingPage from "./routes/admin/BillingPage";
 import SettingsPage from "./routes/admin/SettingsPage";
+import PrintPage from "./pages/Print";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<GeneratorApp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/print" element={<PrintPage />} />
 
         {/* Admin (protected) */}
         <Route

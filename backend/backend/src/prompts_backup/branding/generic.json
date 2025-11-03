@@ -1,0 +1,8 @@
+{
+  "prompt": "Branding: Use Open Sans font with a professional look. Primary colour is #004A7C with an accent of #FFC107. Logo appears in the top-left. Use flat vector-style imagery.",
+  "font": "Open Sans",
+  "primaryColour": "#004A7C",
+  "accentColour": "#FFC107",
+  "logoPosition": "top-left",
+  "imageStyle": "vector-flat"
+}

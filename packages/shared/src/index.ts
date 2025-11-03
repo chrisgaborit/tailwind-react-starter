@@ -1,1 +1,1 @@
-export * from "./storyboardTypesV2.js";
+export * from "./types";

@@ -2,9 +2,13 @@
 import type { StoryboardScene } from "@/types";
 
 /**
- * Ensures a sane distribution of interactions across scenes.
- * - Tries to apply preferred types while respecting maxSameTypeInRow
- * - Keeps first 4 screens (Title/Pronunciation/ToC/Welcome) intact
+ * Enforces interaction density based on module level.
+ * - Level 1: 1 per 5–6 screens
+ * - Level 2: 1 per 3–4 screens
+ * - Level 3: 1 per 2–3 screens
+ * - Level 4: every screen
+ *
+ * Also ensures variation and purpose of each interaction.
  */
 export function enforceInteractiveDensity(
   scenes: StoryboardScene[],
@@ -19,30 +23,29 @@ export function enforceInteractiveDensity(
   const total = out.length;
   const targetInteractive = Math.max(0, Math.round(total * interactiveRatio));
 
-  let currentInteractive = out.filter((s) => (s.interactionType || "None") !== "None").length;
+  let currentInteractive = out.filter(
+    (s) => (s.interactionType || "None") !== "None"
+  ).length;
 
-  // Pass 1: ensure we have enough interactive scenes
+  // Pass 1: add interactions where missing
   let i = keepStaticUntil;
   while (currentInteractive < targetInteractive && i < total) {
-    if (out[i].interactionType === "None" || !out[i].interactionType) {
+    if (!out[i].interactionType || out[i].interactionType === "None") {
       const nextType = preferredTypes[(i + currentInteractive) % preferredTypes.length] || "MCQ";
       out[i].interactionType = nextType as any;
       out[i].interactionDescription = out[i].interactionDescription || describeInteraction(nextType, out[i].pageTitle);
       out[i].interactionDetails = out[i].interactionDetails || {
         interactionType: nextType,
-        retryLogic: nextType === "MCQ" ? "Allow up to 2 retries; reveal on final incorrect." : "Allow retry.",
+        retryLogic: getRetryLogic(nextType),
         completionRule: "User must interact at least once.",
-        aiGenerationDirective:
-          nextType === "MCQ"
-            ? "[AI Generate: MCQ with option‑level feedback; randomise options.]"
-            : undefined,
+        aiGenerationDirective: getAIDirective(nextType),
       };
       currentInteractive++;
     }
     i++;
   }
 
-  // Pass 2: avoid long runs of the same type
+  // Pass 2: prevent repetition of same type
   let runType = "";
   let runLen = 0;
   for (let j = keepStaticUntil; j < total; j++) {
@@ -55,13 +58,17 @@ export function enforceInteractiveDensity(
     if (t === runType) {
       runLen++;
       if (runLen >= maxSameTypeInRow) {
-        // swap to a different preferred type
         const alt = preferredTypes.find((x) => x !== t) || "MCQ";
         out[j].interactionType = alt as any;
         if (!out[j].interactionDescription) {
           out[j].interactionDescription = describeInteraction(alt, out[j].pageTitle);
         }
-        out[j].interactionDetails = out[j].interactionDetails || { interactionType: alt };
+        out[j].interactionDetails = out[j].interactionDetails || {
+          interactionType: alt,
+          retryLogic: getRetryLogic(alt),
+          completionRule: "User must interact at least once.",
+          aiGenerationDirective: getAIDirective(alt),
+        };
         runType = alt;
         runLen = 1;
       }
@@ -90,5 +97,32 @@ function describeInteraction(t: string, topic: string) {
       return `Short video with embedded questions on: ${topic}. Captions ON.`;
     default:
       return `Interactive element aligned to: ${topic}.`;
+  }
+}
+
+function getRetryLogic(type: string): string {
+  switch (type) {
+    case "MCQ":
+      return "Allow up to 2 retries; reveal on final incorrect.";
+    case "Drag & Drop":
+    case "Clickable Hotspots":
+      return "Allow retry.";
+    case "Scenario":
+      return "No retry; path locked after decision.";
+    default:
+      return "Allow retry.";
+  }
+}
+
+function getAIDirective(type: string): string | undefined {
+  switch (type) {
+    case "MCQ":
+      return "[AI Generate: MCQ with option‑level feedback; randomise options.]";
+    case "Scenario":
+      return "[AI Generate: branching choices with outcome debrief.]";
+    case "Reflection":
+      return "[AI Generate: open-ended reflection prompt.]";
+    default:
+      return undefined;
   }
 }
