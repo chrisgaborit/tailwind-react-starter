@@ -1,19 +1,22 @@
 #!/bin/bash
 
-# Step 1: Build the backend
-echo "🔨 Building backend..."
-npm run build
+# 🚀 Deploy backend to Google Cloud Run
 
-# Step 2: Submit Docker image to Google Cloud Build
-echo "📦 Submitting Docker image to Google Cloud..."
-gcloud builds submit --tag gcr.io/genesis-backend-project/genesis-backend
+# Set project ID and service name
+PROJECT_ID="genesis-backend-project"
+SERVICE_NAME="genesis-backend"
+REGION="australia-southeast1"
 
-# Step 3: Deploy to Cloud Run
+# 1. Submit Docker image to Google Container Registry
+echo "🛠️ Building Docker image and submitting to Google Cloud..."
+gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME
+
+# 2. Deploy image to Cloud Run
 echo "🚀 Deploying to Cloud Run..."
-gcloud run deploy genesis-backend \
-  --image gcr.io/genesis-backend-project/genesis-backend \
+gcloud run deploy $SERVICE_NAME \
+  --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
   --platform managed \
-  --region australia-southeast1 \
+  --region $REGION \
   --allow-unauthenticated
 
 echo "✅ Deployment complete!"

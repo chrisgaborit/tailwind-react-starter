@@ -1,0 +1,368 @@
+{
+  "moduleName": "Effective Communication Skills",
+  "targetMinutes": 15,
+  "tableOfContents": [
+    "Welcome & Navigation",
+    "Learning Outcomes",
+    "Teaching: Active Listening",
+    "Practice: Active Listening",
+    "Apply: Active Listening",
+    "Knowledge Check: Active Listening",
+    "Key Takeaways",
+    "Next Steps"
+  ],
+  "scenes": [
+    {
+      "sceneNumber": 1,
+      "pageTitle": "Welcome & Navigation",
+      "pageType": "Informative",
+      "narrationScript": "Welcome to the Effective Communication Skills course! In this module, you'll learn practical techniques for improving your communication in the workplace. Use the navigation arrows to move through the content, and remember - you can pause, replay, or skip ahead at any time.",
+      "onScreenText": "Welcome! Navigate using the arrows. Estimated time: 15 minutes.",
+      "visual": {
+        "aiPrompt": "Professional office environment with diverse team members collaborating, modern workspace with natural lighting",
+        "altText": "Diverse professionals in a modern office setting",
+        "aspectRatio": "16:9"
+      },
+      "interactionType": "None",
+      "timing": {
+        "estimatedSeconds": 30
+      },
+      "pedagogicalPhase": "Welcome"
+    },
+    {
+      "sceneNumber": 2,
+      "pageTitle": "Learning Outcomes",
+      "pageType": "Informative",
+      "narrationScript": "By the end of this module, you will be able to: Practice active listening techniques in conversations, Apply feedback frameworks in workplace scenarios, and Develop a personal communication action plan.",
+      "onScreenText": "Learning Outcomes:\n1. Practice active listening\n2. Apply feedback frameworks\n3. Develop communication plan",
+      "visual": {
+        "aiPrompt": "Checklist or roadmap showing three learning objectives with icons",
+        "altText": "Three learning objectives displayed visually"
+      },
+      "interactionType": "None",
+      "timing": {
+        "estimatedSeconds": 45
+      },
+      "pedagogicalPhase": "LearningOutcomes",
+      "learningOutcome": "Overview of all objectives"
+    },
+    {
+      "sceneNumber": 3,
+      "pageTitle": "Teaching: Active Listening",
+      "pageType": "Informative",
+      "narrationScript": "Active listening is more than just hearing words. It involves paying full attention, understanding the message, responding thoughtfully, and remembering what was said. Let's explore three key techniques: maintaining eye contact, paraphrasing to confirm understanding, and asking clarifying questions.",
+      "onScreenText": "Active Listening Techniques:\n• Maintain eye contact\n• Paraphrase to confirm\n• Ask clarifying questions",
+      "visual": {
+        "aiPrompt": "Two professionals in conversation, one actively listening with engaged body language, visual indicators showing listening techniques",
+        "altText": "Professional demonstrating active listening with engaged posture"
+      },
+      "interactionType": "None",
+      "timing": {
+        "estimatedSeconds": 90
+      },
+      "pedagogicalPhase": "Teach",
+      "learningOutcome": "Practice active listening techniques",
+      "bloomLevel": "Understand",
+      "teachingScene": {
+        "learningOutcome": "Practice active listening techniques",
+        "bloomTaxonomyLevel": "Understand",
+        "teachingMethod": "Direct Instruction",
+        "contentStructurePattern": "Concept → Definition → Examples",
+        "keyConcepts": [
+          "Active listening definition",
+          "Three core techniques",
+          "Workplace applications"
+        ]
+      }
+    },
+    {
+      "sceneNumber": 4,
+      "pageTitle": "Practice: Active Listening",
+      "pageType": "Interactive",
+      "narrationScript": "Now let's practice identifying active listening behaviors. You'll see several workplace scenarios. Identify which active listening technique is being used in each situation.",
+      "onScreenText": "Practice: Match each scenario to the correct active listening technique",
+      "visual": {
+        "aiPrompt": "Interactive workspace showing multiple workplace conversation scenarios with drag-and-drop elements",
+        "altText": "Interactive practice activity for active listening"
+      },
+      "interactionType": "DragDrop",
+      "timing": {
+        "estimatedSeconds": 120
+      },
+      "pedagogicalPhase": "Practice",
+      "learningOutcome": "Practice active listening techniques",
+      "bloomLevel": "Apply",
+      "interactivityDecision": {
+        "interactivityType": "drag_and_drop",
+        "justification": "Allows learners to actively match concepts with real scenarios",
+        "suggestedTemplate": "drag_drop_matching"
+      },
+      "interactionDetails": {
+        "type": "drag_and_drop",
+        "title": "Match: Active Listening Techniques",
+        "interactionSteps": [
+          "Drag items from the left column to match with the correct category on the right",
+          "Drop items into the appropriate target zones",
+          "Click 'Check Answers' to verify your matches"
+        ],
+        "feedbackRules": {
+          "correct": "Perfect! You've correctly matched all active listening techniques.",
+          "incorrect": "Some items need adjustment. Review the concepts and try again.",
+          "neutral": "Drag all items to their correct positions before checking."
+        },
+        "accessibilityNotes": "Use Tab to focus items. Press Space to pick up/drop items. Use Arrow keys to move between drop zones.",
+        "templateData": {
+          "draggableItems": [
+            {
+              "id": "item-1",
+              "label": "Maintaining steady eye contact during conversation",
+              "description": "Visual attention technique"
+            },
+            {
+              "id": "item-2",
+              "label": "Repeating back what you heard in your own words",
+              "description": "Confirmation technique"
+            },
+            {
+              "id": "item-3",
+              "label": "Asking 'Can you tell me more about that?'",
+              "description": "Clarification technique"
+            }
+          ],
+          "dropZones": [
+            {
+              "id": "zone-1",
+              "label": "Eye Contact",
+              "description": "Visual attention"
+            },
+            {
+              "id": "zone-2",
+              "label": "Paraphrasing",
+              "description": "Confirming understanding"
+            },
+            {
+              "id": "zone-3",
+              "label": "Clarifying Questions",
+              "description": "Seeking deeper understanding"
+            }
+          ],
+          "matchPairs": [
+            {
+              "item": "item-1",
+              "zone": "zone-1"
+            },
+            {
+              "item": "item-2",
+              "zone": "zone-2"
+            },
+            {
+              "item": "item-3",
+              "zone": "zone-3"
+            }
+          ],
+          "allowMultiple": false,
+          "showFeedback": true
+        }
+      }
+    },
+    {
+      "sceneNumber": 5,
+      "pageTitle": "Apply: Workplace Scenario",
+      "pageType": "Interactive",
+      "narrationScript": "Let's apply what you've learned. You're in a meeting where a colleague is expressing concerns about a project deadline. How will you respond using active listening?",
+      "onScreenText": "Scenario: A colleague is worried about meeting a tight deadline. Choose your response:",
+      "visual": {
+        "aiPrompt": "Realistic office meeting room with two professionals in discussion, one expressing concern, the other ready to respond",
+        "altText": "Two professionals in a workplace meeting discussing project concerns"
+      },
+      "interactionType": "Scenario",
+      "timing": {
+        "estimatedSeconds": 150
+      },
+      "pedagogicalPhase": "Apply",
+      "learningOutcome": "Practice active listening techniques",
+      "bloomLevel": "Apply",
+      "interactivityDecision": {
+        "interactivityType": "scenario_simulation",
+        "justification": "Real-world application with decision-making",
+        "suggestedTemplate": "branching_scenario"
+      },
+      "interactionDetails": {
+        "type": "scenario_simulation",
+        "title": "Scenario: Active Listening in Action",
+        "interactionSteps": [
+          "Read the scenario carefully",
+          "Consider the situation and potential outcomes",
+          "Choose your response",
+          "Review the consequences and feedback"
+        ],
+        "feedbackRules": {
+          "correct": "Excellent! Your response demonstrates strong active listening skills.",
+          "incorrect": "This approach might miss key concerns. Consider using more active listening techniques.",
+          "neutral": "Each choice has different outcomes. Consider which best demonstrates active listening."
+        },
+        "templateData": {
+          "scenarioText": "Your colleague Sarah says: 'I'm really stressed about this deadline. We have so much to do and I don't think we'll make it. I'm worried the quality will suffer if we rush.'",
+          "context": "Team meeting discussing project timeline",
+          "choices": [
+            {
+              "id": "choice-1",
+              "text": "Make eye contact and say: 'It sounds like you're concerned about both the timeline and the quality of our work. Can you tell me more about which tasks are most worrying?'",
+              "outcome": "positive",
+              "rationale": "This response uses eye contact, paraphrasing, and clarifying questions - all three active listening techniques."
+            },
+            {
+              "id": "choice-2",
+              "text": "Say: 'Don't worry, we'll figure it out. We always do.'",
+              "outcome": "negative",
+              "rationale": "This dismisses Sarah's concerns without demonstrating active listening."
+            },
+            {
+              "id": "choice-3",
+              "text": "Say: 'I hear you. Let me paraphrase - you're worried about meeting the deadline while maintaining quality. Is that right? What specific areas concern you most?'",
+              "outcome": "positive",
+              "rationale": "Excellent use of paraphrasing and clarifying questions to ensure understanding."
+            }
+          ],
+          "allowRetry": true,
+          "showConsequences": true
+        }
+      }
+    },
+    {
+      "sceneNumber": 6,
+      "pageTitle": "Knowledge Check",
+      "pageType": "Interactive",
+      "narrationScript": "Let's check your understanding of active listening. Answer these questions based on what you've learned.",
+      "onScreenText": "Knowledge Check: Active Listening",
+      "visual": {
+        "aiPrompt": "Quiz interface with checkboxes and professional learning environment",
+        "altText": "Knowledge check quiz interface"
+      },
+      "interactionType": "MCQ",
+      "timing": {
+        "estimatedSeconds": 90
+      },
+      "pedagogicalPhase": "Assess",
+      "learningOutcome": "Practice active listening techniques",
+      "bloomLevel": "Evaluate",
+      "interactivityDecision": {
+        "interactivityType": "multi_select_quiz",
+        "justification": "Assesses understanding of multiple concepts",
+        "suggestedTemplate": "multi_select_quiz"
+      },
+      "interactionDetails": {
+        "type": "multi_select_quiz",
+        "title": "Knowledge Check: Active Listening",
+        "interactionSteps": [
+          "Read each question carefully",
+          "Select ALL correct answers (multiple may apply)",
+          "Click 'Submit' to check your answers"
+        ],
+        "feedbackRules": {
+          "correct": "Excellent! You've mastered the key concepts of active listening.",
+          "incorrect": "Review the teaching content and try again.",
+          "neutral": "Select all options that apply before submitting."
+        },
+        "templateData": {
+          "questions": [
+            {
+              "id": "q1",
+              "text": "Which of the following are key components of active listening? (Select all that apply)",
+              "options": [
+                {
+                  "id": "opt1",
+                  "text": "Maintaining eye contact",
+                  "correct": true
+                },
+                {
+                  "id": "opt2",
+                  "text": "Paraphrasing to confirm understanding",
+                  "correct": true
+                },
+                {
+                  "id": "opt3",
+                  "text": "Interrupting to share your own experiences",
+                  "correct": false
+                },
+                {
+                  "id": "opt4",
+                  "text": "Asking clarifying questions",
+                  "correct": true
+                },
+                {
+                  "id": "opt5",
+                  "text": "Checking your phone during conversation",
+                  "correct": false
+                }
+              ],
+              "explanation": "Active listening requires full attention (eye contact), confirmation (paraphrasing), and clarification (questions). Distractions and interruptions are barriers to active listening."
+            }
+          ],
+          "requireAllCorrect": true,
+          "showPartialCredit": false,
+          "allowRetry": true
+        }
+      }
+    },
+    {
+      "sceneNumber": 7,
+      "pageTitle": "Key Takeaways",
+      "pageType": "Informative",
+      "narrationScript": "Congratulations! You've learned the fundamentals of active listening. Remember: maintain eye contact, paraphrase to confirm understanding, and ask clarifying questions. Practice these techniques in your daily conversations.",
+      "onScreenText": "Key Takeaways:\n✓ Active listening requires full attention\n✓ Use three core techniques\n✓ Practice in every conversation",
+      "visual": {
+        "aiPrompt": "Summary infographic showing the three active listening techniques with icons and brief descriptions",
+        "altText": "Summary of three active listening techniques"
+      },
+      "interactionType": "None",
+      "timing": {
+        "estimatedSeconds": 45
+      },
+      "pedagogicalPhase": "Summary"
+    },
+    {
+      "sceneNumber": 8,
+      "pageTitle": "Next Steps & Action Plan",
+      "pageType": "Informative",
+      "narrationScript": "Your action plan: This week, practice active listening in at least three conversations. Notice how others respond when you give them your full attention. Reflect on which technique works best for you.",
+      "onScreenText": "Your Action Plan:\n→ Practice with 3 conversations this week\n→ Notice the impact on your interactions\n→ Identify your strongest technique",
+      "visual": {
+        "aiPrompt": "Action plan checklist with three steps, professional and motivational design",
+        "altText": "Three-step action plan for practicing active listening"
+      },
+      "interactionType": "None",
+      "timing": {
+        "estimatedSeconds": 45
+      },
+      "pedagogicalPhase": "NextSteps"
+    }
+  ],
+  "metadata": {
+    "completionRule": "Completion when all scenes viewed and interactions completed",
+    "pedagogicalFrameworkVersion": "1.0",
+    "enforcedSequence": [
+      "Welcome",
+      "LearningOutcomes",
+      "Teach",
+      "Practice",
+      "Apply",
+      "Assess",
+      "Summary"
+    ],
+    "learningOutcomes": [
+      "Practice active listening techniques"
+    ],
+    "frameworkEnforced": true
+  },
+  "qaReport": {
+    "score": 85,
+    "issues": [],
+    "recommendations": [
+      "Consider adding more practice scenarios",
+      "Could include peer feedback element"
+    ]
+  }
+}
+
+

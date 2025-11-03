@@ -9,18 +9,39 @@ import {
 } from "@/constants";
 import {
   StoryboardFormData,
-  LearningMode,
-  InstructionalPurpose,
 } from "@/types";
+
+// Define missing types and enums locally to avoid import issues
+type LearningMode = "storytelling" | "branching" | "procedural" | "scenario-led" | "demo-practice";
+type InstructionalPurpose = "teach" | "demonstrate" | "practice" | "assess";
+
+// Create enum-like objects for Object.values() usage
+const LearningMode = {
+  STORYTELLING: "storytelling",
+  BRANCHING: "branching", 
+  PROCEDURAL: "procedural",
+  SCENARIO_LED: "scenario-led",
+  DEMO_PRACTICE: "demo-practice"
+} as const;
+
+const InstructionalPurpose = {
+  TEACH: "teach",
+  DEMONSTRATE: "demonstrate",
+  PRACTICE: "practice", 
+  ASSESS: "assess"
+} as const;
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import FormTextArea from "./FormTextArea";
+import FormMultiSelect from "./FormMultiSelect";
+import BusinessImpactForm from "./BusinessImpactForm";
 
 // Extend locally so we can add aiModel and durationMins without touching global types
 type StoryboardFormDataWithAI = StoryboardFormData & {
-  aiModel?: string;        // "gpt-5" | "gpt-4o" | "gpt-4-turbo"
+  aiModel?: string;        // "gpt-4o" | "gpt-4o" | "gpt-4-turbo"
   durationMins?: number;   // preferred numeric duration (backend clamps again)
   idMethod?: string;       // instructional design method
+  strictMode?: boolean;    // 🆕 Enable strict source-only generation with gap analysis
   branding?: {
     fonts?: string;
     colours?: string;
@@ -48,22 +69,59 @@ interface StoryboardFormProps {
   onImageRemove?: (fileName: string) => void;
 }
 
-const AI_MODEL_OPTIONS = ["gpt-5", "gpt-4o", "gpt-4-turbo"];
+const AI_MODEL_OPTIONS = ["gpt-4o", "gpt-4-turbo", "gpt-4"];
 
 const ID_METHOD_OPTIONS = [
   "ADDIE (Analyze–Design–Develop–Implement–Evaluate)",
   "SAM (Successive Approximation Model)",
-  "Merrill’s First Principles",
-  "Gagné’s Nine Events",
+  "Merrill's First Principles",
+  "Gagné's Nine Events",
   "Backward Design",
   "Bloom-aligned Planning",
+];
+
+// NEW STRATEGIC CATEGORIES
+const STRATEGIC_CATEGORIES = [
+  "Compliance & Risk Management",
+  "Leadership & Management Development", 
+  "Sales & Customer Excellence",
+  "Technical & Systems Mastery",
+  "Onboarding & Culture Integration",
+  "Professional Skills Development",
+  "Health, Safety & Wellbeing",
+  "Diversity, Equity & Inclusion",
+  "Innovation & Future Readiness",
+  "Product & Service Excellence",
+  "Custom Strategic Initiative"
+];
+
+// NEW INNOVATION STRATEGIES
+const INNOVATION_STRATEGIES = [
+  "AI-Powered Simulation",
+  "Branching Scenarios with Consequences",
+  "Real-Work Application",
+  "Social Learning Community",
+  "VR/AR Immersive Experience",
+  "Microlearning Performance Support",
+  "Adaptive Learning Paths",
+  "Gamified Progression",
+  "Peer-to-Peer Coaching"
+];
+
+// NEW MEASUREMENT APPROACHES
+const MEASUREMENT_APPROACHES = [
+  "Level 1: Satisfaction surveys",
+  "Level 2: Knowledge assessment",
+  "Level 3: Behavior observation",
+  "Level 4: Business impact tracking",
+  "Level 5: ROI calculation"
 ];
 
 const StoryboardForm: React.FC<StoryboardFormProps> = ({
   formData,
   onFormChange,
   disabled,
-  files,
+  files = [],
   onFileChange,
   onFileRemove,
   imageFiles = [],
@@ -87,6 +145,17 @@ const StoryboardForm: React.FC<StoryboardFormProps> = ({
     }
     const clamped = Math.max(1, Math.min(90, Math.round(n)));
     onFormChange("durationMins", clamped);
+  };
+
+  // Strategic validation helper
+  const isStrategicFoundationComplete = () => {
+    return !!(
+      formData.businessImpact?.metric &&
+      formData.businessImpact?.targetImprovement &&
+      formData.businessImpact?.successDefinition &&
+      formData.innovationStrategies?.length > 0 &&
+      formData.measurementApproaches?.length > 0
+    );
   };
 
   return (
@@ -130,6 +199,7 @@ const StoryboardForm: React.FC<StoryboardFormProps> = ({
             disabled={disabled}
             required
           />
+
 
           <FormSelect
             label="Complexity Level"
@@ -216,53 +286,124 @@ const StoryboardForm: React.FC<StoryboardFormProps> = ({
             disabled={disabled}
           />
         </div>
+
+        {/* 🆕 Strict Mode Toggle */}
+        <div className="md:col-span-2 mt-6">
+          <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                id="strictMode"
+                name="strictMode"
+                checked={formData.strictMode || false}
+                onChange={(e) => onFormChange("strictMode", e.target.checked)}
+                className="mt-1 h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-yellow-500 rounded"
+                disabled={disabled}
+              />
+              <div className="flex-1">
+                <label htmlFor="strictMode" className="text-yellow-200 font-medium">
+                  🚩 Enable Strict Source-Only Generation
+                </label>
+                <p className="text-yellow-100/80 text-sm mt-1">
+                  <strong>What this does:</strong> Uses ONLY your source material, never invents content. 
+                  Identifies gaps and flags them for your review instead of filling them with AI-generated content.
+                  <br />
+                  <strong>When to use:</strong> When you want 100% source fidelity and transparency about content completeness.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* SECTION 2: Learning Design */}
+      {/* SECTION 2: Business Impact & Strategy */}
       <section
-        aria-labelledby="learning-design-title"
+        aria-labelledby="business-impact-strategy-title"
         className="p-8 lg:p-10 bg-slate-800/60 rounded-3xl shadow-2xl border border-slate-700"
       >
         <h2
-          id="learning-design-title"
+          id="business-impact-strategy-title"
           className="text-2xl md:text-3xl font-bold text-sky-300 mb-8 border-b border-slate-700 pb-4"
         >
-          2. Learning Design
+          2. Business Impact & Strategy
         </h2>
-        <p className="text-slate-300/90 mb-6">
-          Use the{" "}
-          <span className="text-sky-300 font-semibold">
-            Preferred Instructional Design Methodology
-          </span>{" "}
-          to guide overall structure.
+        <p className="text-slate-300/90 mb-8">
+          Define the business impact and learning approach for this training initiative.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-          <FormSelect
-            label="Instructional Design Process"
-            name="idMethod"
-            value={formData.idMethod || "ADDIE (Analyze–Design–Develop–Implement–Evaluate)"}
-            onChange={onFormChange}
-            options={ID_METHOD_OPTIONS}
-            disabled={disabled}
-          />
-          <FormSelect
-            label="Primary Learning Mode (optional)"
-            name="primaryLearningMode"
-            value={(formData as any).primaryLearningMode}
-            onChange={onFormChange}
-            options={learningModes}
-            disabled={disabled}
-          />
-          <FormSelect
-            label="Instructional Purpose"
-            name="instructionalPurpose"
-            value={formData.instructionalPurpose}
-            onChange={onFormChange}
-            options={instructionalPurposes}
-            disabled={disabled}
-          />
+        
+        {!isStrategicFoundationComplete() && (
+          <div className="mb-6 p-4 bg-amber-900/30 border border-amber-600 rounded-2xl">
+            <p className="text-amber-200 text-sm">
+              <span className="font-semibold">⚠️ Business Impact & Strategy Required:</span> Please complete all strategic fields before proceeding to storyboard generation.
+            </p>
+          </div>
+        )}
+        
+        {isStrategicFoundationComplete() && (
+          <div className="mb-6 p-4 bg-green-900/30 border border-green-600 rounded-2xl">
+            <p className="text-green-200 text-sm">
+              <span className="font-semibold">✅ Business Impact & Strategy Complete:</span> Ready to proceed with storyboard generation.
+            </p>
+          </div>
+        )}
+        
+        <div className="space-y-8">
+
+          {/* Business Impact */}
+          <div>
+            <h3 className="text-xl font-semibold text-slate-100 mb-2">
+              Business Impact <span className="text-red-400">*</span>
+            </h3>
+            <p className="text-slate-400 text-sm mb-4">
+              What specific business value will this training deliver?
+            </p>
+            <BusinessImpactForm
+              value={formData.businessImpact || {
+                metric: "Productivity",
+                targetImprovement: 15,
+                timeframe: 90,
+                successDefinition: ""
+              }}
+              onChange={onFormChange}
+              disabled={disabled}
+              strategicCategory={formData.strategicCategory}
+            />
+          </div>
+
+          {/* Learning Approach */}
+          <div>
+            <FormMultiSelect
+              label="Learning Approach * (Choose 2-3)"
+              name="innovationStrategies"
+              value={formData.innovationStrategies || []}
+              onChange={onFormChange}
+              options={INNOVATION_STRATEGIES}
+              disabled={disabled}
+              required
+            />
+            <p className="text-slate-400 text-sm mt-2">
+              Select methods that go beyond standard eLearning
+            </p>
+          </div>
+
+          {/* How We'll Measure Success */}
+          <div>
+            <FormMultiSelect
+              label="How We'll Measure Success * (Choose all that apply)"
+              name="measurementApproaches"
+              value={formData.measurementApproaches || []}
+              onChange={onFormChange}
+              options={MEASUREMENT_APPROACHES}
+              disabled={disabled}
+              required
+            />
+            <p className="text-slate-400 text-sm mt-2">
+              Choose how you'll prove this training delivered results
+            </p>
+          </div>
         </div>
       </section>
+
 
       {/* SECTION 3: Audience & Branding */}
       <section
@@ -319,6 +460,24 @@ const StoryboardForm: React.FC<StoryboardFormProps> = ({
             rows={4}
             disabled={disabled}
           />
+        </div>
+        
+        {/* Text-only images toggle */}
+        <div className="mt-5 flex items-center gap-3 rounded-md border border-slate-700 bg-slate-800/40 p-3">
+          <input
+            type="checkbox"
+            className="h-5 w-5 accent-sky-500 cursor-pointer"
+            checked={formData?.options?.skipAIImages ?? false}
+            onChange={(e) =>
+              onFormChange('options', { ...(formData.options ?? {}), skipAIImages: e.target.checked })
+            }
+          />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-slate-200">Skip AI images (text-only visuals)</span>
+            <span className="text-xs text-slate-400">
+              Tick this box if you don't want AI-generated images in your storyboard — only image prompts/descriptions will appear.
+            </span>
+          </div>
         </div>
       </section>
 
@@ -467,94 +626,6 @@ const StoryboardForm: React.FC<StoryboardFormProps> = ({
         </div>
       </section>
 
-      {/* SECTION 6: Instructional Methodology (Advanced) */}
-      <section
-        aria-labelledby="instructional-methodology-title"
-        className="p-8 lg:p-10 bg-slate-800/60 rounded-3xl shadow-2xl border border-slate-700"
-      >
-        <h2
-          id="instructional-methodology-title"
-          className="text-2xl md:text-3xl font-bold text-sky-300 mb-8 border-b border-slate-700 pb-4"
-        >
-          6. Instructional Methodology (Advanced)
-        </h2>
-
-        <FormSelect
-          label="Primary Learning Goal (Select one)"
-          name="primaryLearningGoal"
-          value={(formData as any).primaryLearningGoal || ""}
-          onChange={onFormChange}
-          options={[
-            "Compliance (formal tone, rules)",
-            "Knowledge Transfer (clear, structured)",
-            "Skills Practice (hands-on, applied)",
-            "Attitude/Soft Skills (empathy, resilience)",
-          ]}
-          disabled={disabled}
-        />
-
-        <div className="mt-8">
-          <label className="block font-semibold text-slate-100 mb-3">
-            Secondary Teaching Techniques (Select all that apply)
-          </label>
-          <div className="space-y-3">
-            {[
-              { value: "explainer", label: "Explainer (use diagrams & metaphors)" },
-              { value: "scenario", label: "Scenario-Based (use branching choices)" },
-              { value: "softskills", label: "Soft Skills (focus on empathy)" },
-            ].map((opt) => (
-              <div key={opt.value} className="flex items-center">
-                <input
-                  type="checkbox"
-                  id={opt.value}
-                  name="secondaryTechniques"
-                  value={opt.value}
-                  checked={((formData as any).secondaryTechniques || []).includes(opt.value)}
-                  onChange={(e) => {
-                    const current = (formData as any).secondaryTechniques || [];
-                    if (e.target.checked) {
-                      onFormChange("secondaryTechniques", [...current, opt.value]);
-                    } else {
-                      onFormChange(
-                        "secondaryTechniques",
-                        current.filter((v: string) => v !== opt.value)
-                      );
-                    }
-                  }}
-                  disabled={disabled}
-                  className="h-5 w-5 rounded border-slate-600 bg-slate-700 text-sky-400 focus:ring-sky-400"
-                />
-                <label htmlFor={opt.value} className="ml-3 text-slate-200">
-                  {opt.label}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <FormSelect
-            label="Interaction Frequency (Optional)"
-            name="interactionFrequency"
-            value={(formData as any).interactionFrequency || ""}
-            onChange={onFormChange}
-            options={["Let AI Decide (Recommended)", "Low", "Medium", "High"]}
-            disabled={disabled}
-          />
-        </div>
-
-        <div className="mt-8">
-          <FormTextArea
-            label="Specific Creative Instructions (Optional)"
-            name="creativeInstructions"
-            value={(formData as any).creativeInstructions}
-            onChange={onFormChange}
-            placeholder="e.g., 'For the section on data privacy, please ensure you use a branching scenario.'"
-            rows={4}
-            disabled={disabled}
-          />
-        </div>
-      </section>
     </form>
   );
 };

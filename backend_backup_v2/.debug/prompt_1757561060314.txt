@@ -1,0 +1,97 @@
+MODEL: gpt-5
+
+SYSTEM:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+...
+
+USER:
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+...

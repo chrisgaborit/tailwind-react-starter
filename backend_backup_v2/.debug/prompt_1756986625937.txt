@@ -1,0 +1,755 @@
+MODEL: gpt-5
+
+SYSTEM:
+You are an award-winning eLearning design director and platform architect. Produce **build-ready storyboards** in **UK English** that meet **Brandon Hall** standards and act as **AI asset blueprints** for images, animations, videos and audio.
+
+NON-NEGOTIABLES
+- Output MUST be a single valid **JSON object** (no markdown fences; no extra prose).
+- Use **UK spellings** (behaviour, organisation, programme).
+- Voiceover ~110 wpm; On-Screen Text (OST) ≤ **70 words** and NOT duplicated verbatim from VO.
+- Accessibility: meaningful **alt text** for every visual; **captions ON** by default; include **keyboard path & focus order**; **reduced-motion fallback** noted.
+- Interactivity: explicit decision/feedback logic, **retry rules**, **xAPI events**, and a **completionRule** per interactive screen.
+
+STRICT FIRST FOUR (must be first, in order)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents
+4) Welcome & Learning Objectives
+
+GLOBAL IMPROVEMENT RULES
+- **Scaffolding flow**: Overview → Context → Key Concepts → Examples → Application → Knowledge Check → Summary (repeat per section).
+- **Role-based learning**: Tie learning objectives, examples and scenarios to stated roles in targetAudience. Generate at least one **role-specific example per key concept**.
+- **Scenario fidelity**: Branching dilemmas that mirror real workplace tensions; include consequences, coaching, and replay to compare paths.
+- **Progressive disclosure**: Use click/hover/tap to reveal definitions, steps, or nice-to-know; keep OST scannable, VO carries nuance.
+- **Knowledge checks**: Use realistic distractors. For each MCQ, include **distractorRationale** per option.
+- **Performance & compliance aids**: Include timeframe tables, decision guides, and role-based job-aids where relevant.
+- **Measurement**: Map xAPI verbs to actions (answered, selected, responded, experienced) and provide a clear **completionRule**.
+
+RETURN EXACTLY THIS SHAPE:
+{
+  "moduleName": string,
+  "moduleOverview": string,
+  "learningLevel": "Level 1" | "Level 2" | "Level 3" | "Level 4",
+  "targetAudience": string,
+  "idMethod": "ADDIE" | "SAM" | "MERRILL" | "GAGNE" | "BACKWARD" | "BLOOM",
+  "metadata": {
+    "moduleTiming": {
+      "targetMinutes": number,
+      "totalEstimatedMinutes": number,
+      "perSceneSeconds": number[]
+    },
+    "brand": { "colours"?: string, "fonts"?: string, "guidelines"?: string },
+    "performanceSupport"?: { "jobAids"?: string[], "timeframeTables"?: string[] },
+    "storyArc"?: { "characters": string[], "throughline": string, "conflicts": string[] }
+  },
+  "revisionHistory": [{ "dateISO": string, "change": string, "author": string }],
+  "pronunciationGuide": [{ "term": string, "pronunciation": string, "note"?: string }],
+  "tableOfContents": string[],
+  "learningOutcomes": [{ "text": string, "bloom": "Remember"|"Understand"|"Apply"|"Analyze"|"Evaluate"|"Create" }],
+  "learningObjectiveMap": [{ "lo": string, "teach": number[], "practice": number[], "assess": number[] }],
+  "evaluationPlan": {
+    "postTestItems": Array<Record<string, any>>,
+    "confidenceCheck": "slider 1–10" | string,
+    "followUpPlan": string,
+    "orgImpactKPIs": string[]
+  },
+  "scenes": Scene[]
+}
+
+Scene = {
+  "sceneNumber": number,
+  "pageTitle": string,
+  "pageType": "Informative" | "Interactive",
+  "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+
+  "screenLayout": string | { "description": string, "elements": Array<Record<string, any>> },
+  "templateId": string,
+  "screenId": string,
+
+  "audio": {
+    "script": string,
+    "voiceParameters": { "persona": string, "gender"?: string, "pace": string, "tone": string, "emphasis": string },
+    "backgroundMusic"?: string,
+    "aiGenerationDirective"?: string
+  },
+  "narrationScript": string,
+
+  "onScreenText": string,
+  "textOnScreen"?: {
+    "onScreenTextContent": string,
+    "style"?: { "fontFamily"?: string, "fontWeight"?: string, "fontSize"?: string, "color"?: string, "alignment"?: string, "position"?: string, "animation"?: string }
+  },
+
+  "visual": {
+    "mediaType": "Image" | "Graphic" | "Animation" | "Video",
+    "style": string,
+    "visualGenerationBrief": {
+      "sceneDescription": string,
+      "style": string,
+      "subject"?: Record<string, any>,
+      "setting"?: string,
+      "composition"?: string,
+      "lighting"?: string,
+      "colorPalette"?: string[],
+      "mood"?: string,
+      "brandIntegration"?: string,
+      "negativeSpace"?: string,
+      "assetId"?: string,
+      "altText"?: string
+    },
+    "overlayElements"?: Array<{ "elementType": string, "content"?: string, "style"?: Record<string,string>, "aiGenerationDirective"?: string }>,
+    "aiPrompt": string,
+    "altText": string,
+    "aspectRatio": "16:9" | "1:1" | "4:5" | string,
+    "composition": string,
+    "environment": string
+  },
+
+  "interactionDetails"?: {
+    "interactionType": "None" | "MCQ" | "DragAndDrop" | "Scenario" | "ClickableHotspots" | "Reflection" | "InteractiveVideo" | string,
+    "aiActions"?: string[],
+    "aiDecisionLogic"?: Array<Record<string, any>>,
+    "retryLogic"?: string,
+    "completionRule"?: string,
+    "aiGenerationDirective"?: string,
+    "xapiEvents"?: Array<{ "verb": string, "object": string, "result"?: Record<string, any> }>,
+    "distractorRationale"?: Array<{ "option": string, "whyPlausible": string, "whyWrong": string }>
+  },
+  "interactionType": string,
+  "interactionDescription": string,
+
+  "scaffoldingPhase"?: "Overview" | "Context" | "KeyConcepts" | "Example" | "Application" | "KnowledgeCheck" | "Summary",
+  "roleFocus"?: string,
+
+  "developerNotes": string,
+  "accessibilityNotes": string,
+
+  "instructionalTag": any,
+  "timing": { "estimatedSeconds": number }
+}
+
+Brandon Hall Enforcement:
+- **LOs** must be SMART and tagged with **Bloom level** (prefer Apply/Analyze/Evaluate).
+- Provide **learningObjectiveMap** (teach→practice→assess scene IDs).
+- Ensure **≥5 distinct interaction types**; upgrade shallow repetitions to richer ones.
+- Insert a **knowledge check every 3–5 scenes**.
+- End with **capstone branching** + **action plan/commitment** + optional **job aid**.
+- **Accessibility**: captions ON, alt text, tab order, visible focus, reduced-motion fallback, WCAG AA contrast.
+
+---
+
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+---
+
+USER:
+You are designing a Brandon-Hall quality storyboard. Use any source content faithfully, but enforce the interactivity profile and quality mandates **exactly**.
+
+--- CONTEXT EXAMPLES (RAG – Storyboards) ---
+--- START OF EXAMPLE 1 ---
+{
+  "text": "Coates Industrial Solutions\nStoryboard Script\nDocument Objectives:\nThis document provides insight into the proposed content outline, design approach and the estimated seat time.\nCustomer Name: Coates\nProject/Course Name: Product Introduction\nModule Number: M2\nProject Manager: Rashida\nID: Majid Sheikh\nPOC: NA\nVersion History\nDate\nVersion Number\nAuthor/Reviewer\nDescription\n26th Aug 2021\n Jul, 2021\nV1.0\nMajid Sheikh\nSB creation\nProject brief/requirement\nSeat time: 10 mins\nLanguage: - U.K English\nInteraction levels: - Level 2\nInput documents for creating this document: Product Introduction - Coates Industrial Services - Final\nSource: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/Product Introduction - Coates Industrial Services - Final.pptx\nAudio: Articulate Rise formats do not have scope for audio except multimedia sections. In this course, audio has only been used in one video.\nNumber of VO artists: 1\nVideo: Yes\nAssessment and number of questions: NA\nAuthoring Tool: Articulate Rise\nList with names of characters used: NA\nDiversity in characters: NA\nImage type: Real images + Icons\nOpen Note:\n Client wants simple and general eLearning course.\nTemplates have been chosen from scaffold.\nThe yellow highlighted words are for the understanding of graphics team, they will not be a part of on-screen text.\nColor code used for updates: Alpha Edits; Beta Edits; Final Edits\nTable of Contents\nTopic 0: Module Landing Screen\t4\nScreen 1: Welcome\t4\nTopic 1: Introduction\t5\nScreen 1: Module Overview\t5\nTopic 2: Shutdowns – Tool Stores\t12\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\t12\nTopic 3: Value Proposition, Resources and Specialisations\t14\nScreen 1: Value Proposition\t14\nScreen 2: Resources & Specialisations\t14\nScreen 3: Coming Up\t15\nTopic 4: Market Segments and Customers\t15\nScreen 1: What Market Segments use Coates Industrial Solutions?\t15\nScreen 2: What Customers use Coates Industrial Solutions?\t17\nScreen 3: Coming Up\t18\nTopic 5: Key Services and Areas of Expertise\t18\nScreen 1: Key Services Offered\t18\nScreen 2: Areas of Expertise\t20\nScreen 3: Coming Up\t21\nTopic 6: Uncovering Business Opportunities\t22\nScreen 1: Questions to Ask Customers to Uncover Business Opportunities\t22\nScreen 2: Check Your Understanding\t23\nScreen 4: Check Your Understanding\t24\nScreen 5: Coming Up\t25\nTopic 7: Module Summary\t25\nScreen 1: Key Messages\t25\nScreen 2: Additional Information\t26\nScreen 3: Thank You\t27\nTopic 0: Module Landing Screen\nScreen 1: Welcome\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nCoates Industrial Solutions\nSTART MODULE\n                                         Details\nObjectives of this Module\nBuild your knowledge of Coates Industrial Solutions\nUnderstand the value proposition, resources and specialisations of Coates Industrial Solutions\nAssist you in understanding the services and offerings that Coates Industrial Solutions provide\nIdentify the questions to be asked to customers to uncover the opportunities for business growth\nYou will need around 10 minutes to complete this course.\nImage:\nImage from: https://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Coates-Hire-Solutions-Project-Planning.png\nOn selecting Details, the following topics will be displayed.\nIntroduction\nShutdowns – Tool Stores\nValue Proposition, Resources and Specialisations\nMarket Segments and Customers\nKey Services and Areas of Expertise\nUncovering Business Opportunities\nModule Summary\nTopic 1: Introduction\nScreen 1: Module Overview\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nStart the video below to learn more about Coates Industrial Solutions.\nNo Audio here\nThis will be a video.\nVideo launch image:\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images/Kalgoorlie Toolstore 5.jpg\nCoates Industrial Solutions - One stop solution for industrial shutdowns or maintenance events\nCoates Industrial Solutions is the one stop solution for industrial shutdowns or maintenance events.\nBring this image first in synch with the audio ‘for industrial shutdowns’\n872042966\nBring this image in synch with the audio ‘maintenance events’.\n1094009946\nEnd-to-end tailor-made solutions\nIt provides end-to-end tailor-made solutions …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nLatest in equipment offerings\nwith the latest in equipment offerings for any project.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTemporary 24/7 operational services\nCoates Industrial Solutions provides customers with temporary 24/7 operational services.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nSite Maintenance and Shutdown\nThese services include:\nSite Maintenance and Shutdown, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nTool Store Management\nTool Store Management, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nOnsite Facilities\nOnsite Facilities, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Management Service\nEquipment Management Service, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nEquipment Hire and Fleet\nEquipment Hire and Fleet, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nConsumables\nConsumables, …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nAsset Management\nAsset Management and …\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nDrones, Refuelling and Productivity Tracking\nOther services including Drones, Refuelling and productivity Tracking.\nhttps://192.168.10.11/svn/3000_TLF_Coates_Hire_15_modules/00_Source_Received_From_Client/MODULE 11-Coates Industrial Solutions Introduction/M11_Images\nThis module will give you a complete overview of Coates Industrial Solutions\nThis module will give you a complete overview of Coates Industrial Solutions. Let’s continue to learn more.\n1291620198\nTopic 2: Shutdowns – Tool Stores\nScreen 1: Why Customers Need Tool Stores for Shutdowns?\nOn-screen Text\nAudio\nGraphic Notes (For internal team)\nLet’s look at the reasons why customers need tool stores for shutdowns.\nTimeline 1\nSupport Day-to-Day Operations\nGenerally, a client is setup for day-to-day operations, which may mean having a tool store to support a crew of 100-200 people, this is where Industrial Solutions can manage the ‘resident’ tool store.\nTimeline 2\nSupport Shutdown or a Maintenance Event\nFrom time-to-time, clients have a shutdown or event where they need to support a larger crew e.g., 400-600 people, for a short duration and it’s not commercially viable for the customer to procure, so they call in Coates Industrial Solutions to support the project.\nTimeline 3\nTools an
+
+[…truncated…]
+--- END CONTEXT ---
+
+--- INTERACTION BLUEPRINTS (RAG – Chunks) ---
+No chunk-level RAG available.
+--- END BLUEPRINTS ---
+
+INTERACTIVITY PROFILE
+- Level: Level 3
+- Target scenes: ~20 (±2)
+- Minimum interactive scenes: 6
+- Min knowledge check items total: 5
+- Preferred types: Scenario, MCQ, Clickable Hotspots, Drag & Drop, Reflection
+- Max same type in a row: 2
+- Branching required: Yes
+
+HARD CONSTRAINTS
+- Mix knowledge check formats (single, multi, scenario, drag-drop). Place a KC every **3–5 scenes**.
+- Provide **option-level feedback** in developer notes for knowledge checks and **distractorRationale[]** per MCQ option.
+- Maintain variety; do not repeat the same interaction type > 2 times in a row.
+
+--- USER BRIEF ---
+Module Name: Managing Remote Teams
+Module Type: Leadership
+Complexity Level: Level 3
+Target Duration (mins): 20
+Audience: Managers
+Tone: Supportive & Encouraging
+Output Language: English (UK)
+Organisation: Learno
+Preferred Instructional Design Methodology (idMethod): ADDIE
+Brand Guidelines: 🖼️ Imagery & Visual Style
+Element	Guideline
+Imagery	Use realistic, high-resolution photography that aligns with a modern workplace or human-centric AI theme.
+Graphics	Leverage minimal, premium-quality vector icons when needed. No clip art.
+Backgrounds	Prefer gradient transitions using Bright Purple or clean Black backgrounds.
+Layout Style	Use spacious layouts with clear hierarchy, large headings, and central alignment.
+Visual Effects	Allow light glow or blur effects behind text or on buttons when it enhances readability.
+Page Numbering	Bottom-right corner in Brilliant Blue or White for contrast.
+💬 Tone and Voice
+Forward-thinking, professional, yet human
+Speak with clarity, simplicity, and authority
+Avoid buzzwords; favour real impact and results
+Every statement should feel empowering and visionary
+Colours: Color Name	HEX	Suggested Use Brilliant Blue	#0387E6	Primary brand color (CTA buttons, highlights) Vivid Red	#E63946	Secondary attention-grabbing color Bright Purple	#BC57CF	Accent and gradient transition Black	#000000	Backgrounds, dark theme sections White	#FFFFFF	Text, glow accents, clean contrast
+Fonts: Usage Area	Font	Weight	Notes Primary Heading Font	Outfit	Bold (700) or SemiBold (600)	Used for all major headings (H1, H2, H3)E63946 Body Text Font	Inter	Regular (400) / Medium (500)	Used for all normal paragraphs, taglines, small text338CFF Button Font	Outfit	SemiBold (600)	Clear and easy to click Catchlines & Slogans	Inter	Regular (400)	Professional and clean tone
+Company Images:
+None provided
+Additional Notes: None
+
+--- SOURCE CONTENT (sanitised) ---
+--- CONTENT FROM FILE: Facilitator Guide Managing Remote Teams (v.100812).pdf ---
+
+Facilitator Guide
+Managing Remote Teams
+
+Managing Remote Teams Facilitator Guide Managing Remote Teams for Levels 4, 5 & 6 Bankwest Managers
+Timing
+:9.00am to 5.00pm
+Objectives:  Participants will be able to:
+1.   Identify the key issues in managing remote staff, and explore the constraints associated with 
+remote management
+2.   Outline the factors that contribute to a well-managed remote team 
+3.   Identify approaches and strategies to increase their success in effectively managing and 
+leading remote teams
+4.   Select appropriate remote technologies to assist practical and effective management of a 
+remote team
+5.   Describe ways in which to sensitively and successfully support remote staff through change 
+and uncertainty 
+Resources:
+Materials
+Blu-tac
+Possible prizes for 
+group with most tips in 
+Remote Technology 
+session
+Pre-prepared Flipcharts
+3 x blank F/cs, posted around the room, titled: (1) impacts on 
+the business, (2) key priorities to manage, (3) organisational 
+constraints – for use in Intro Activity
+3 x F/c paper, posted around the room, titled: (1) 
+Telephone/Teleconferencing, (2) Email, (3) Other (video 
+conferencing, voice mail, fax, texting/SMS’ing, real-time 
+messaging) – cover until ready for use in the Remote 
+Technology session
+Miscellaneous
+3 different coloured markers (eg black, blue, green) for 
+Remote Technology session
+
+Managing Remote Teams Facilitator Guide Agenda
+TimeMinsItemActivity
+9.00-9.5050 minWorkshop Introduction
+10 minOpening: 
+Facilitator intro
+Overview, rationale, agenda
+40 minGroup intro’s: Identify (1) impacts on the 
+business, (2) key priorities to manage, (3) 
+organisational constraints
+Activity: small 
+group 
+discussion – 3 
+issues of 
+remote 
+management
+9.50-10.2030 minRemote Management Skills
+10 minDo you have a team?
+20 minLeadership skills
+Management skills – traditional vs 
+virtual leadership
+Activity: Small 
+groups identify 
+necessary 
+leadership skills 
+for remote 
+managing
+10.20-10.3010 minStrategies for Building Trust (pre-break)
+10.20-10.3010 minTrust quizActivity: 
+Rotating trust 
+quiz
+10.30-10.4515 minBREAK
+10.45-12.301 hr
+45 min
+Strategies for Building Trust – contd (post 
+break)
+10.45-11.0015 minTask-based and interpersonal-based 
+trust
+Truisms
+Introduce 7 strategies
+Story
+10.55-12.3025 min
+15 min
+Establish clear direction
+Create ground rules
+Team Charter
+Reviewing charter components
+Activity: 
+Elevator 
+speeches
+Exercise: 
+Review of 
+Team Charter
+10 minManaging workload
+
+Managing Remote Teams Facilitator Guide TimeMinsItemActivity
+15 min
+20 min
+Provide social interaction
+Demonstrate cultural sensitivity
+Activity: 
+brainstorm 
+social 
+interactions 
+possibilities
+Activity: Discuss 
+cultrl sensvty 
+factors
+12.30-1.301 hrLUNCH
+1.30-3.001hr 
+30min
+Strategies for Building Trust - contd
+1.30-2.0030 minTechnology of remotenessActivity: 
+moving 
+brainstorm to 
+identify ways to 
+maximise use of 
+technologies
+2.00-3.0060 minCase Study 
+Group discussions
+Activity: case 
+study
+3.00-3.1515 minBREAK
+3.15-3.4530 min Case Study - contd
+Reports
+3.45-4.4560 minStrategies for Building Trust – contd
+Communicate, communicate, 
+communicate - specific applications for 
+communication
+Assessing and giving feedback 
+on the remote mgt process
+Motivation/Promote unity/team 
+building
+Performance Management and 
+Coaching
+Activity: Sml 
+grp 
+discsn/reports 
+on best 
+practices for 
+remote 
+commnctn
+4.45-4.5510 minAction PlanningActivity: 
+Determine a 
+course of 
+action
+4.55-5.005 minCourse conclusion
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+WORKSHOP INTRODUCTION
+50 min
+Opening3 minPPT Slide 1
+Title
+Facilitator introduction
+2 minHousekeeping
+Phones – toilets – breaks/finish time – lunch arrangements – punctuality – workbooks – toys
+1 min
+PPT Slide 2
+Objctvs 
+Just as the personal computer revolutionised the workplace throughout the 1980’s and 1990’s, 
+recent developments in information and communication technology are forging the 
+foundations of another new workplace.  This workplace is largely unconstrained by geography, 
+time and organisational boundaries.  It is a virtual workplace, where productivity, flexibility and 
+collaboration may unprecedented levels.
+More and more, organisations are finding that their operations are decentralising, localising, 
+regionalising and globalising.  
+In the USA, for example, the International Telework Association and Council estimates 
+that more than 28 million workers in the US – that’s more than 20% of all workers – now 
+work remotely.  
+In a 2007 study by the Economist Intelligence Unit (IU), almost half the firms surveyed 
+reported having remote workforces; within 5 years this will be 70%. 
+Course objectives
+Group intro’s, 
+challenges
+5 min
+Pg 7PPT Slide 3-4
+Qns mgrs ask
+As prework you were asked to identify the key challenges you face when managing your 
+remote teams.  Your specific challenges may or may not be reflected in common questions 
+virtual managers ask:
+[Show ppt of questions asked by remote managers; same questions are also listed in wkbk]
+Let’s use the discussion of your challenges and these questions as a way to get to know each 
+other better, focusing on 3 issues of remote management...
+35 min
+PPT Slide 5
+INTRO ACTIVITY: small groups + whole group discussion
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+RM – your 
+views
+3 x Prepared 
+F/cs: (1) 
+impacts on 
+the business, 
+(2) key 
+priorities to 
+manage, (3) 
+organisation
+al constraints
+Form small groups to consider current issues/concerns around management of remote staff.  
+Include input of survey data also.
+Assign each group to a F/c with one of 3 titles:
+1.   Impacts of remote mgt on the business (pro’s and con’s)
+2.   Organisational constraints of managing remotely (eg budget, time, time differences, 
+culture)
+3.   Key priorities to manage
+Have each group spend 7 minutes at each F/c, brainstorming their views on the topic 
+specified.
+DEBRIEF:
+Q.  What patterns emerge about the key issues of remote managing?
+Facilitator note: Link proposed content of day to issues raised.
+Facilitator note:  if the issue of trust does not arise, bring it up yourself to be added to the list.
+Facilitator note:  Stimulus material for the ‘pro’s’ of remote managing could include the
+following:
+Potential "pluses" of remote managing to the business:
+Local knowledge 
+Wider talent pool, greater diversity of approaches and expertise 
+Efficiencies in time/money on travel
+Can grow understanding of how to work collaboratively together
+Can leverage differences to trigger breakthrough thinking and innovation 
+Potential benefits to the individual of being in a remote team:
+An increase in colleague job satisfaction
+Reduced likelihood of employee turnover
+Reduced role stressors
+Increased satisfaction with supervisors (who improve their management skills)
+Increased commitment to the organisation
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+Pg 4PPT Slide 6
+Potential 
+benefits
+Wkbk 
+Potential benefits listed on ppt and in wkbk.
+As part of this workshop, we are going to be testing the validity of these assumptions in your 
+own remote management context.
+Summary1 minManaging remote teams which, though it is more complex than managing a co-located 
+group, has strong benefits for the business.  We have identified some of the challenges a 
+remote manager faces in realising these benefits, a key one being the matter of trust.
+TransitionIn discussing these issues, we’ve assumed we are talking about remote managing a team.  
+Let’s query that assumption... 
+SKILLS FOR MANAGING A REMOTE TEAM
+30 min
+What is a
+team?
+10 minAll of you are here because you manage people from a distance ...
+Q.  Taking the new Bankwest value of “One team” into consideration, what differentiates a 
+team from a work group?
+Both a team and a work group are working towards shared goals, and have some level 
+of inter-connectedness between members
+A work group works more inter-dependently, with regular interactions and inter-
+connectedness between team members to carry out the tasks required to achieve 
+goals
+A team is a broader collection of people, all of whom are stakeholders in some way in 
+the achievement of the goals; though not necessarily directly involved in carrying out 
+tasks, these stakeholders must be linked by effective communication, influenced to 
+support goals and involved in varied ways to ensure success.
+Q.  Would you say you actually have an efficient work group?  A team?  Why/not?
+Q.  What is the value of clarifying these concepts for 
+yourpeople?  
+Self identifying as a member of a work group/team can give remote colleagues a sense 
+of involvement and purpose that may be missing if they operate by simply “doing the 
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+job”
+Q.  What do you think is the maximum optimal size of a remote work group?
+The literature suggests maximum 10 people  (from the Corporate Leadership Council, 
+January 2009)
+Leadership 
+skills
+2 min
+PPT Slide 7
+Two sets of 
+skills – 2 loops 
+You would all be aware that, for any team, a leader must possess a standard set of 
+management skills to achieve team objectives.  To be as successful as managers of co-
+located teams, a remote manager needs to expand upon traditional leadership qualities.
+PPT Slide 8
+Traditional 
+skills
+Some of the main, traditional team leadership skills would be:
+1.   Developing and articulating the group’s mission and objectives
+2.   Mentoring team members
+3.   Ensuring clear lines of communication
+4.   Updating the team regularly on progress
+5.   Measuring performance
+PPT Slide 9
+Remote skills
+Some suggested management practices/skills necessary for remote managing (extending the 
+tried and tested formula that works for co-located management, REACH):
+1.   Emphasise 
+Responsiveness – make yourself as available to remote team members as to 
+local ones (eg strive to build trust from a distance)
+2.   Use 
+Empathy – attuning to and accepting others’ feelings and perspectives; best 
+demonstrated by acknowledging – verbally or otherwise – the validity of others’ ideas, 
+concerns etc (eg ‘cultural’ awareness/intelligence)
+3.   Accelerate 
+Accountability – building a sense of ownership for results in team members 
+and the team as a whole
+4.   Create 
+Connection – building links between team members, the rest of the team and 
+the organisation as a whole (eg precision in communication, technical know-
+how/aptitude)
+5.
+Help – providing support for individuals’ and team’s success (eg logistical/organisational 
+skills)
+17 min
+ACTIVITY – discussion on virtual team skills
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+Pg 12
+F/c
+Wkbk 
+Form 5 small groups, assign each group to one of the REACH practices, to discuss:
+What virtual team management skills are necessary, or which of the traditional skills 
+need amplifying, to feed into the assigned REACH practice?
+They will note these on F/c.  Before finishing, they are to identify the top 3 virtual skills on their 
+list.
+Allow 12 min.
+DEBRIEF – 5 min
+Whip round all groups for their top 3 virtual leadership/management skills.  Don’t mention any 
+stated by previous small groups.
+Facilitator note: See the Effective Practices for Remote Leaders in wkbk for further resources.
+Transition We said earlier that trust is important to a remote team.  All these REACH practices aid the 
+development of trust.  Let’s investigate further by means of a quick True/False quiz...
+STRATEGIES FOR BUILDING TRUST
+10 min (pre-break)
+Trust quiz
+10 min
+We’ve agreed trust is important to remote relationships.  This quick group quiz will check your 
+own trust-building notions...
+ACTIVITY – rotating quiz on building trust
+This activity is a rotating, verbal true/false quiz.  Move it along quickly.
+Have participants work in small groups.  
+A group will be asked a T/F question and given 20 seconds (max) to answer.  If they take too 
+long, the question passes to the next group.  
+Though the answers to questions must come quickly, you can allow for discussion between 
+questions if appropriate to the group.  
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+Facilitator note: The “correct” T/F response can be varied if the group gives a good reason for
+their response.
+Questions to be asked (with suggested answers):
+TrueFalse
+1.Besides being costly and, sometimes, impractical, too many team 
+meetings conducted face-to-face discourage the individuals from 
+developing distance communication skills.
+
+2.Explain yourself - make your actions as transparent as possible.
+
+3.Beware too much team input on decisions.  This can confuse 
+issues.
+
+4.Carefully plan the “trickle down” effect when you communicate 
+with team members.  Understand the opinion leaders and
+influence-peddlers.  It is wise not to communicate simultaneously 
+with everyone.
+
+5.“Seeing is believing” - sighting colleagues in person is crucial in
+developing more accurate impressions of others’ trustworthiness.
+
+6.Disseminate as much information to as many team members as 
+possible.  Information overload can be managed.
+
+7.Be accessible and responsive.  Their priorities should become your 
+priorities.
+
+8.Let relationships between team members grow naturally through 
+your various remote meetings – do not push for sharing of non-
+work related information.
+
+9.Provide photos of team members for all to see.  It helps to have a 
+visual image of who you’re talking to.
+
+10.  Feel free to explain and provide information on team operations 
+to all interested outside parties.
+
+11.  Have team members create profiles of their personal interests, 
+hobbies and areas of expertise.  
+
+12.  Agree on norms for what information can be shared within and 
+outside the team.
+
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+Transition
+Trust is an important element in remote managing.  We’ll continue with this aspect of 
+managing a remote team after the break.  
+BREAK - 15 min
+STRATEGIES FOR BUILDING TRUST
+1 hour 50 min (post-break)
+About trust –
+self reflection
+10 minPPT Slide 10
+Trust
+Truisms about trust:
+Is a key component in any successful relationship
+Develops over time
+Once lost, is hard to regain
+Is related to what others need and expect
+Includes giving something of yourself, being genuinely interested in the other person 
+and seeing communication as a shared experience
+Is best built by face-to-face interactions, the very activity that remote teams eliminate or 
+severely constrain  
+We’re talking about trust as a very personal phenomenon that, in management, also needs to 
+apply across many people.
+Thinking about how 
+youcome to trust someone or something...
+Q.  What is necessary for trust to develop?
+Q.  What do you base your answer on?
+Q.  What other comments have you about the nature of trust?
+Thinking about your remote team...
+Q.  How does your thinking change, if at all, when the trust needs to be built in a remote 
+context, when the parties are separated by geography?
+Q.  How can you cope when your team is not easily accessible, so they may not know why you 
+
+Managing Remote Teams Facilitator Guide SessionTimingPagePPT Slide/FCDetail
+do what you do?
+Task-based 
+and 
+interpersonal-
+based trust
+2 minFortunately, though face-to-face interactions may be the best trust-building approach, trust is 
+not always dependent on social bonds.  It can also be founded on performance consistency.  
+Task-based trust, as opposed to interpersonal-based trust, may be more achievable for remote 
+teams.  
+Task-based trust can be built by developing norms around communication patterns, ensuring 
+rapid and reliable responses, and making team interaction timely and consistent.  This intensive 
+communication helps to build a coherent identity and hold the team together.  
+
+[…truncated…]
+--- END USER BRIEF ---
+
+QUALITY MANDATES
+- First four screens must be: Title, Pronunciation Guide, Table of Contents, Welcome & Learning Objectives.
+- Provide **3–5 SMART Learning Outcomes** tagged with **Bloom** level; favour Apply/Analyze/Evaluate.
+- For every key concept: at least one **role-specific example**. Label scenes with "scaffoldingPhase".
+- Each scene: structured audio directives, OST ≤ 70w, **AI Visual Generation Brief** (composition + lighting + HEX palette + mood + brand integration + negativeSpace + altText), overlayElements, interaction details (logic/xAPI), and **timing**.
+- Accessibility notes must include: **captions ON**, **keyboard path**, **focus order**, **WCAG AA contrast**, **reduced-motion fallback**.
+- Provide **evaluationPlan** { postTestItems[], confidenceCheck, followUpPlan, orgImpactKPIs[] }.
+- Use **UK English**; professional/empathetic tone.
+
+INSTRUCTIONAL DESIGN METHOD
+- idMethod ∈ {ADDIE, SAM, MERRILL, GAGNE, BACKWARD, BLOOM}.
+- Annotate every scene with **instructionalTag**:
+
+ADDIE → instructionalTag.addie.phase = "A" | "D1" | "D2" | "I" | "E"  
+SAM → instructionalTag.sam.phase = "Prepare" | "Iterate" | "Implement"  
+MERRILL → instructionalTag.merrill.phase = "Activation" | "Demonstration" | "Application" | "Integration"  
+GAGNE → instructionalTag.gagne.event = one of the Nine Events  
+BACKWARD → instructionalTag.backward.stage = "IdentifyResults" | "DetermineEvidence" | "PlanLearning"  
+BLOOM → instructionalTag.bloom.level = "Remember"|"Understand"|"Apply"|"Analyze"|"Evaluate"|"Create"
+
+OUTPUT CONTRACT
+- storyboards.storyboardModule.idMethod = caller's idMethod (preferredMethodology/form id).
+- Every scene MUST include **instructionalTag**.
+- Provide **learningObjectiveMap**: each LO mapped to teach→practice→assess scene IDs.
+- Provide **evaluationPlan** as above.
+
+OUTPUT RULES
+- Return a single **JSON object only** (no markdown fences, no commentary).
+- Use the exact schema above; include the first four scenes in order.
+- Populate both the new structured fields and the legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout short string).
+
+---
+
+<< DO NOT DEVIATE — STORYBOARD BLUEPRINT v1 >>
+
+OPENING (FIRST FOUR, IN ORDER)
+1) Title
+2) Pronunciation Guide
+3) Table of Contents (include a short progress note)
+4) Welcome & Learning Objectives (3–5 role-tied, performance-based objectives)
+
+CORE SCENES
+- VO: ~75–150 words (~30–60s). Natural, conversational, ~140 WPM.
+- OST: 5–30 words; never a verbatim VO copy (hard rule).
+- Visuals: Provide an AI Visual Generation Brief (subject, setting, composition, lighting, HEX palette, mood, brand integration, negative space). Alt text is required.
+- Interaction mapping:
+  • lists → Flip Cards/Tabs/Accordion
+  • comparison → Two-column / dual cards
+  • process/timeline → Stepper/Timeline
+  • components/regions → Hotspots
+  • "nice-to-know" → Accordion / Learn More pop-up
+- Label each scene with a scaffolding phase where appropriate: Overview / Context / KeyConcepts / Example / Application / KnowledgeCheck / Summary.
+- When a targetAudience is provided, include at least one role-specific example per key concept (e.g., “Underwriter”, “Claims Assessor”).
+
+KNOWLEDGE CHECKS
+- Place a knowledge check every 3–5 scenes; mix MCQ / Scenario / Drag & Drop.
+- Provide option-level feedback + retry (1–2 attempts before reveal).
+- For MCQs include distractor rationales (why plausible / why wrong) per incorrect option.
+
+CAPSTONE & CLOSE
+- Capstone branching scenario with coaching feedback; allow replay to compare paths.
+- xAPI verbs: responded/experienced/answered as appropriate.
+- Summary (3–5 bullets); Completion statement with clear criteria; Thank you/Next steps.
+- Add an Action Plan / Commitment step (short free text or checklist) when appropriate.
+
+CROSS-CUTTING
+- Brand: fonts/colours referenced in OST and visuals where useful (maintain WCAG AA contrast).
+- Accessibility: captions ON; keyboard path + focus order; reduced-motion fallback.
+- Timing metadata per scene + module roll-up in metadata.moduleTiming.
+- Performance support: if policies or timeframes are present, include job-aids/checklists and timeframe tables in metadata.performanceSupport.
+
+GOLDEN RATIOS
+- ≥30–40% scenes interactive; ≥5 interaction types in a Level 3 module.
+- KC cadence every 3–5 scenes. OST ≤ 70 words (hard cap).
+
+SCHEMA REMINDERS
+- Always include structured fields (visualGenerationBrief, overlayElements, interactionDetails with xAPI, retry/completion rules) *and* legacy mirrors (narrationScript, aiPrompt, interactionType, interactionDescription, screenLayout string).
+
+---

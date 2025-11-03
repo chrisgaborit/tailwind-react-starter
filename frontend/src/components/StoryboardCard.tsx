@@ -60,19 +60,8 @@ const StoryboardCard: React.FC<StoryboardCardProps> = ({ scene, sceneIndex = 0 }
   const recipe = scene.imageParams || scene.visual?.imageParams || null;
   const cardIcon = getCardIcon(scene);
 
-  const internalSceneTitles = [
-    "Table of Contents",
-    "Pronunciation",
-    "Pronunciation Guide",
-    "Metadata",
-    "Learning Outcomes",
-    "Course Overview",
-    "Module Objectives"
-  ];
-
-  const isInternalPage = internalSceneTitles.some(title =>
-    (scene.sceneTitle || "").toLowerCase().includes(title.toLowerCase())
-  );
+  // Internal page detection removed per user request
+  const isInternalPage = false;
 
   return (
     <div
@@ -101,12 +90,7 @@ const StoryboardCard: React.FC<StoryboardCardProps> = ({ scene, sceneIndex = 0 }
 )}
 
       <div className="p-5 flex-grow flex flex-col text-sm">
-        {/* INTERNAL BANNER */}
-        {isInternalPage && (
-          <div className="bg-purple-800 text-white text-xs font-semibold px-3 py-1 rounded mb-3 text-center">
-            🚧 INTERNAL USE ONLY — Not Learner-Facing
-          </div>
-        )}
+        {/* Internal page banners removed per user request */}
 
         {/* --- HEADER --- */}
         <div className="flex justify-between items-start mb-3">
@@ -154,48 +138,39 @@ const StoryboardCard: React.FC<StoryboardCardProps> = ({ scene, sceneIndex = 0 }
         </div>
 
         {!isInternalPage && (
-  <div className="mt-auto pt-4 border-t border-slate-700">
-    <div className="mb-2">
-      <strong className="text-slate-300 block mb-1">AI Image Prompt:</strong>
-      <code className="bg-slate-900 p-2 rounded-md text-cyan-400 text-xs block whitespace-pre-wrap break-all">
-        {scene.imagePrompt || recipe?.prompt || "No prompt generated."}
-      </code>
-    </div>
-
-    {recipe && (
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-400">
-        <div>
-          <strong>Model:</strong> {recipe.model || "imagen-3.0"}
-        </div>
-        {recipe.style && <div><strong>Style:</strong> {recipe.style}</div>}
-        {recipe.size && <div><strong>Size:</strong> {recipe.size}</div>}
-        {typeof recipe.seed === "number" && <div><strong>Seed:</strong> {recipe.seed}</div>}
-        {recipe.version && <div><strong>Version:</strong> {recipe.version}</div>}
-        {recipe.generatedAt && (
-          <div className="col-span-2">
-            <strong>Generated:</strong>{" "}
-            {new Date(recipe.generatedAt).toLocaleString()}
-          </div>
-        )}
-        {recipe.enhancements && recipe.enhancements.length > 0 && (
-          <div className="col-span-2">
-            <strong>Enhancements:</strong>{" "}
-            {recipe.enhancements.join(", ")}
-          </div>
-        )}
-      </div>
-    )}
-  </div>
-)}
-              {recipe.enhancements && recipe.enhancements.length > 0 && (
-                <div className="col-span-2">
-                  <strong>Enhancements:</strong>{" "}
-                  {recipe.enhancements.join(", ")}
-                </div>
-              )}
+          <div className="mt-auto pt-4 border-t border-slate-700">
+            <div className="mb-2">
+              <strong className="text-slate-300 block mb-1">AI Image Prompt:</strong>
+              <code className="bg-slate-900 p-2 rounded-md text-cyan-400 text-xs block whitespace-pre-wrap break-all">
+                {scene.imagePrompt || recipe?.prompt || "No prompt generated."}
+              </code>
             </div>
-          )}
-        </div>
+
+            {recipe && (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-400">
+                <div>
+                  <strong>Model:</strong> {recipe.model || "imagen-3.0"}
+                </div>
+                {recipe.style && <div><strong>Style:</strong> {recipe.style}</div>}
+                {recipe.size && <div><strong>Size:</strong> {recipe.size}</div>}
+                {typeof recipe.seed === "number" && <div><strong>Seed:</strong> {recipe.seed}</div>}
+                {recipe.version && <div><strong>Version:</strong> {recipe.version}</div>}
+                {recipe.generatedAt && (
+                  <div className="col-span-2">
+                    <strong>Generated:</strong>{" "}
+                    {new Date(recipe.generatedAt).toLocaleString()}
+                  </div>
+                )}
+                {recipe.enhancements && recipe.enhancements.length > 0 && (
+                  <div className="col-span-2">
+                    <strong>Enhancements:</strong>{" "}
+                    {recipe.enhancements.join(", ")}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

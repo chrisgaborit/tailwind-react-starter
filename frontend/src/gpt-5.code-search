@@ -1,0 +1,50 @@
+# Query: gpt-5
+# ContextLines: 1
+
+13 results - 6 files
+
+backend/.env:
+  10  OPENAI_FALLBACK_MODEL=gpt-4o
+  11: OPENAI_ALLOWED_MODELS=gpt-4o,gpt-4-turbo
+  12  OPENAI_TIMEOUT_MS=300000
+
+backend/NODE_ENV=development:
+  8  🔧 Using OpenAI default model from env: gpt-4o
+  9: 🔒 Allowed models: gpt-4o, gpt-4-turbo
+  10  ✅ Backend server listening on http://localhost:8080
+
+backend/src/services/openaiService.ts:
+   67  const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 120000);
+   68: const ALLOWED_MODELS = (process.env.OPENAI_ALLOWED_MODELS || "gpt-4o,gpt-4-turbo")
+   69    .split(",").map((s) => s.trim()).filter(Boolean);
+
+   91    const map: Record<string, string> = {
+   92:     gpt4o: "gpt-4o",
+   93:     "chat-4o": "gpt-4o",
+   94:     
+   95      gpt4o: "gpt-4o",
+
+  141  function modelSupportsTuning(model: string): boolean {
+  142:   // Models like the upcoming GPT-5 might not support tuning parameters like temperature.
+  143    // This function prevents sending those parameters for specific models.
+  144:   return !/gpt-4o/i.test(model);
+  145  }
+
+frontend/src/constants.ts:
+  134  // =====================
+  135: export const AI_MODEL_OPTIONS = ["gpt-4o", "gpt-4-turbo"] as const;
+  136  
+
+frontend/src/StoryboardFormData.ts:
+  63    /** Advanced */
+  64:   aiModel?: "gpt-4o" | "gpt-4-turbo";
+  65  }
+
+frontend/src/components/StoryboardForm.tsx:
+  20  type StoryboardFormDataWithAI = StoryboardFormData & {
+  21:   aiModel?: string;        // "gpt-4o" | "gpt-4-turbo"
+  22    durationMins?: number;   // preferred numeric duration (backend clamps again)
+
+  50  
+  51: const AI_MODEL_OPTIONS = ["gpt-4o", "gpt-4-turbo"];
+  52  

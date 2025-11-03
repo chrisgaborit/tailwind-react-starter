@@ -2,6 +2,7 @@
 
 import type { StoryboardScene, KnowledgeCheck } from "@/types";
 import React, { useState, useEffect } from 'react';
+import InteractionRenderer from './InteractionRenderer';
 
 interface SlideshowViewerProps {
   scenes: StoryboardScene[];
@@ -187,6 +188,13 @@ const SlideshowViewer: React.FC<SlideshowViewerProps> = ({
         <AccordionItem title="Knowledge Check" content={currentScene.knowledgeCheck} sceneId={String(currentScene.id ?? currentScene.sceneNumber ?? "0")} /> {/* This will now render the object or string */}
         <AccordionItem title="AI Image Prompt" content={currentScene.imagePrompt} sceneId={String(currentScene.id ?? currentScene.sceneNumber ?? "0")} />
       </div>
+
+      {/* Phase 4: Render Interactive Content */}
+      {currentScene.interactionDetails && (
+        <div className="w-full mb-8">
+          <InteractionRenderer interactionDetails={currentScene.interactionDetails} />
+        </div>
+      )}
 
       <div className="w-full flex justify-between items-center pt-6 border-t border-slate-700">
         <button

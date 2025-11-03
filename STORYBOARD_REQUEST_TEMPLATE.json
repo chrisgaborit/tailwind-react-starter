@@ -1,0 +1,68 @@
+{
+  "_comment": "This is the JSON structure you send to the API to generate a storyboard",
+  "_endpoint": "POST http://localhost:8080/api/v2/storyboards",
+  
+  "topic": "Effective Communication Skills",
+  
+  "learningOutcomes": [
+    "Practice active listening techniques in workplace conversations",
+    "Apply constructive feedback frameworks in team settings",
+    "Develop a personal communication action plan"
+  ],
+  
+  "audience": "Mid-level managers and team leaders",
+  
+  "duration": 15,
+  
+  "moduleLevel": 3,
+  
+  "_optional_fields": {
+    "sourceMaterial": "Optional: paste training manual content here",
+    "moduleType": "application | knowledge | compliance | skill-building",
+    "maxInteractions": 10,
+    "phase2Config": {
+      "enabled": true
+    }
+  },
+  
+  "_moduleLevel_guide": {
+    "1": "Passive (minimal interaction, information-heavy)",
+    "2": "Limited (some basic interactions)",
+    "3": "Moderate (balanced interactions)",
+    "4": "Immersive (rich, complex interactions)"
+  },
+  
+  "_example_requests": {
+    "minimal": {
+      "topic": "Workplace Safety Basics",
+      "learningOutcomes": ["Identify common hazards"],
+      "audience": "New employees",
+      "duration": 5
+    },
+    "standard": {
+      "topic": "Managing Difficult Conversations",
+      "learningOutcomes": [
+        "Identify triggers and emotional responses",
+        "Apply de-escalation techniques",
+        "Create personal action plan"
+      ],
+      "audience": "Team Leaders",
+      "duration": 15,
+      "moduleLevel": 3
+    },
+    "advanced": {
+      "topic": "Strategic Leadership Development",
+      "learningOutcomes": [
+        "Analyze organizational dynamics",
+        "Evaluate leadership frameworks",
+        "Create strategic vision plans"
+      ],
+      "audience": "Senior Executives",
+      "duration": 30,
+      "moduleLevel": 4,
+      "moduleType": "skill-building"
+    }
+  }
+}
+
+

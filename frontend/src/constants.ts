@@ -70,12 +70,14 @@ export const TONES = [
 // Module Types (UI)
 // =====================
 export const MODULE_TYPES = [
-  "Compliance",
-  "Onboarding",
-  "Sales Enablement",
-  "Product Training",
-  "Leadership",
+  "Compliance & Ethics",
+  "Leadership & Coaching", 
+  "Sales & Customer Service",
+  "Technical & Systems",
   "Health & Safety",
+  "Onboarding & Culture",
+  "Product Knowledge",
+  "Professional Skills",
 ] as const;
 
 // =====================
@@ -121,7 +123,7 @@ export const INTERACTION_FREQUENCY_OPTIONS = [
 // Duration helpers
 // =====================
 // Allow *every* minute from 1 to 90 so users can start with 1, 2, 3, etc.
-export const DURATION_OPTIONS = Array.from({ length: DURATION_MAX }, (_, i) => `${i + 1} minutes`) as const;
+export const DURATION_OPTIONS = Array.from({ length: DURATION_MAX }, (_, i) => `${i + 1} minutes`);
 
 export const minutesFromDurationLabel = (label?: string): number | null => {
   if (!label) return null;
@@ -132,7 +134,7 @@ export const minutesFromDurationLabel = (label?: string): number | null => {
 // =====================
 // AI Model options (shared)
 // =====================
-export const AI_MODEL_OPTIONS = ["gpt-5", "gpt-4o", "gpt-4-turbo"] as const;
+export const AI_MODEL_OPTIONS = ["gpt-4o", "gpt-4o", "gpt-4-turbo"] as const;
 
 // =====================
 // Instructional Design methods (shared)

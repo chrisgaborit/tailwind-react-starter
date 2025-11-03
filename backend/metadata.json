@@ -1,0 +1,7 @@
+
+{
+  "name": "AI Storyboard Generator",
+  "description": "An application that uses AI to generate storyboard scenes from a user's story idea, providing descriptions and image prompts for each scene.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

@@ -1,6 +1,6 @@
 // frontend/src/components/StoryboardDisplayV2.tsx
 import React, { useMemo, useState, useEffect } from "react";
-import type { StoryboardModule, StoryboardScene, OverlayElement } from "@/types";
+import type { StoryboardModule, StoryboardScene, OverlayElement } from "@/types/storyboardTypes";
 import QualityPanel from "./QualityPanel";
 
 // ---- Helpers -------------------------------------------------

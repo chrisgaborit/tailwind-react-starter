@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "sourceMap": true,
+
+    "lib": ["ES2018", "DOM"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    "types": ["node"],
+    "strict": false,
+    "forceConsistentCasingInFileNames": true
+  },
+
+  "include": ["src/**/*.ts", "../packages/shared/**/*.ts"],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/types/__unused__/**",
+    "src/validation/**",
+    "src/utils/pdfMapping.ts",
+    "src/utils/quality.ts"
+  ],
+
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+}

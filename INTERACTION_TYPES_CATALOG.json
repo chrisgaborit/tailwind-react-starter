@@ -1,0 +1,260 @@
+{
+  "_description": "Complete catalog of all available interaction types in the Genesis Storyboard App",
+  
+  "interactionTypes": [
+    {
+      "id": "click_to_reveal",
+      "name": "Click to Reveal",
+      "description": "Progressive disclosure of information through clickable cards",
+      "bloomLevels": ["understand"],
+      "moduleLevels": [1, 2, 3],
+      "cognitiveLoad": "low",
+      "purposes": ["foundation", "reinforcement"],
+      "example": {
+        "title": "Explore: Key Concepts",
+        "concepts": [
+          {
+            "title": "Concept 1",
+            "content": "Detailed explanation..."
+          }
+        ]
+      }
+    },
+    {
+      "id": "drag_and_drop",
+      "name": "Drag and Drop Matching",
+      "description": "Match items to categories or zones",
+      "bloomLevels": ["understand", "apply"],
+      "moduleLevels": [1, 2, 3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["practice", "reinforcement", "assessment"],
+      "example": {
+        "title": "Match: Categories",
+        "draggableItems": ["Item 1", "Item 2"],
+        "dropZones": ["Zone A", "Zone B"],
+        "matchPairs": [
+          ["Item 1", "Zone A"]
+        ]
+      }
+    },
+    {
+      "id": "timeline_sequencing",
+      "name": "Timeline Sequencing",
+      "description": "Order steps or events in correct chronological sequence",
+      "bloomLevels": ["understand", "apply", "analyze"],
+      "moduleLevels": [2, 3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["foundation", "practice", "reinforcement"],
+      "example": {
+        "title": "Sequence: Process Steps",
+        "steps": [
+          {
+            "id": "step-1",
+            "label": "First step",
+            "correctOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "scenario_simulation",
+      "name": "Scenario Simulation",
+      "description": "Real-world decision-making with consequences",
+      "bloomLevels": ["apply", "analyze", "evaluate"],
+      "moduleLevels": [3, 4],
+      "cognitiveLoad": "high",
+      "purposes": ["practice", "application", "assessment"],
+      "example": {
+        "title": "Scenario: Workplace Challenge",
+        "scenarioText": "You're facing a situation...",
+        "choices": [
+          {
+            "id": "choice-1",
+            "text": "Option A",
+            "outcome": "positive",
+            "rationale": "Why this works..."
+          }
+        ]
+      }
+    },
+    {
+      "id": "decision_tree",
+      "name": "Decision Tree",
+      "description": "Navigate through branching decision paths",
+      "bloomLevels": ["apply", "analyze"],
+      "moduleLevels": [2, 3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["practice", "reinforcement"],
+      "example": {
+        "title": "Decide: Your Path",
+        "rootNode": {
+          "question": "What's your primary goal?",
+          "options": [
+            {
+              "text": "Quick resolution",
+              "nextNode": "node-1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "multi_select_quiz",
+      "name": "Multiple Select Quiz",
+      "description": "Select all correct answers from options",
+      "bloomLevels": ["understand", "remember"],
+      "moduleLevels": [1, 2, 3],
+      "cognitiveLoad": "medium",
+      "purposes": ["reinforcement", "assessment"],
+      "example": {
+        "title": "Knowledge Check",
+        "questions": [
+          {
+            "text": "Which are correct?",
+            "options": [
+              {
+                "text": "Option A",
+                "correct": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "single_select_quiz",
+      "name": "Single Select Quiz",
+      "description": "Choose one correct answer",
+      "bloomLevels": ["understand", "remember"],
+      "moduleLevels": [1, 2, 3],
+      "cognitiveLoad": "low",
+      "purposes": ["reinforcement", "assessment"],
+      "example": {
+        "title": "Quick Check",
+        "question": "What is the correct answer?",
+        "options": [
+          {
+            "text": "Option A",
+            "correct": true,
+            "feedback": "Correct!"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hotspot_exploration",
+      "name": "Hotspot Exploration",
+      "description": "Click on areas of interest to explore content",
+      "bloomLevels": ["understand", "apply"],
+      "moduleLevels": [2, 3],
+      "cognitiveLoad": "medium",
+      "purposes": ["foundation", "reinforcement"],
+      "example": {
+        "title": "Explore: Interactive Diagram",
+        "hotspots": [
+          {
+            "id": "hotspot-1",
+            "label": "Area 1",
+            "content": "Information about this area..."
+          }
+        ]
+      }
+    },
+    {
+      "id": "procedural_demo",
+      "name": "Procedural Demonstration",
+      "description": "Step-by-step process demonstration with practice",
+      "bloomLevels": ["understand", "apply"],
+      "moduleLevels": [2, 3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["foundation", "practice"],
+      "example": {
+        "title": "Learn: Step-by-Step Process",
+        "steps": [
+          {
+            "step": 1,
+            "title": "Preparation",
+            "description": "Get ready...",
+            "practiceTask": "Try this..."
+          }
+        ]
+      }
+    },
+    {
+      "id": "case_study_analysis",
+      "name": "Case Study Analysis",
+      "description": "Analyze real-world case studies",
+      "bloomLevels": ["analyze", "evaluate"],
+      "moduleLevels": [3, 4],
+      "cognitiveLoad": "high",
+      "purposes": ["application", "assessment"],
+      "status": "Available"
+    },
+    {
+      "id": "conversation_simulator",
+      "name": "Conversation Simulator",
+      "description": "Practice dialogue in realistic scenarios",
+      "bloomLevels": ["apply", "analyze"],
+      "moduleLevels": [3, 4],
+      "cognitiveLoad": "high",
+      "purposes": ["practice", "application"],
+      "status": "Available"
+    },
+    {
+      "id": "reflection_journal",
+      "name": "Reflection Journal",
+      "description": "Personal reflection and application planning",
+      "bloomLevels": ["analyze", "evaluate", "create"],
+      "moduleLevels": [3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["meaning_making", "self_assessment"],
+      "status": "Available"
+    },
+    {
+      "id": "video_analysis",
+      "name": "Video Analysis",
+      "description": "Analyze video content for learning",
+      "bloomLevels": ["analyze", "evaluate"],
+      "moduleLevels": [2, 3, 4],
+      "cognitiveLoad": "medium",
+      "purposes": ["reinforcement", "assessment"],
+      "status": "Builder Pending"
+    }
+  ],
+  
+  "interactionPriorities": {
+    "narrative_first": {
+      "high_priority": [
+        "branching_scenario",
+        "conversation_simulator",
+        "reflection_journal",
+        "video_analysis",
+        "case_study_analysis"
+      ],
+      "medium_priority": [
+        "procedural_demo",
+        "simulation_exercise",
+        "hotspot_exploration",
+        "decision_tree",
+        "timeline_sequencing"
+      ],
+      "low_priority": [
+        "multi_select_quiz",
+        "single_select_quiz",
+        "drag_and_drop",
+        "click_to_reveal"
+      ]
+    }
+  },
+  
+  "domainBoosts": {
+    "emotional": ["conversation_simulator", "reflection_journal", "branching_scenario"],
+    "compliance": ["branching_scenario", "decision_tree", "single_select_quiz"],
+    "procedural": ["procedural_demo", "timeline_sequencing", "simulation_exercise"],
+    "technical": ["simulation_exercise", "case_study_analysis", "decision_tree"],
+    "safety": ["branching_scenario", "hotspot_exploration", "procedural_demo"],
+    "leadership": ["conversation_simulator", "reflection_journal", "branching_scenario"]
+  }
+}
+
+

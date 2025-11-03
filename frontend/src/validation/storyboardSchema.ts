@@ -1,12 +1,12 @@
 // frontend/src/validation/storyboardSchema.ts
 import { z } from "zod";
-import type { StoryboardModule } from "@/types";
+import type { StoryboardModule } from "@/types/storyboardTypes";
 
 const OverlayElementSchema = z.object({
   elementType: z.string(),
   content: z.string().optional(),
   placement: z.string().optional(),
-  style: z.record(z.any()).optional(),
+  style: z.record(z.string(), z.any()).optional(),
   aiGenerationDirective: z.string().optional(),
 }).passthrough();
 
@@ -34,7 +34,7 @@ const AudioSchema = z.object({
 const VisualBriefSchema = z.object({
   sceneDescription: z.string(),
   style: z.string(),
-  subject: z.record(z.any()).optional(),
+  subject: z.record(z.string(), z.any()).optional(),
   setting: z.string().optional(),
   composition: z.string().optional(),
   lighting: z.string().optional(),
@@ -69,7 +69,7 @@ const InteractionSchema = z.object({
     xapi: z.object({
       verb: z.string(),
       object: z.string(),
-      result: z.record(z.any()).optional(),
+      result: z.record(z.string(), z.any()).optional(),
     }).optional(),
     navigateTo: z.string().optional(),
   })).optional(),
@@ -79,7 +79,7 @@ const InteractionSchema = z.object({
   xapiEvents: z.array(z.object({
     verb: z.string(),
     object: z.string(),
-    result: z.record(z.any()).optional(),
+    result: z.record(z.string(), z.any()).optional(),
   })).optional(),
   aiGenerationDirective: z.string().optional(),
 });
@@ -121,7 +121,7 @@ export const StoryboardSchema = z.object({
   tableOfContents: z.any().optional(),
   scenes: z.array(SceneSchema),
   pages: z.array(SceneSchema).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
   moduleOverview: z.string().optional(),
   durationMinutes: z.number().optional(),
   learningLevel: z.string().optional(),

@@ -6,24 +6,25 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import StoryboardProgress from "@/components/StoryboardProgress";
 import ErrorMessage from "@/components/ErrorMessage";
 import StoryboardForm from "@/components/StoryboardForm";
 import StoryboardDisplay from "@/components/StoryboardDisplay";
+import InputSummary from "@/components/InputSummary";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import { normaliseStoryboardForUI } from "@/lib/normaliseStoryboard";
+import { downloadStoryboardPdf } from "@/lib/api";
 import { GENERIC_ERROR_MESSAGE, FORM_ERROR_MESSAGE } from "./constants";
 
 // ✅ Logo (white-on-dark) from /public
 const LearnoLogo = "/learno-logo-light.png";
 
-/** API base:
- *  - DEV:   VITE_BACKEND_URL=/api  (Vite proxies /api → http://localhost:8080)
- *  - PROD:  VITE_BACKEND_URL=https://app.learno.com.au
- */
-const API_BASE = (import.meta as any)?.env?.VITE_BACKEND_URL ?? "";
-const joinUrl = (base: string, path: string) =>
-  `${base}${path}`.replace(/([^:]\/)\/+/g, "$1");
-const apiUrl = (path: string) => joinUrl(API_BASE, path);
+const BASE_URL = ((import.meta as any)?.env?.VITE_BACKEND_BASE || "http://localhost:8080").replace(/\/$/, "");
+const STORYBOARD_ENDPOINT = `${BASE_URL}/api/v2/storyboards`;
+if (typeof window !== "undefined") {
+  console.log("Posting to:", STORYBOARD_ENDPOINT);
+}
 
 /* -------- minimal normalizer for legacy responses -------- */
 function normalizeToScenes(sb: any): StoryboardModule {
@@ -49,78 +50,46 @@ function normalizeToScenes(sb: any): StoryboardModule {
   return sb;
 }
 
-function extractStoryboardFromResponse(json: any, fallbackModuleName: string) {
-  const candidate =
-    json?.storyboard ??
-    json?.storyboardModule ??
-    json?.data?.storyboardModule ??
-    json;
-
-  const minimallyNormalised = normalizeToScenes(candidate);
-  if (!minimallyNormalised?.scenes?.length) {
-    console.error("Unexpected API payload keys:", Object.keys(json || {}));
-    throw new Error("API response did not contain a valid Storyboard Module.");
-  }
-  if (!minimallyNormalised.moduleName) {
-    minimallyNormalised.moduleName = fallbackModuleName || "Untitled Module";
-  }
-  const fullyNormalised = normaliseStoryboardForUI(minimallyNormalised);
-  return {
-    storyboard: fullyNormalised,
-    meta:
-      json?.meta ||
-      json?.data?.meta || {
-        storyboardId: json?.id || json?.storyboardId || fullyNormalised?.id || undefined,
-        modelUsed: json?.meta?.modelUsed,
-        examples: json?.meta?.examples,
-        durationMs: json?.meta?.durationMs,
-      },
-  };
+enum AppState {
+  FormInput = "form-input",
+  Loading = "loading",
+  Cancelling = "cancelling",
+  Success = "success",
+  Error = "error",
 }
 
-/* ============================ Helpers ============================ */
-const clampDuration = (mins: number) => Math.min(90, Math.max(1, Math.round(mins)));
-const ensureClampedDuration = (n: any): number => {
-  const parsed = Number(Array.isArray(n) ? n[0] : n);
-  const base = isNaN(parsed) ? 20 : parsed;
-  return clampDuration(base);
-};
-
-/* ============================ Defaults ============================ */
-const defaultInitialFormData: StoryboardFormData = {
-  moduleName: "",
-  moduleType: "E-Learning",
-  complexityLevel: "Level 3",
-  tone: "Professional",
-  outputLanguage: "English (UK)",
-  organisationName: "",
-  targetAudience: "",
-  durationMins: 20,
-  duration: "",
-  brandGuidelines: "Adhere to modern, clean design principles.",
-  fonts: "",
-  colours: "",
-  learningOutcomes: "",
-  content: "",
-  additionalNotes: "",
-  preferredMethodology: undefined,
-  aiModel: "gpt-4o",
-  companyImages: [],
-};
-
-const getInitialData = (): StoryboardFormData => {
+function getInitialData(): StoryboardFormData {
   try {
-    const saved = localStorage.getItem("storyboardFormData");
-    if (saved) return { ...defaultInitialFormData, ...JSON.parse(saved) };
-  } catch {}
-  return defaultInitialFormData;
-};
-
-enum AppState {
-  FormInput,
-  Loading,
-  Success,
-  Error,
+    const stored = localStorage.getItem("storyboardFormData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        moduleName: parsed.moduleName || "",
+        moduleType: parsed.moduleType || "compliance",
+        complexityLevel: parsed.complexityLevel || "intermediate",
+        tone: parsed.tone || "professional",
+        durationMins: parsed.durationMins || 15,
+        content: parsed.content || "",
+        learningObjectives: parsed.learningObjectives || "",
+        targetAudience: parsed.targetAudience || "",
+        companyImages: [],
+      };
+    }
+  } catch (e) {
+    console.warn("Failed to parse stored form data:", e);
+  }
+  return {
+    moduleName: "",
+    moduleType: "compliance",
+    complexityLevel: "intermediate",
+    tone: "professional",
+    durationMins: 15,
+    content: "",
+    learningObjectives: "",
+    targetAudience: "",
+    companyImages: [],
+    options: { skipAIImages: false },
+  };
 }
 
 const GeneratorApp: React.FC = () => {
@@ -130,12 +99,23 @@ const GeneratorApp: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.FormInput);
   const [error, setError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   // lightweight toast (no deps)
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
+
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
     window.clearTimeout((showToast as any)._t);
@@ -198,13 +178,29 @@ const GeneratorApp: React.FC = () => {
     return true;
   };
 
-  const endpoint = useMemo(
-    () =>
-      selectedFiles.length > 0 || imageFiles.length > 0
-        ? "/api/v1/generate-from-files"
-        : "/api/v1/generate-from-text",
-    [selectedFiles.length, imageFiles.length]
-  );
+  const endpoint = useMemo(() => STORYBOARD_ENDPOINT, []);
+
+  const handleCancelGeneration = useCallback(() => {
+    if (abortController) {
+      setAppState(AppState.Cancelling);
+      abortController.abort();
+      setAbortController(null);
+      setAppState(AppState.FormInput);
+      setError("Generation cancelled by user");
+    }
+  }, [abortController]);
+
+  // Keyboard shortcut for cancellation (Escape key) - MOVED AFTER handleCancelGeneration definition
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && appState === AppState.Loading) {
+        handleCancelGeneration();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [appState, handleCancelGeneration]);
 
   const handleGenerateStoryboard = useCallback(async () => {
     if (!validateForm()) return;
@@ -214,241 +210,318 @@ const GeneratorApp: React.FC = () => {
     setStoryboardModule(null);
     setMeta(null);
 
-    try {
-      const original = formData.durationMins;
-      const clamped = ensureClampedDuration(typeof original === "number" ? original : 20);
-      if (typeof original === "number" && clamped !== original) {
-        showToast(`Duration adjusted to ${clamped} mins (allowed range 1–90).`);
-      } else if (typeof original !== "number") {
-        showToast(`Duration set to ${clamped} mins.`);
-      }
-      setFormData((prev) => ({ ...prev, durationMins: clamped }));
+    // Auto-scroll to bottom when generation starts
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
 
-      const payloadFormData: StoryboardFormData = {
-        ...formData,
-        durationMins: clamped,
-        duration: formData.duration || undefined,
-        companyImages: formData.companyImages?.length ? formData.companyImages : undefined,
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    try {
+      const fileSummary = selectedFiles.length
+        ? `\n\nUploaded files:\n${selectedFiles.map((file) => `- ${file.name}`).join('\n')}`
+        : '';
+      const imageSummary = imageFiles.length
+        ? `\n\nUploaded images:\n${imageFiles.map((file) => `- ${file.name}`).join('\n')}`
+        : '';
+
+      const payload = {
+        topic: formData.moduleName || "Untitled Module",
+        duration: `${formData.durationMins || 15} minutes`,
+        audience: formData.targetAudience || "General staff",
+        sourceMaterial: `${formData.content || ""}${fileSummary}${imageSummary}`.trim(),
       };
 
-      let response: Response;
-      if (endpoint.includes("files")) {
-        const fd = new FormData();
-        fd.append("formData", JSON.stringify(payloadFormData));
-        selectedFiles.forEach((f) => fd.append("files", f, f.name));
-        imageFiles.forEach((img) => fd.append("companyImages", img, img.name));
-        response = await fetch(apiUrl(endpoint), { method: "POST", body: fd });
-      } else {
-        response = await fetch(apiUrl(endpoint), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ formData: payloadFormData }),
-        });
+      console.log("Posting to:", endpoint, payload);
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        let msg = res.statusText;
+        try {
+          const j = await res.json();
+          msg = j.error || j.message || msg;
+        } catch (e) {
+          // ignore JSON parse errors
+        }
+        throw new Error(`${res.status}: ${msg}`);
       }
 
-      const raw = await response.text();
-      if (!response.ok) throw new Error(raw || `Request failed with status ${response.status}`);
+      const response = await res.json();
+      console.log("Response success:", response.success !== false);
 
-      let json: any;
-      try {
-        json = JSON.parse(raw);
-      } catch {
-        throw new Error(`Non-JSON response from server:\n${raw.slice(0, 400)}`);
+      if (response.success === false) {
+        throw new Error(response.error?.message || "Storyboard generation failed");
       }
 
-      const { storyboard, meta } = extractStoryboardFromResponse(
-        json,
-        formData.moduleName || "Untitled Module"
-      );
-      setStoryboardModule(storyboard);
-      try {
-        localStorage.setItem("lastStoryboard", JSON.stringify(storyboard));
-      } catch {}
+      const storyboardEnvelope =
+        response?.storyboard?.storyboard ??
+        response?.storyboard ??
+        response?.storyboardModule ??
+        response?.data?.storyboardModule ??
+        response?.data ??
+        response;
+
+      const scenes =
+        response?.storyboard?.scenes ??
+        response?.storyboard?.data?.scenes ??
+        storyboardEnvelope?.scenes ??
+        storyboardEnvelope?.data?.scenes ??
+        response?.data?.scenes ??
+        [];
+
+      const normalized = normalizeToScenes({
+        ...storyboardEnvelope,
+        scenes,
+      });
+
+      if (!normalized.moduleName) {
+        normalized.moduleName = formData.moduleName || "Untitled Module";
+      }
+
+      if (!normalized || !Array.isArray(normalized.scenes) || normalized.scenes.length === 0) {
+        console.error("No scenes found in storyboard:", normalized);
+        throw new Error("No storyboard scenes were generated. Please try again with different content.");
+      }
+
+      const uiReady = normaliseStoryboardForUI(normalized);
+      
+      // Final validation before setting state
+      if (!uiReady || !Array.isArray(uiReady.scenes) || uiReady.scenes.length === 0) {
+        console.error("UI normalization failed:", uiReady);
+        throw new Error("Failed to prepare storyboard for display. Please try again.");
+      }
+      
+      const meta =
+        response?.storyboard?.meta ||
+        response?.meta ||
+        response?.data?.meta ||
+        storyboardEnvelope?.meta || {
+          qaScore: response?.storyboard?.qa_score ?? storyboardEnvelope?.qa_score,
+          sourceValid: response?.storyboard?.source_valid ?? storyboardEnvelope?.source_valid,
+        };
+
+      setStoryboardModule(uiReady);
       setMeta(meta || null);
       setAppState(AppState.Success);
-    } catch (err) {
-      console.error("Generation error:", err);
-      setError(err instanceof Error ? err.message : GENERIC_ERROR_MESSAGE);
-      setAppState(AppState.Error);
+      showToast("Storyboard generated successfully!");
+      console.log("Scenes rendered:", uiReady.scenes.length);
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        setError("Generation cancelled");
+        setAppState(AppState.FormInput);
+      } else {
+        console.error(
+          "🚨 Generation error:",
+          err?.response?.status,
+          err?.response?.data?.message || err.message,
+          err?.response?.data?.details || err
+        );
+        setError(err.message || GENERIC_ERROR_MESSAGE);
+        setAppState(AppState.Error);
+      }
+    } finally {
+      setAbortController(null);
     }
   }, [formData, selectedFiles, imageFiles, endpoint, showToast]);
 
   const handleStartNew = useCallback(() => {
-    setFormData(defaultInitialFormData);
     setStoryboardModule(null);
+    setMeta(null);
+    setError(null);
+    setAppState(AppState.FormInput);
     setSelectedFiles([]);
     setImageFiles([]);
-    setError(null);
-    setMeta(null);
-    setAppState(AppState.FormInput);
   }, []);
 
-  async function fetchPdfAsBlob(url: string, init?: RequestInit) {
-    const res = await fetch(url, init);
-    if (!res.ok) {
-      let msg = res.statusText;
-      try {
-        const j = await res.json();
-        msg = j.message || msg;
-      } catch {
-        msg = await res.text();
-      }
-      throw new Error(msg || `Request failed: ${res.status}`);
-    }
-    return res.blob();
-  }
-
   const downloadExactServerPdf = useCallback(async () => {
-    if (!storyboardModule) return alert("Cannot download PDF: storyboard data is not available.");
+    if (!storyboardModule) return;
+
     setIsDownloading(true);
-    setError(null);
     try {
-      const pdfBlob = await fetchPdfAsBlob(apiUrl("/api/storyboard/pdf"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(storyboardModule),
-      });
-      const blobUrl = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement("a");
-      const safeFilename = (storyboardModule.moduleName || "export")
-        .replace(/[^a-z0-9]/gi, "_")
-        .toLowerCase();
-      a.download = `storyboard_${safeFilename}_exact.pdf`;
-      a.href = blobUrl;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("Exact (server) PDF download error:", err);
-      setError(err instanceof Error ? err.message : "Could not download exact server PDF.");
+      await downloadStoryboardPdf(storyboardModule);
+      showToast("PDF downloaded successfully!");
+    } catch (err: any) {
+      console.error("Download error:", err);
+      showToast("Download failed. Please try again.");
     } finally {
       setIsDownloading(false);
     }
-  }, [storyboardModule]);
-
-  const dismissError = () => {
-    setError(null);
-    if (appState === AppState.Error) setAppState(AppState.FormInput);
-  };
-
-  const canGenerate = appState !== AppState.Loading;
+  }, [storyboardModule, showToast]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
-      <Header />
-
-      {/* Global typographic scale up for this page */}
-      <main className="flex-grow container mx-auto px-6 sm:px-10 lg:px-14 py-12 relative text-lg lg:text-xl">
-        {/* Brand header */}
-        <div className="max-w-6xl mx-auto text-center mb-12">
-          <img
-            src={LearnoLogo}
-            alt="Learno"
-            className="mx-auto h-16 sm:h-20 md:h-24 mb-7"
-          />
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-sky-300 tracking-tight">
-            eLearning Storyboard Generator
-          </h1>
-          <p className="mt-4 text-2xl text-slate-300">
-            Crafting eLearning experiences with AI
-          </p>
-        </div>
-
-        {/* Toast */}
+    <div className="min-h-screen bg-slate-900 text-white">
+      <Header logo={LearnoLogo} />
+      
+      <main className="container mx-auto px-4 py-8">
         {toastMsg && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-lg bg-slate-900/90 px-5 py-3 text-base text-slate-100 shadow-2xl border border-slate-700"
-            data-html2canvas-ignore="true"
-          >
+          <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
             {toastMsg}
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto">
-          <StoryboardForm
-            formData={formData}
-            onFormChange={handleFormChange}
-            disabled={appState === AppState.Loading}
-            files={selectedFiles}
-            onFileChange={handleFileChange}
-            onFileRemove={handleFileRemove}
-            imageFiles={imageFiles}
-            onImageChange={handleImageChange}
-            onImageRemove={handleImageRemove}
-          />
-
-          <section
-            aria-live="polite"
-            className="my-10 text-center flex flex-col sm:flex-row justify-center items-center gap-5"
-            data-html2canvas-ignore="true"
-          >
-            {storyboardModule && (
-              <Button onClick={handleStartNew} variant="ghost" className="w-full sm:w-auto text-xl px-8 py-4">
-                Start New Storyboard
-              </Button>
-            )}
-            <Button
-              onClick={handleGenerateStoryboard}
-              isLoading={appState === AppState.Loading}
-              disabled={!canGenerate}
-              className="w-full sm:w-auto text-2xl px-10 py-5"
-            >
-              {appState === AppState.Loading
-                ? "Generating..."
-                : storyboardModule
-                ? "Regenerate Storyboard"
-                : "Generate Storyboard"}
-            </Button>
-          </section>
-
-          {appState === AppState.Loading && <LoadingSpinner />}
-          {error && <ErrorMessage message={error} onDismiss={dismissError} />}
-
-          {appState === AppState.Success && storyboardModule && (
-            <section id="storyboard-print-root" aria-labelledby="storyboard-output-title">
-              <h2 id="storyboard-output-title" className="sr-only">
-                Generated Storyboard Output
-              </h2>
-
-              <p className="my-6 p-5 bg-sky-800 text-sky-100 rounded-lg text-center text-xl">
-                Storyboard generated successfully. You can now download the document.
+        {appState === AppState.FormInput && (
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold mb-4">AI Storyboard Generator</h1>
+              <p className="text-xl text-slate-300">
+                Create interactive eLearning storyboards with AI
               </p>
+            </div>
 
-              {meta && (
-                <div className="text-base lg:text-lg text-slate-400 text-center mb-4">
-                  {meta.modelUsed ? (
-                    <>
-                      Model: <b>{meta.modelUsed}</b> ·{" "}
-                    </>
-                  ) : null}
-                  {typeof meta.examples === "number" ? <>Examples: {meta.examples} · </> : null}
-                  {typeof meta.durationMs === "number" ? <>Time: {meta.durationMs} ms</> : null}
+            <StoryboardForm
+              formData={formData}
+              onFormChange={handleFormChange}
+              disabled={appState === AppState.Loading}
+              files={selectedFiles}
+              onFileChange={handleFileChange}
+              onFileRemove={handleFileRemove}
+              imageFiles={imageFiles}
+              onImageChange={handleImageChange}
+              onImageRemove={handleImageRemove}
+            />
+
+            {error && <ErrorMessage message={error} />}
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+              <Button
+                onClick={handleGenerateStoryboard}
+                variant="primary"
+                className="w-full sm:w-auto text-xl px-8 py-4"
+                disabled={appState === AppState.Loading}
+              >
+                {appState === AppState.Loading ? (
+                  <>
+                    <LoadingSpinner className="mr-2" />
+                    Generating...
+                  </>
+                ) : "Generate Storyboard"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Success State - Show input summary + storyboard */}
+        {appState === AppState.Success && (
+          <div className="max-w-6xl mx-auto">
+            {/* Input Summary - Always visible after generation */}
+            <InputSummary 
+              formData={formData}
+              selectedFiles={selectedFiles}
+              imageFiles={imageFiles}
+              className="mb-8"
+            />
+
+            {/* Storyboard Results */}
+            {storyboardModule ? (
+              <>
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-8">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">{storyboardModule.moduleName || "Untitled Storyboard"}</h2>
+                    <p className="text-slate-300">
+                      {storyboardModule.scenes?.length || 0} scenes • {formData.durationMins || 15} minutes
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      onClick={downloadExactServerPdf}
+                      variant="primary"
+                      className="w-full sm:w-auto text-xl px-8 py-4"
+                      disabled={isDownloading}
+                    >
+                      {isDownloading ? (
+                        <>
+                          <LoadingSpinner className="mr-2" />
+                          Downloading...
+                        </>
+                      ) : (
+                        "📄 Download PDF"
+                      )}
+                    </Button>
+                    
+                    <Button onClick={handleStartNew} variant="ghost" className="w-full sm:w-auto text-xl px-8 py-4">
+                      Start New Storyboard
+                    </Button>
+                  </div>
                 </div>
-              )}
 
-              <div className="my-8 flex justify-center" data-html2canvas-ignore="true">
+                <ErrorBoundary>
+                  <StoryboardDisplay storyboardModule={storyboardModule} />
+                </ErrorBoundary>
+              </>
+            ) : (
+              <div className="max-w-2xl mx-auto text-center">
+                <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-yellow-400 mb-4">
+                    No storyboard scenes generated
+                  </h2>
+                  <p className="text-slate-300 mb-4">
+                    The storyboard generation completed but no scenes were created. This might be due to insufficient content or a processing error.
+                  </p>
+                  <Button onClick={handleStartNew} variant="primary" className="text-xl px-8 py-4">
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {appState === AppState.Error && (
+          <div className="max-w-2xl mx-auto text-center">
+            <ErrorMessage message={error || GENERIC_ERROR_MESSAGE} />
+            <Button onClick={handleStartNew} variant="primary" className="mt-6 text-xl px-8 py-4">
+              Try Again
+            </Button>
+          </div>
+        )}
+
+        {/* Loading State - Show input summary + progress */}
+        {appState === AppState.Loading && (
+          <div className="max-w-6xl mx-auto">
+            {/* Input Summary - Always visible during and after generation */}
+            <InputSummary 
+              formData={formData}
+              selectedFiles={selectedFiles}
+              imageFiles={imageFiles}
+              className="mb-8"
+            />
+
+            {/* Progress Animation */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-8">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-semibold text-blue-400 mb-2">
+                  Crafting your interactive storyboard
+                </h2>
+                <p className="text-slate-300">
+                  Our AI is working through each step to create an engaging learning experience
+                </p>
+              </div>
+              
+              <StoryboardProgress isGenerating={true} className="mb-6" />
+              
+              <div className="flex justify-center">
                 <Button
-                  onClick={downloadExactServerPdf}
-                  variant="primary"
-                  className="w-full sm:w-auto text-xl px-8 py-4"
-                  disabled={isDownloading}
-                  isLoading={isDownloading}
+                  onClick={handleCancelGeneration}
+                  variant="ghost"
+                  className="text-lg px-6 py-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/50"
+                  disabled={appState === AppState.Cancelling}
                 >
-                  {isDownloading ? "Preparing PDF..." : "Download PDF"}
+                  {appState === AppState.Cancelling ? "🛑 Stopping..." : "🛑 Cancel Generation"}
                 </Button>
               </div>
-
-              {/* Make the output easier to read */}
-              <div className="prose prose-invert max-w-none text-lg lg:text-xl">
-                <StoryboardDisplay storyboardModule={storyboardModule} />
-              </div>
-            </section>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </main>
+
       <Footer />
     </div>
   );

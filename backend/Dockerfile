@@ -1,30 +1,26 @@
-# Simple image with Chromium preinstalled (good for Puppeteer/PDF)
-FROM ghcr.io/puppeteer/puppeteer:22.10.0
+# Use official Node.js LTS image
+FROM node:20
 
-# Build first with dev deps, then prune them
-ENV PUPPETEER_SKIP_DOWNLOAD=true \
-    PORT=8080
-
-# Install & build as root to avoid EACCES, then switch to pptruser
-USER root
+# Set working directory inside container
 WORKDIR /app
 
-# 1) Install deps (incl dev so tsc exists)
+# Copy package files first (optimises Docker cache)
 COPY package*.json ./
-RUN npm ci --include=dev
 
-# 2) Copy source and build
-COPY tsconfig*.json ./
-COPY src ./src
-RUN npm run build
+# Install dependencies
+RUN npm install
 
-# 3) Drop dev deps and fix ownership for runtime user
-RUN npm prune --omit=dev && chown -R pptruser:pptruser /app
+# Copy rest of the codebase
+COPY . .
 
-# 4) Run as non-root at runtime
-USER pptruser
-ENV NODE_ENV=production
+# Build TypeScript (compile src to dist)
+RUN npm run build:backend
 
-# Cloud Run will send traffic to $PORT
+# Tell Cloud Run to use PORT 8080 (even though app reads process.env.PORT)
+ENV PORT 8080
+
+# Expose port (for local docker if you want)
 EXPOSE 8080
-CMD ["node", "dist/index.js"]
+
+# Start production server
+CMD ["npm", "run", "start"]

@@ -5,7 +5,7 @@ import type {
   OverlayElement,
   InteractionDetails,
   KnowledgeCheck,
-} from "@/types";
+} from "@/types/storyboardTypes";
 
 type Props = {
   scene: StoryboardScene;
