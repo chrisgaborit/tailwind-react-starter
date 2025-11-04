@@ -101,7 +101,7 @@ function buildProductionScenes(scenes: Scene[]): ProductionScene[] {
     return {
       eventNumber,
       pageNumber,
-      pageTitle: scene?.pageTitle || scene?.title || `Scene ${index + 1}`,
+      pageTitle: scene?.pageTitle || (scene as any)?.title || `Scene ${index + 1}`,
       screenLayout,
       audio: scene?.narrationScript || "",
       onScreenText: scene?.onScreenText || "",
@@ -126,9 +126,9 @@ function buildSubEvents(scene: Scene, parentIndex: number): ProductionSubEvent[]
 }
 
 function determineScreenLayout(scene: Scene): string {
-  const pageType = String(scene?.pageType || "").toLowerCase();
+  const pageType = String((scene as any)?.pageType || "").toLowerCase();
   const interaction = String(scene?.interactionType || "").toLowerCase();
-  const title = String(scene?.pageTitle || "").toLowerCase();
+  const title = String(scene?.pageTitle || (scene as any)?.title || "").toLowerCase();
 
   if (pageType.includes("interactive") || interaction !== "none") {
     if (interaction.includes("scenario") || title.includes("scenario")) {
@@ -254,11 +254,15 @@ function buildImageSpecs(scene: Scene): ProductionImageSpecs {
     inferComposition(prompt) ||
     "Balanced composition with clear focal point supporting the learning objective.";
 
-  const palette: string[] =
+  const paletteSource =
     Array.isArray(brief?.colorPalette) && brief.colorPalette.length
       ? brief.colorPalette
-      : Array.isArray(scene?.visual?.colorPalette)
-      ? (scene?.visual?.colorPalette as string[])
+      : Array.isArray((scene.visual as any)?.colorPalette)
+      ? ((scene.visual as any).colorPalette as string[])
+      : undefined;
+
+  const palette: string[] = paletteSource && paletteSource.length
+      ? paletteSource
       : ["#0F172A", "#0284C7", "#38BDF8", "#F8FAFC"];
 
   const altText =

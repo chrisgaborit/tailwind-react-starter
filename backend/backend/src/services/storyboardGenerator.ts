@@ -31,11 +31,11 @@ export async function generateStoryboardFromBrief(params: {
   const text = resp.choices[0]?.message?.content || '{}';
 
   try {
-    const parsed = JSON.parse(text) as StoryboardModule;
-    if (!parsed?.meta || !Array.isArray(parsed?.scenes)) {
+    const parsed = JSON.parse(text) as Partial<StoryboardModule>;
+    if (!parsed || !Array.isArray(parsed.scenes)) {
       throw new Error('Invalid structure');
     }
-    return parsed;
+    return parsed as StoryboardModule;
   } catch (e) {
     // Log raw for debugging
     console.error('❌ JSON parse failed. Raw:', text.slice(0, 1200));

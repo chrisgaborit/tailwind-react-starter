@@ -226,6 +226,8 @@ export interface VisualSpec {
   aspectRatio: "16:9" | "1:1" | "4:5" | string;
   composition?: string;
   environment?: string;
+  /** Optional colour palette shorthand provided by upstream agents */
+  colorPalette?: string[];
 
   /** New: richly detailed, AI-ready visual brief */
   visualGenerationBrief?: VisualGenerationBrief;
@@ -235,6 +237,9 @@ export interface VisualSpec {
 
   /** New: full recipe used to create the image */
   imageParams?: ImageParams;
+
+  /** Optional: asset identifier used by the build pipeline */
+  assetId?: string;
 }
 
 /* ---------------------------------------
@@ -307,6 +312,9 @@ export interface AudioDirectives {
 export interface Scene {
   sceneNumber: number;
   pageTitle: string;
+  /** Optional legacy variations */
+  title?: string;
+  pageType?: string;
 
   /** Can be a plain string OR a structured, componentised layout spec */
   screenLayout: ScreenLayoutSpec;

@@ -222,6 +222,9 @@ class InMemoryAssetQueue {
       } else if (job.kind === "voice") {
         job.result = await this.generateVoice(job, scene);
         // persist on scene
+        if (!scene.audio) {
+          scene.audio = { script: scene.narrationScript || "" };
+        }
         (scene.audio as any).assetId = job.result.assetId;
         (scene.audio as any).fileUrl = job.result.publicUrl || job.result.filePath;
       }
