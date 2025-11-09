@@ -52,3 +52,5 @@ backend/storyboard_*.pdf
 # macOS files
 .DS_Store
 backend/backend/.env
+.env
+.env.local
