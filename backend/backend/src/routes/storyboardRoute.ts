@@ -1,7 +1,10 @@
 // backend/src/routes/storyboardRoute.ts
 import express, { Request, Response } from "express";
-import { generateStoryboardFromOpenAI, resolveOpenAIModel } from "../services/openaiGateway";
-import type { StoryboardFormData } from "../types/storyboardTypesArchive"; // keep if this is your current form type
+import type { StoryboardFormData } from "../types/storyboardTypesArchive";
+import { DirectorAgent } from "../agents/director/DirectorAgent";
+import { LearningRequest } from "../agents_v2/types";
+import { summarizeContentIfNeeded } from "../utils/summarizer";
+import OpenAI from "openai";
 
 import {
   saveStoryboard,
@@ -121,9 +124,19 @@ function normalizeFormData(body: any): { formData: any; ragContext?: string; aiM
  * Query:
  *  - ?raw=1 to return the raw storyboard object (no envelope)
  */
+/**
+ * POST /api/storyboard/generate
+ * 
+ * ⚠️ DEPRECATED: This endpoint now uses DirectorAgent orchestration.
+ * For new code, use /api/generate-storyboard directly.
+ * 
+ * This route maintains backward compatibility by converting
+ * the old request format to DirectorAgent's LearningRequest.
+ */
 router.post("/generate", async (req: Request, res: Response) => {
   try {
-    const { formData, ragContext, aiModel } = normalizeFormData(req.body);
+    console.warn("⚠️ DEPRECATED: /api/storyboard/generate called. Using DirectorAgent orchestration.");
+    const { formData } = normalizeFormData(req.body);
 
     if (!formData || !String(formData?.content || "").trim()) {
       return res.status(400).json({
@@ -132,21 +145,36 @@ router.post("/generate", async (req: Request, res: Response) => {
       });
     }
 
-    // Resolve model (for meta only)
-    const modelRequested = aiModel ?? formData.aiModel ?? null;
-    const modelUsed = resolveOpenAIModel(modelRequested || undefined);
+    // Convert to DirectorAgent format
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+    const summarizedContent = await summarizeContentIfNeeded(formData.content, openai);
+    
+    if (!summarizedContent.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Cannot generate storyboard with no content." }
+      });
+    }
 
-    const storyboard = await attemptGenerateWithRetry(
-      async () =>
-        await generateStoryboardFromOpenAI(formData, {
-          ragContext,
-          aiModel: modelRequested || undefined,
-        }),
-      2 // one retry after first attempt
-    );
+    const learningRequest: LearningRequest = {
+      topic: formData.moduleName || "Learning Module",
+      duration: formData.durationMins || formData.duration || 20,
+      audience: formData.targetAudience || "Learners",
+      sourceMaterial: summarizedContent,
+      learningOutcomes: Array.isArray(formData.learningOutcomes) ? formData.learningOutcomes : [],
+      brand: {
+        colours: formData.colours || "#001E41",
+        fonts: formData.fonts || "Outfit"
+      },
+      moduleType: formData.moduleType || "Soft Skills"
+    };
+
+    // Use DirectorAgent - the ONLY path
+    const director = new DirectorAgent();
+    const storyboard = await director.orchestrateStoryboard(learningRequest);
 
     const isRaw = String(req.query.raw || "").toLowerCase() === "1";
-    const warnings = storyboard?.metadata?.warnings || [];
+    const warnings: string[] = [];
 
     if (isRaw) {
       if (warnings.length) {
@@ -156,10 +184,10 @@ router.post("/generate", async (req: Request, res: Response) => {
     }
 
     const meta = {
-      modelRequested,
-      modelUsed,
+      generationMethod: "Agent Orchestration v2.0 (DirectorAgent)",
       interactiveScenes: countInteractiveScenes(storyboard),
       warnings,
+      deprecationWarning: "This endpoint is deprecated. Use /api/generate-storyboard instead."
     };
 
     return res.status(200).json({

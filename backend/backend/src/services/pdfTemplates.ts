@@ -207,7 +207,7 @@ function renderAudioSection(s: StoryboardScene): string {
     <div class="grid grid-3">
       <div>
         <div class="muted small"><strong>Script</strong></div>
-        <div class="mono small">${escapeHTML(s.audio?.script || s.narrationScript || "—")}</div>
+        <div class="mono small">${escapeHTML((s as any).voiceoverScript || s.narration || s.audio?.script || s.narrationScript || (s as any).voiceover || (s as any).VO || "—")}</div>
       </div>
       <div>
         <div class="muted small"><strong>Voice</strong></div>

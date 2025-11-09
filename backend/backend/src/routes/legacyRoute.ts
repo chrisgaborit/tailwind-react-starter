@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { StoryboardFormData, ModuleLevel } from "../types/storyboardTypesArchive";
-import { generateStoryboardFromGemini } from "../services/geminiService";
 import { generateImageFromPrompt } from "../services/imageService";
 import {
   MODULE_TYPES,
@@ -10,10 +9,23 @@ import {
   GENERIC_ERROR_MESSAGE,
 } from "../constants";
 import { ENABLE_IMAGE_GENERATION } from "../config/featureFlags";
+import { DirectorAgent } from "../agents/director/DirectorAgent";
+import { LearningRequest } from "../agents_v2/types";
+import { summarizeContentIfNeeded } from "../utils/summarizer";
+import OpenAI from "openai";
 
 const legacyRoute = Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
+/**
+ * ⚠️ DEPRECATED ENDPOINT
+ * This endpoint is deprecated. Use /api/generate-storyboard instead.
+ * This route now redirects to DirectorAgent orchestration for backward compatibility.
+ */
 legacyRoute.post("/generate-storyboard", async (req: Request, res: Response) => {
+  console.warn("⚠️ DEPRECATED: /api/v1/generate-storyboard called. Redirecting to DirectorAgent orchestration.");
+  console.warn("⚠️ Please update clients to use /api/generate-storyboard instead.");
+  
   const formData = req.body as StoryboardFormData;
 
   const requiredFields: (keyof StoryboardFormData)[] = [
@@ -62,15 +74,46 @@ legacyRoute.post("/generate-storyboard", async (req: Request, res: Response) => 
   }
 
   try {
-    console.log(`[API] Generating storyboard for: ${formData.moduleName}`);
-    const storyboardModule = await generateStoryboardFromGemini(formData);
-    res.status(200).json({ storyboardModule });
+    // Convert legacy format to LearningRequest for DirectorAgent
+    const content = formData.content || "";
+    const summarizedContent = await summarizeContentIfNeeded(content, openai);
+    
+    if (!summarizedContent.trim()) {
+      return res.status(400).json({
+        error: "Cannot generate storyboard with no content.",
+        deprecationWarning: "This endpoint is deprecated. Use /api/generate-storyboard instead."
+      });
+    }
+    
+    const learningRequest: LearningRequest = {
+      topic: formData.moduleName || "Learning Module",
+      duration: typeof formData.duration === "number" ? formData.duration : 20,
+      audience: formData.targetAudience || "Learners",
+      sourceMaterial: summarizedContent,
+      learningOutcomes: Array.isArray(formData.learningOutcomes) ? formData.learningOutcomes : [],
+      brand: {
+        colours: Array.isArray(formData.colours) ? formData.colours[0] : formData.colours || "#001E41",
+        fonts: Array.isArray(formData.fonts) ? formData.fonts[0] : formData.fonts || "Outfit"
+      },
+      moduleType: formData.moduleType || "Soft Skills"
+    };
+    
+    console.log(`[DEPRECATED API] Generating storyboard via DirectorAgent for: ${formData.moduleName}`);
+    const director = new DirectorAgent();
+    const storyboardModule = await director.orchestrateStoryboard(learningRequest);
+    
+    res.status(200).json({ 
+      storyboardModule,
+      deprecationWarning: "This endpoint is deprecated. Use /api/generate-storyboard instead.",
+      generationMethod: "Agent Orchestration v2.0 (via deprecated endpoint)"
+    });
   } catch (error) {
-    console.error("[API] Error generating storyboard:", error);
+    console.error("[DEPRECATED API] Error generating storyboard:", error);
     const errorMessage = error instanceof Error ? error.message : GENERIC_ERROR_MESSAGE;
     res.status(500).json({
       error: errorMessage,
       details: error instanceof Error ? error.stack : undefined,
+      deprecationWarning: "This endpoint is deprecated. Use /api/generate-storyboard instead."
     });
   }
 });

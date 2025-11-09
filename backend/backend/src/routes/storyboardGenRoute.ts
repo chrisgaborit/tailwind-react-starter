@@ -1,10 +1,14 @@
 // backend/src/routes/storyboardGenRoute.ts
 import { Router, Request, Response } from "express";
-import { generateStoryboardFromBrief } from "../services/storyboardGenerator";
+import { DirectorAgent } from "../agents/director/DirectorAgent";
+import { LearningRequest } from "../agents_v2/types";
 import { generateImageFromPrompt } from "../services/imageService";
 import { ENABLE_IMAGE_GENERATION } from "../config/featureFlags";
+import { summarizeContentIfNeeded } from "../utils/summarizer";
+import OpenAI from "openai";
 
 export const storyboardGenRoute = Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 /**
  * TEMP switch:
@@ -40,14 +44,34 @@ storyboardGenRoute.post(
       console.log("   ▶︎ moduleName:", formData?.moduleName);
       console.log("   ▶︎ requested generateImages:", rawFormData?.generateImages);
       console.log("   ▶︎ effective generateImages:", formData?.generateImages);
+      console.warn("⚠️ Using DirectorAgent orchestration (old generator removed)");
 
-      // 1) Generate the base storyboard
-      const result = await generateStoryboardFromBrief({
-        projectBrief,
-        formData,
-        brand,
-        interactivityHints,
-      });
+      // 1) Generate the base storyboard using DirectorAgent (ONLY PATH)
+      const content = projectBrief || formData?.content || "";
+      const summarizedContent = await summarizeContentIfNeeded(content, openai);
+      
+      if (!summarizedContent.trim()) {
+        return res.status(400).json({
+          error: "Cannot generate storyboard with no content.",
+          detail: "Provide projectBrief or formData.content"
+        });
+      }
+
+      const learningRequest: LearningRequest = {
+        topic: formData?.moduleName || "Learning Module",
+        duration: formData?.durationMins || formData?.duration || 20,
+        audience: formData?.targetAudience || "Learners",
+        sourceMaterial: summarizedContent,
+        learningOutcomes: Array.isArray(formData?.learningOutcomes) ? formData.learningOutcomes : [],
+        brand: brand || {
+          colours: formData?.colours || "#001E41",
+          fonts: formData?.fonts || "Outfit"
+        },
+        moduleType: formData?.moduleType || "Soft Skills"
+      };
+
+      const director = new DirectorAgent();
+      const result = await director.orchestrateStoryboard(learningRequest);
 
       if (!result || !Array.isArray(result?.scenes)) {
         console.warn("⚠️ Storyboard generator returned no scenes.");

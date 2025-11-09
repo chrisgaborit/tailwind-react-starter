@@ -38,10 +38,21 @@ export class EnhancedTeachAgentSimple {
     learningOutcome: string,
     sceneNumber: number
   ): Promise<Scene> {
+    // STEP 1: Extract SPECIFIC INSTRUCTIONAL CONTENT from the LO
+    console.log(`      🔍 Extracting instructional content from LO...`);
+    const extractedInstructionalContent = await this.extractInstructionalContentFromLO(
+      learningOutcome,
+      req.topic,
+      req.sourceMaterial
+    );
+    
+    console.log(`      ✅ Extracted ${extractedInstructionalContent.keyConcepts.length} key concepts`);
+    
     const extractedContent = (req as any).extractedContent;
     const contentSummary = this.buildExtractedContentSummary(learningOutcome, extractedContent);
     const availableCharacters = this.getAvailableCharacters(extractedContent);
 
+    // STEP 2: Generate scene using EXTRACTED CONTENT
     const enhancedPrompt = getEnhancedPrompt("teachAgent", {
       topic: req.topic,
       outcome: learningOutcome,
@@ -50,7 +61,21 @@ export class EnhancedTeachAgentSimple {
       availableCharacters,
     });
 
-    const finalPrompt = `${resetHeader}${enhancedPrompt}`;
+    // Inject extracted instructional content into the prompt
+    const contentInjection = `
+MANDATORY INSTRUCTIONAL CONTENT (this MUST appear in the voiceover):
+${JSON.stringify(extractedInstructionalContent.keyConcepts, null, 2)}
+
+CONCRETE EXAMPLES TO INCLUDE:
+${JSON.stringify(extractedInstructionalContent.concreteExamples, null, 2)}
+
+MISCONCEPTIONS TO ADDRESS:
+${JSON.stringify(extractedInstructionalContent.misconceptions, null, 2)}
+
+${enhancedPrompt}
+`.trim();
+
+    const finalPrompt = `${resetHeader}${contentInjection}`;
     const response = await openaiChat({ systemKey: "master_blueprint", user: finalPrompt });
     console.log(`   🧠 EnhancedTeachAgentSimple: Response received for outcome "${learningOutcome.substring(0, 60)}..."`);
 
@@ -69,9 +94,34 @@ export class EnhancedTeachAgentSimple {
 
     teachingScene.pageTitle = payload.title || teachingScene.pageTitle;
     teachingScene.onScreenText = payload.on_screen_text || payload.onScreenText || teachingScene.onScreenText;
-    teachingScene.voiceOverScript = payload.narration_script || payload.narrationScript || teachingScene.voiceOverScript;
+    
+    // CRITICAL: Enrich narration with explicit instructional content if it's too generic
+    const rawNarration = payload.narration_script || payload.narrationScript || teachingScene.voiceOverScript;
+    teachingScene.voiceOverScript = this.enrichWithInstructionalContent(
+      rawNarration,
+      learningOutcome,
+      extractedContent
+    );
+    
     teachingScene.visualAIPrompt = payload.visual_ai_prompt || payload.visualAiPrompt || teachingScene.visualAIPrompt;
     teachingScene.altText = payload.alt_text || payload.altText || teachingScene.altText;
+    
+    // STEP 3: VALIDATE content is present
+    const validation = this.validateInstructionalContentPresence(
+      teachingScene.voiceOverScript,
+      extractedInstructionalContent.keyConcepts
+    );
+    
+    if (validation.missingConcepts.length > 0) {
+      console.warn(`      ⚠️  Scene missing concepts: ${validation.missingConcepts.join(', ')}`);
+      // Force injection of missing content
+      teachingScene.voiceOverScript = this.forceInstructionalContent(
+        teachingScene.voiceOverScript,
+        learningOutcome,
+        extractedContent,
+        extractedInstructionalContent
+      );
+    }
 
     const developerNotes: string[] = [];
     if (payload.character) {
@@ -351,17 +401,403 @@ export class EnhancedTeachAgentSimple {
   }
   
   private generateOnScreenText(learningOutcome: string, keyConcepts: string[]): string {
-    const action = learningOutcome.split(' ')[0];
-    const concept = learningOutcome.substring(learningOutcome.indexOf(' ') + 1);
+    const instructionalContent = this.extractInstructionalContent(learningOutcome, keyConcepts);
     
-    return `${action} the key principles and concepts for ${concept}. Understanding these fundamentals will help you apply this knowledge effectively in your workplace. Focus on ${keyConcepts.slice(0, 2).join(' and ')} as core elements.`;
+    // Build explicit on-screen text with actual content
+    let text = `${learningOutcome}. `;
+    
+    if (instructionalContent.definitions.length > 0) {
+      text += `Key concepts: ${instructionalContent.definitions.map(d => d.name).slice(0, 3).join(', ')}. `;
+    }
+    
+    text += `Understanding these specific elements will help you apply this knowledge effectively.`;
+    
+    return text;
   }
   
   private generateVoiceOverScript(learningOutcome: string, keyConcepts: string[], topicContext: string): string {
-    const action = learningOutcome.split(' ')[0];
-    const concept = learningOutcome.substring(learningOutcome.indexOf(' ') + 1);
+    // Extract actual instructional content from the learning outcome
+    const instructionalContent = this.extractInstructionalContent(learningOutcome, keyConcepts);
     
-    return `Let's explore the essential concepts for ${concept}. Understanding these principles is crucial for success in ${topicContext}. We'll break down the key elements: ${keyConcepts.slice(0, 3).join(', ')}. Each concept builds upon the previous one, creating a solid foundation for practical application. By the end of this section, you'll have a clear understanding of how to ${action.toLowerCase()} these concepts effectively in real workplace scenarios.`;
+    // Build explicit teaching script that includes actual content
+    let script = `Let's explore ${learningOutcome}. `;
+    
+    // Add explicit instructional content
+    if (instructionalContent.definitions.length > 0) {
+      script += `Here are the key concepts you need to understand: `;
+      script += instructionalContent.definitions.map((def, idx) => {
+        return `${def.name}: ${def.description}`;
+      }).join('. ') + '. ';
+    }
+    
+    if (instructionalContent.examples.length > 0) {
+      script += `For example, ${instructionalContent.examples[0]}. `;
+    }
+    
+    if (instructionalContent.methods.length > 0) {
+      script += `To apply this, ${instructionalContent.methods[0]}. `;
+    }
+    
+    script += `Understanding these specific elements is crucial for success in ${topicContext}. `;
+    script += `By the end of this section, you'll be able to ${learningOutcome.toLowerCase()} with confidence.`;
+    
+    return script;
+  }
+  
+  /**
+   * STEP 1: Extract SPECIFIC INSTRUCTIONAL CONTENT from the LO
+   * Universal method that works for ANY topic, ANY LO, ANY audience
+   */
+  private async extractInstructionalContentFromLO(
+    learningOutcome: string,
+    topic: string,
+    sourceMaterial?: string
+  ): Promise<{
+    actionVerb: string;
+    subjectMatter: string;
+    keyConcepts: string[];
+    concreteExamples: string[];
+    misconceptions: string[];
+  }> {
+    const extractionPrompt = `
+You are analyzing a learning objective to extract the SPECIFIC CONTENT that must be taught.
+
+LEARNING OBJECTIVE: "${learningOutcome}"
+TOPIC: "${topic}"
+${sourceMaterial ? `SOURCE MATERIAL CONTEXT:\n${sourceMaterial.substring(0, 1000)}` : ''}
+
+EXTRACT:
+
+1. ACTION VERB: What must the learner DO? (understand, apply, identify, develop, etc.)
+2. SUBJECT MATTER: What specific topic/skill/concept?
+3. KEY CONCEPTS: What are the 3-5 core ideas that MUST be explained to achieve this LO?
+4. CONCRETE EXAMPLES: What real-world examples demonstrate this?
+5. MISCONCEPTIONS: What do learners typically get wrong?
+
+EXAMPLE:
+
+LO: "Identify the four CAPS behavioral types and their characteristics"
+
+OUTPUT:
+{
+  "actionVerb": "Identify",
+  "subjectMatter": "CAPS behavioral types",
+  "keyConcepts": [
+    "Controller: Direct, results-focused, wants efficiency",
+    "Analyser: Detail-oriented, systematic, wants data", 
+    "Promoter: Enthusiastic, relationship-driven, wants connection",
+    "Supporter: Patient, helpful, wants harmony"
+  ],
+  "concreteExamples": [
+    "Controller customer: 'Just tell me the bottom line. I don't have time for details.'",
+    "Analyser customer: 'Can you send me all the documentation? I need to review it thoroughly.'"
+  ],
+  "misconceptions": [
+    "Thinking all difficult people are aggressive (some are passive)",
+    "Believing one type is 'better' than others"
+  ]
+}
+
+LEARNING OBJECTIVE TO ANALYZE: "${learningOutcome}"
+
+Return ONLY valid JSON. This content MUST appear in the teaching scene.
+    `.trim();
+
+    try {
+      const response = await openaiChat({
+        systemKey: "master_blueprint",
+        user: `${resetHeader}${extractionPrompt}`
+      });
+
+      const parsed = safeJSONParse(response);
+      const extracted = parsed.report || parsed;
+
+      return {
+        actionVerb: extracted.actionVerb || this.extractActionVerb(learningOutcome),
+        subjectMatter: extracted.subjectMatter || this.extractSubjectMatter(learningOutcome),
+        keyConcepts: Array.isArray(extracted.keyConcepts) ? extracted.keyConcepts : 
+          extracted.keyConcepts ? [extracted.keyConcepts] : 
+          this.extractKeyConcepts(learningOutcome),
+        concreteExamples: Array.isArray(extracted.concreteExamples) ? extracted.concreteExamples : 
+          extracted.concreteExamples ? [extracted.concreteExamples] : [],
+        misconceptions: Array.isArray(extracted.misconceptions) ? extracted.misconceptions : 
+          extracted.misconceptions ? [extracted.misconceptions] : []
+      };
+    } catch (error) {
+      console.error("⚠️  Failed to extract instructional content, using fallback:", error);
+      // Fallback extraction
+      return {
+        actionVerb: this.extractActionVerb(learningOutcome),
+        subjectMatter: this.extractSubjectMatter(learningOutcome),
+        keyConcepts: this.extractKeyConcepts(learningOutcome),
+        concreteExamples: [],
+        misconceptions: []
+      };
+    }
+  }
+
+  private extractActionVerb(lo: string): string {
+    const verbs = ['understand', 'apply', 'identify', 'develop', 'analyze', 'evaluate', 'create', 'demonstrate', 'explain', 'recognize'];
+    const loLower = lo.toLowerCase();
+    for (const verb of verbs) {
+      if (loLower.includes(verb)) return verb.charAt(0).toUpperCase() + verb.slice(1);
+    }
+    return 'Understand';
+  }
+
+  private extractSubjectMatter(lo: string): string {
+    // Remove common prefixes and extract the core subject
+    const cleaned = lo.replace(/^(understand|apply|identify|develop|analyze|evaluate|create|demonstrate|explain|recognize)\s+/i, '');
+    return cleaned.substring(0, 60);
+  }
+
+  /**
+   * STEP 3: VALIDATE content is present
+   */
+  private validateInstructionalContentPresence(
+    voiceOver: string,
+    requiredConcepts: string[]
+  ): {
+    missingConcepts: string[];
+    coverageScore: number;
+  } {
+    const missing: string[] = [];
+    let covered = 0;
+
+    for (const concept of requiredConcepts) {
+      // Check if key words from the concept appear in voiceover
+      const conceptWords = concept.toLowerCase()
+        .split(/\s+/)
+        .filter(w => w.length > 4)
+        .slice(0, 3); // Check first 3 significant words
+      
+      const found = conceptWords.some(word => 
+        voiceOver.toLowerCase().includes(word)
+      );
+
+      if (found) {
+        covered++;
+      } else {
+        missing.push(concept);
+      }
+    }
+
+    return {
+      missingConcepts: missing,
+      coverageScore: requiredConcepts.length > 0 ? (covered / requiredConcepts.length) * 100 : 0
+    };
+  }
+
+  /**
+   * Extract actual instructional content from learning outcome
+   */
+  private extractInstructionalContent(learningOutcome: string, keyConcepts: string[]): {
+    definitions: Array<{ name: string; description: string }>;
+    examples: string[];
+    methods: string[];
+  } {
+    const definitions: Array<{ name: string; description: string }> = [];
+    const examples: string[] = [];
+    const methods: string[] = [];
+    
+    const loLower = learningOutcome.toLowerCase();
+    
+    // Extract if LO asks to "identify" or "list"
+    if (loLower.includes('identify') || loLower.includes('list')) {
+      // Look for numbered items or specific types
+      if (loLower.includes('four') || loLower.includes('4')) {
+        // Extract the thing being identified
+        const match = learningOutcome.match(/identify (?:the )?(?:four|4) (\w+)/i);
+        if (match) {
+          const itemType = match[1];
+          keyConcepts.forEach(concept => {
+            definitions.push({
+              name: concept,
+              description: `${concept} is a key component of ${itemType} that...`
+            });
+          });
+        }
+      }
+    }
+    
+    // Extract if LO mentions specific frameworks or models
+    if (loLower.includes('caps model') || loLower.includes('caps')) {
+      definitions.push(
+        { name: 'Controller', description: 'direct and results-focused individuals who speak quickly, make quick decisions, and want efficiency' },
+        { name: 'Analyser', description: 'detail-oriented and systematic individuals who ask many questions, want data, and think before acting' },
+        { name: 'Promoter', description: 'enthusiastic and relationship-driven individuals who are expressive, share stories, and value connection' },
+        { name: 'Supporter', description: 'patient and helpful individuals who are calm, considerate, and want harmony' }
+      );
+      examples.push('A Controller might say "Get to the point, I\'m busy" while an Analyser asks "Can you send me the full report?"');
+    }
+    
+    // Extract techniques or methods
+    if (loLower.includes('technique') || loLower.includes('method') || loLower.includes('strategy')) {
+      keyConcepts.forEach(concept => {
+        methods.push(`apply the ${concept} technique by...`);
+      });
+    }
+    
+    // Fallback: use key concepts as definitions
+    if (definitions.length === 0 && keyConcepts.length > 0) {
+      keyConcepts.forEach(concept => {
+        definitions.push({
+          name: concept,
+          description: `an essential concept for mastering ${learningOutcome}`
+        });
+      });
+    }
+    
+    return { definitions, examples, methods };
+  }
+  
+  /**
+   * Enrich narration script with explicit instructional content
+   */
+  private enrichWithInstructionalContent(
+    narration: string,
+    learningOutcome: string,
+    extractedContent?: any
+  ): string {
+    // Check if narration already contains specific instructional content
+    const hasSpecificContent = this.hasExplicitInstructionalContent(narration, learningOutcome);
+    
+    if (hasSpecificContent) {
+      return narration; // Already good
+    }
+    
+    // Extract and inject actual instructional content
+    const instructionalContent = this.extractInstructionalContent(
+      learningOutcome,
+      extractedContent ? this.extractConceptsFromMaterial(extractedContent, learningOutcome) : []
+    );
+    
+    // Build enriched narration
+    let enriched = narration;
+    
+    // Add definitions if missing
+    if (instructionalContent.definitions.length > 0 && !narration.includes(instructionalContent.definitions[0].name)) {
+      const definitionsText = instructionalContent.definitions
+        .map(def => `${def.name}: ${def.description}`)
+        .join('. ');
+      enriched += ` Specifically, ${definitionsText}.`;
+    }
+    
+    // Add examples if missing
+    if (instructionalContent.examples.length > 0 && !narration.toLowerCase().includes('example')) {
+      enriched += ` For example, ${instructionalContent.examples[0]}.`;
+    }
+    
+    return enriched;
+  }
+  
+  /**
+   * Check if narration contains explicit instructional content
+   */
+  private hasExplicitInstructionalContent(narration: string, learningOutcome: string): boolean {
+    const loLower = learningOutcome.toLowerCase();
+    const narrationLower = narration.toLowerCase();
+    
+    // Check for generic motivational phrases (bad)
+    const genericPhrases = [
+      'learned about',
+      'felt confident',
+      'understood the importance',
+      'gained insight',
+      'felt empowered'
+    ];
+    
+    const hasGenericOnly = genericPhrases.some(phrase => 
+      narrationLower.includes(phrase) && narration.length < 200
+    );
+    
+    if (hasGenericOnly) {
+      return false;
+    }
+    
+    // Check for specific content indicators (good)
+    const specificIndicators = [
+      'are',
+      'is a',
+      'includes',
+      'consists of',
+      'can be identified by',
+      'technique involves',
+      'method requires'
+    ];
+    
+    const hasSpecific = specificIndicators.some(indicator => narrationLower.includes(indicator));
+    
+    // Check if LO mentions specific items and narration includes them
+    if (loLower.includes('identify') || loLower.includes('list')) {
+      // Extract what needs to be identified
+      const match = learningOutcome.match(/identify (?:the )?(?:four|4|five|5|three|3|two|2) (\w+)/i);
+      if (match) {
+        const itemType = match[1];
+        // Check if narration mentions the item type and lists items
+        return narrationLower.includes(itemType.toLowerCase()) && 
+               (narration.match(/:/g) || []).length >= 2; // Has multiple definitions
+      }
+    }
+    
+    return hasSpecific;
+  }
+  
+  /**
+   * Force instructional content into narration if it's too generic
+   */
+  private forceInstructionalContent(
+    narration: string,
+    learningOutcome: string,
+    extractedContent?: any,
+    extractedInstructionalContent?: {
+      keyConcepts: string[];
+      concreteExamples: string[];
+      misconceptions: string[];
+    }
+  ): string {
+    // Use extracted instructional content if provided, otherwise extract it
+    const keyConcepts = extractedInstructionalContent?.keyConcepts || 
+      (extractedContent ? this.extractConceptsFromMaterial(extractedContent, learningOutcome) : 
+        this.extractKeyConcepts(learningOutcome));
+    
+    const examples = extractedInstructionalContent?.concreteExamples || [];
+    const misconceptions = extractedInstructionalContent?.misconceptions || [];
+    
+    // Build explicit instructional script with actual content
+    let script = narration;
+    
+    if (keyConcepts.length > 0) {
+      script += ` Specifically, here are the key concepts you must understand: `;
+      script += keyConcepts.slice(0, 5).join('. ') + '. ';
+    }
+    
+    if (examples.length > 0) {
+      script += `For example, ${examples[0]}. `;
+    }
+    
+    if (misconceptions.length > 0) {
+      script += `Common misconception to avoid: ${misconceptions[0]}. `;
+    }
+    
+    // Preserve character story if present, but add instructional content
+    if (narration.length > 50) {
+      // Extract character name if present
+      const nameMatch = narration.match(/\b([A-Z][a-z]+)\b/);
+      if (nameMatch) {
+        const characterName = nameMatch[1];
+        script = `${characterName} discovered that ${script.toLowerCase()}`;
+      }
+    }
+    
+    return script;
+  }
+  
+  /**
+   * Validate that scene contains actual instructional content
+   */
+  private validateInstructionalContent(narration: string, learningOutcome: string): boolean {
+    return this.hasExplicitInstructionalContent(narration, learningOutcome);
   }
   
   private generateVisualPrompt(learningOutcome: string, topic: string): string {

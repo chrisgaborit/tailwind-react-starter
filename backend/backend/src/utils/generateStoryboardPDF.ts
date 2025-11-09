@@ -122,7 +122,8 @@ function generateStoryboardHTML(storyboard: any): string {
   const scenesHTML = scenes.map((scene: any, index: number) => {
     const pageTitle = scene.pageTitle || scene.title || `Scene ${scene.sceneNumber ?? index + 1}`;
     const ost = scene.onScreenText || scene.on_screen_text || scene.ost || "";
-    const vo = scene.narrationScript || scene.voiceover || scene.voiceoverScript || scene.voice_over || "";
+    // Check all possible VO field names in order of preference
+    const vo = scene.voiceoverScript || scene.narration || scene.narrationScript || scene.voiceover || scene.voice_over || scene.VO || scene.audio?.script || "";
     const screenLayout = typeof scene.screenLayout === "string" ? scene.screenLayout : scene?.screenLayout?.description || "Standard slide layout";
     
     // Visual generation brief

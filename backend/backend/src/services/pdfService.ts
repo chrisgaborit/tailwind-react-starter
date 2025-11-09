@@ -71,10 +71,14 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
   `;
 
   // ==== HEADER =======================================================================
+  const isBrandonHall = Array.isArray((sb as any).pages) && (sb as any).pages.length > 0;
   const timing = (sb as any)?.metadata?.moduleTiming || {};
   const brand = (sb as any)?.metadata?.brand || {};
+  const moduleTitle = isBrandonHall 
+    ? ((sb as any).moduleTitle || "Untitled Module")
+    : ((sb as any).moduleName || "Untitled Module");
   const headerHTML = `
-    <h1>${esc((sb as any).moduleName || "Untitled Module")}</h1>
+    <h1>${esc(moduleTitle)}</h1>
     <div class="muted small">${esc((sb as any).moduleOverview || "—")}</div>
     <div class="kpi" style="margin-top:10px;">
       <div class="box"><div class="muted small">Learning Level</div><strong>${esc((sb as any).learningLevel || "—")}</strong></div>
@@ -111,7 +115,11 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
   `;
 
   // ==== SCENES =======================================================================
-  const scenesHTML = ((sb as any).scenes || []).map((s: any, i: number) => renderScene(s, i)).join("");
+  // Handle Brandon Hall format (pages[]) or legacy format (scenes[])
+  const isBrandonHall = Array.isArray((sb as any).pages) && (sb as any).pages.length > 0;
+  const scenesHTML = isBrandonHall
+    ? ((sb as any).pages || []).map((page: any, i: number) => renderBrandonHallPage(page, i)).join("")
+    : ((sb as any).scenes || []).map((s: any, i: number) => renderScene(s, i)).join("");
 
   return `<!doctype html>
   <html>
@@ -122,6 +130,105 @@ export function renderStoryboardAsHTML(sb: StoryboardModule): string {
       <div class="footer-note muted small">Generated ${new Date().toLocaleString()}</div>
     </body>
   </html>`;
+}
+
+// ----------------------------- Brandon Hall Page Renderer ----------------------------
+
+function renderBrandonHallPage(page: any, idx: number): string {
+  // Combine all event OST into one field
+  const onScreenText = page.events
+    ?.map((e: any) => e.ost)
+    .filter(Boolean)
+    .join('\n\n') || '—';
+
+  // Combine all event audio into one field
+  const voiceoverScript = page.events
+    ?.map((e: any) => e.audio)
+    .filter(Boolean)
+    .join(' ') || '—';
+
+  const pageBadges = `
+    <span class="badge">${esc(page.pageNumber || `p${String(idx + 1).padStart(2, "0")}`)}</span>
+    <span class="badge">${esc(page.pageType || "Page")}</span>
+  `;
+
+  // Render events detail
+  const eventsHTML = page.events && page.events.length > 0
+    ? `
+      <div class="section" style="padding-top:0;">
+        <h3>Events (${page.events.length})</h3>
+        <table class="tbl small">
+          <thead><tr><th>#</th><th>On-Screen Text</th><th>Audio</th><th>Dev Notes</th></tr></thead>
+          <tbody>
+            ${page.events.map((event: any) => `
+              <tr>
+                <td>${esc(event.number || "—")}</td>
+                <td>${esc(event.ost || "—")}</td>
+                <td class="mono small">${esc(event.audio || "—")}</td>
+                <td class="small">${esc(event.devNotes || "—")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+    : "";
+
+  return `
+  <div class="card">
+    <div class="bar">
+      <div class="title">${esc(page.title || `Page ${idx + 1}`)}</div>
+      <div class="right">
+        ${pageBadges}
+      </div>
+    </div>
+
+    <!-- On-screen text -->
+    <div class="section">
+      <div class="muted small"><strong>On-Screen Text (OST)</strong></div>
+      <div>${esc(onScreenText)}</div>
+    </div>
+
+    <!-- Audio -->
+    <div class="section">
+      <h3>Audio</h3>
+      <div class="grid g-3">
+        <div>
+          <div class="muted small"><strong>Voiceover Script (VO)</strong></div>
+          <div class="mono small">${esc(voiceoverScript)}</div>
+        </div>
+        <div>
+          <div class="muted small"><strong>Estimated Duration</strong></div>
+          <div class="small">${esc(page.estimatedDurationSec ? `${page.estimatedDurationSec}s` : "—")}</div>
+        </div>
+        <div>
+          <div class="muted small"><strong>Learning Objectives</strong></div>
+          <div class="small">${esc(Array.isArray(page.learningObjectiveIds) ? page.learningObjectiveIds.join(", ") : "—")}</div>
+        </div>
+      </div>
+    </div>
+
+    ${eventsHTML}
+
+    <!-- Accessibility -->
+    <div class="section">
+      <h3>Accessibility</h3>
+      <div class="grid g-3">
+        <div>
+          <div class="muted small"><strong>Alt Text</strong></div>
+          <div class="small">${esc(Array.isArray(page.accessibility?.altText) ? page.accessibility.altText.join(", ") : "—")}</div>
+        </div>
+        <div>
+          <div class="muted small"><strong>Keyboard Navigation</strong></div>
+          <div class="small">${esc(page.accessibility?.keyboardNav || "—")}</div>
+        </div>
+        <div>
+          <div class="muted small"><strong>Screen Reader</strong></div>
+          <div class="small">${esc(page.accessibility?.screenReader || "—")}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 // ----------------------------- Scene Renderer ---------------------------------------
@@ -272,7 +379,7 @@ Negative Space: ${esc(b.negativeSpace || "—")}
       <div class="grid g-3">
         <div>
           <div class="muted small"><strong>Voiceover Script</strong></div>
-          <div class="mono small">${esc((s as any).audio?.script || (s as any).narrationScript || "—")}</div>
+          <div class="mono small">${esc((s as any).voiceoverScript || (s as any).narration || (s as any).audio?.script || (s as any).narrationScript || (s as any).voiceover || (s as any).VO || "—")}</div>
         </div>
         <div>
           <div class="muted small"><strong>Voice Parameters</strong></div>
@@ -334,6 +441,16 @@ Negative Space: ${esc(b.negativeSpace || "—")}
 // ----------------------------- Header helpers ---------------------------------------
 
 function renderTOC(sb: StoryboardModule): string {
+  // Check for Brandon Hall format first
+  const isBrandonHall = Array.isArray((sb as any).pages) && (sb as any).pages.length > 0;
+  if (isBrandonHall && Array.isArray((sb as any).toc) && (sb as any).toc.length > 0) {
+    return `<h2>Table of Contents</h2>
+      <ol class="toc">
+        ${(sb as any).toc.map((t: any) => `<li>${esc(t.title || "")} ${t.pageNumber ? `<span class="muted small">— ${t.pageNumber}</span>` : ""}</li>`).join("")}
+      </ol>`;
+  }
+
+  // Legacy format
   const toc: any = (sb as any).tableOfContents || [];
   if (!toc || (Array.isArray(toc) && toc.length === 0)) return "";
 

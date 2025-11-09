@@ -10,12 +10,14 @@ import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 
 // Our services & helpers already in your repo
-import {
-  generateStoryboardFromOpenAI,
-  resolveOpenAIModel,
-} from "./services/openaiGateway";
+// Old generator removed - DirectorAgent is the ONLY path
 import { normalizeToScenes } from "./utils/normalizeStoryboard";
 import { summarizeContentIfNeeded, truncateContent } from "./utils/summarizer";
+import { DirectorAgent } from "./agents/director/DirectorAgent";
+import { QualityAgent } from "./agents/director/QualityAgent";
+import { ContentExtractionAgent } from "./agents/specialists/ContentExtractionAgent";
+import { LearningRequest } from "./agents_v2/types";
+import { StoryboardModuleV2 } from "../../packages/shared/src/storyboardTypesV2";
 
 /* -----------------------------------------------------------
    Basic, local minimal types (keeps this file self‑contained)
@@ -105,6 +107,10 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(morgan("dev"));
 
+// Mount API router for orchestrated endpoints
+import apiRouter from "./routes/apiRouter";
+app.use("/api", apiRouter);
+
 /* -----------------------------------------------------------
    Multer: PDF uploads for /generate-from-files
 ----------------------------------------------------------- */
@@ -159,10 +165,17 @@ function pdfNormalizeEvents(scene: any) {
   const evs = Array.isArray(scene?.events) ? scene.events : [];
   if (evs.length) {
     return evs.map((e: any, i: number) => ({
-      num: e.eventNumber ?? i + 1,
-      audio: e.audio?.script ?? e.narrationScript ?? e.voiceover ?? scene.narrationScript ?? "",
-      ost: e.onScreenText ?? scene.onScreenText ?? "",
+      num: e.number ?? e.eventNumber ?? i + 1,
+      // Brandon Hall format: event.audio is a string
+      // Legacy format: event.audio?.script or event.narrationScript
+      audio: e.audio ?? e.audio?.script ?? e.narrationScript ?? e.voiceover ?? scene.voiceoverScript ?? scene.narrationScript ?? "",
+      // Brandon Hall format: event.ost is a string
+      // Legacy format: event.onScreenText
+      ost: e.ost ?? e.onScreenText ?? scene.onScreenText ?? "",
+      // Brandon Hall format: event.devNotes is a string
+      // Legacy format: event.developerNotes or event.interactive?.behaviourExplanation
       dev:
+        e.devNotes ??
         e.developerNotes ??
         e.interactive?.behaviourExplanation ??
         e.interactionDescription ??
@@ -170,10 +183,11 @@ function pdfNormalizeEvents(scene: any) {
         "",
     }));
   }
+  // Fallback: use scene-level fields if no events
   return [
     {
       num: 1,
-      audio: scene.narrationScript ?? scene.voiceover ?? "",
+      audio: scene.voiceoverScript ?? scene.narrationScript ?? scene.voiceover ?? "",
       ost: scene.onScreenText ?? "",
       dev: scene.developerNotes ?? scene.interactionDescription ?? "",
     },
@@ -353,33 +367,23 @@ app.post("/api/v1/generate-from-text", async (req: Request, res: Response) => {
       });
     }
 
-    const modelRequested: string | null = (formData as any)?.aiModel || null;
-    const modelUsed: string = resolveOpenAIModel(modelRequested || undefined);
-
-    const searchQuery = formData.moduleName || String(summarizedContent).slice(0, 500);
-    const similar = await searchSimilarStoryboards(searchQuery, 2);
-    const ragContext =
-      similar.length > 0
-        ? similar
-            .map((ex: any, i: number) => {
-              const content = typeof ex.content === "string" ? ex.content : JSON.stringify(ex.content, null, 2);
-              return `--- START OF EXAMPLE ${i + 1} ---\n${content}\n--- END OF EXAMPLE ${i + 1} ---`;
-            })
-            .join("\n\n")
-        : "No similar examples were found in the database.";
-
-    const storyRaw = await generateStoryboardFromOpenAI(
-      { ...formData, content: summarizedContent }, 
-      {
-        ragContext,
-        aiModel: modelRequested || undefined,
-      }
-    );
-
-    const storyboard: StoryboardModuleV2 =
-      (storyRaw as any)?.scenes
-        ? (storyRaw as StoryboardModuleV2)
-        : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
+    // Use DirectorAgent - the ONLY path for storyboard generation
+    console.log("🎬 Using DirectorAgent orchestration (ONLY PATH)");
+    const learningRequest = {
+      topic: formData.moduleName || "Learning Module",
+      duration: formData.durationMins || 20,
+      audience: formData.targetAudience || "Learners",
+      sourceMaterial: summarizedContent,
+      learningOutcomes: Array.isArray(formData.learningOutcomes) ? formData.learningOutcomes : [],
+      brand: {
+        colours: formData.colours || "#001E41",
+        fonts: formData.fonts || "Outfit"
+      },
+      moduleType: formData.moduleType || "Soft Skills"
+    };
+    
+    const director = new DirectorAgent();
+    const storyboard = await director.orchestrateStoryboard(learningRequest);
 
     // RAW compat
     const rawMode = String(req.query.raw || "").toLowerCase();
@@ -388,7 +392,10 @@ app.post("/api/v1/generate-from-text", async (req: Request, res: Response) => {
     const envelope: StoryboardEnvelope = {
       success: true,
       data: { storyboardModule: storyboard },
-      meta: { modelRequested, modelUsed, ragUsed: true, examples: similar.length },
+      meta: { 
+        generationMethod: "Agent Orchestration v2.0 (DirectorAgent)",
+        sceneCount: storyboard.scenes?.length || 0
+      },
     };
     res.json(envelope);
   } catch (e: any) {
@@ -455,16 +462,23 @@ app.post(
               .join("\n\n")
           : "No similar examples were found in the database.";
 
-      const modelRequested: string | null = (formData as any)?.aiModel || null;
-      const storyRaw = await generateStoryboardFromOpenAI(
-        { ...formData, content: summarizedContent },
-        { ragContext, aiModel: modelRequested || undefined }
-      );
-
-      const storyboard: StoryboardModuleV2 =
-        (storyRaw as any)?.scenes
-          ? (storyRaw as StoryboardModuleV2)
-          : ((normalizeToScenes(storyRaw) as unknown) as StoryboardModuleV2);
+      // Use DirectorAgent - the ONLY path for storyboard generation
+      console.log("🎬 Using DirectorAgent orchestration (ONLY PATH)");
+      const learningRequest = {
+        topic: formData.moduleName || "Learning Module",
+        duration: formData.durationMins || 20,
+        audience: formData.targetAudience || "Learners",
+        sourceMaterial: summarizedContent,
+        learningOutcomes: Array.isArray(formData.learningOutcomes) ? formData.learningOutcomes : [],
+        brand: {
+          colours: formData.colours || "#001E41",
+          fonts: formData.fonts || "Outfit"
+        },
+        moduleType: formData.moduleType || "Soft Skills"
+      };
+      
+      const director = new DirectorAgent();
+      const storyboard = await director.orchestrateStoryboard(learningRequest);
 
       const rawMode = String(req.query.raw || "").toLowerCase();
       if (rawMode === "1" || rawMode === "true") return res.json(storyboard);
@@ -472,7 +486,10 @@ app.post(
       const envelope: StoryboardEnvelope = {
         success: true,
         data: { storyboardModule: storyboard },
-        meta: { modelRequested, modelUsed: resolveOpenAIModel(modelRequested || undefined), ragUsed: true, examples: similar.length },
+        meta: { 
+          generationMethod: "Agent Orchestration v2.0 (DirectorAgent)",
+          sceneCount: storyboard.scenes?.length || 0
+        },
       };
       res.json(envelope);
     } catch (e: any) {
@@ -488,12 +505,83 @@ app.post(
 app.post("/api/v1/generate-pdf", async (req: Request, res: Response) => {
   try {
     const storyboardModule = req.body as StoryboardModuleV2;
-    if (!storyboardModule || !Array.isArray(storyboardModule.scenes) || storyboardModule.scenes.length === 0) {
-      return res.status(400).json({ message: 'Invalid storyboard data: expected non-empty "scenes" array.' });
+    
+    // ============================================================
+    // TRANSFORM BRANDON HALL FORMAT TO PDF FORMAT
+    // ============================================================
+    // Convert Brandon Hall pages[].events[] to flat scenes[]
+    let scenes: any[] = [];
+    
+    if (Array.isArray(storyboardModule.pages) && storyboardModule.pages.length > 0) {
+      // Brandon Hall format: transform pages to scenes
+      scenes = storyboardModule.pages.map((page: any) => {
+        // Combine all event OST fields into one
+        const ostTexts = page.events
+          ?.map((event: any) => event.ost)
+          .filter((text: string) => text && text.trim().length > 0) || [];
+
+        // Combine all event audio fields into one
+        const audioTexts = page.events
+          ?.map((event: any) => event.audio)
+          .filter((text: string) => text && text.trim().length > 0) || [];
+
+        // Combine all dev notes
+        const devNotes = page.events
+          ?.map((event: any) => event.devNotes)
+          .filter((text: string) => text && text.trim().length > 0) || [];
+
+        return {
+          sceneNumber: page.pageNumber || 'p00',
+          title: page.title || 'Untitled Scene',
+          pageTitle: page.title || 'Untitled Scene',
+          pageType: page.pageType || 'Text + Image',
+
+          // CRITICAL: These are the fields the PDF template expects
+          onScreenText: ostTexts.length > 0 ? ostTexts.join('\n\n') : 'Content not available',
+          voiceoverScript: audioTexts.length > 0 ? audioTexts.join(' ') : 'Content not available',
+
+          // Additional metadata
+          estimatedDuration: page.estimatedDurationSec || 60,
+          timing: {
+            estimatedSeconds: page.estimatedDurationSec || 60,
+          },
+          learningObjectiveIds: page.learningObjectiveIds || [],
+
+          // Include events for detailed view (optional)
+          events: page.events || [],
+
+          // Developer notes
+          developerNotes: devNotes.length > 0 ? devNotes.join('\n') : '',
+
+          // Accessibility
+          accessibility: page.accessibility || {
+            altText: [],
+            keyboardNav: 'Standard navigation',
+            contrastNotes: 'Standard contrast',
+            screenReader: 'Standard screen reader support'
+          }
+        };
+      });
+
+      console.log(`\n📄 PDF GENERATOR: Transformed ${scenes.length} pages to scenes`);
+      if (scenes.length > 0) {
+        console.log(`   Scene 1 OST: ${scenes[0].onScreenText?.substring(0, 50)}...`);
+        console.log(`   Scene 1 VO: ${scenes[0].voiceoverScript?.substring(0, 50)}...`);
+      }
+    } else if (Array.isArray(storyboardModule.scenes) && storyboardModule.scenes.length > 0) {
+      // Legacy format: use scenes directly
+      scenes = storyboardModule.scenes;
+      console.log(`\n📄 PDF GENERATOR: Using legacy scenes format (${scenes.length} scenes)`);
+    } else {
+      return res.status(400).json({ 
+        message: 'Invalid storyboard data: expected non-empty "pages" or "scenes" array.' 
+      });
     }
 
-    const moduleTitle = pdfEscapeHtml(storyboardModule.moduleName || "Storyboard");
-    const html = buildPdfHtml(moduleTitle, storyboardModule.scenes);
+    const moduleTitle = pdfEscapeHtml(
+      storyboardModule.moduleTitle || storyboardModule.moduleName || "Storyboard"
+    );
+    const html = buildPdfHtml(moduleTitle, scenes);
 
     try { fs.writeFileSync("./debug.html", html); } catch {}
 

@@ -21,7 +21,8 @@ import { GENERIC_ERROR_MESSAGE, FORM_ERROR_MESSAGE } from "./constants";
 const LearnoLogo = "/learno-logo-light.png";
 
 const BASE_URL = ((import.meta as any)?.env?.VITE_BACKEND_BASE || "http://localhost:8080").replace(/\/$/, "");
-const STORYBOARD_ENDPOINT = `${BASE_URL}/api/v2/storyboards`;
+// Use Brandon Hall pipeline endpoint for new architecture
+const STORYBOARD_ENDPOINT = `${BASE_URL}/api/generate`;
 if (typeof window !== "undefined") {
   console.log("Posting to:", STORYBOARD_ENDPOINT);
 }
@@ -70,7 +71,8 @@ function getInitialData(): StoryboardFormData {
         tone: parsed.tone || "professional",
         durationMins: parsed.durationMins || 15,
         content: parsed.content || "",
-        learningObjectives: parsed.learningObjectives || "",
+        learningObjectives: parsed.learningObjectives || parsed.learningOutcomes || "",
+        learningOutcomes: parsed.learningOutcomes || parsed.learningObjectives || "", // Support both field names
         targetAudience: parsed.targetAudience || "",
         companyImages: [],
       };
@@ -86,6 +88,7 @@ function getInitialData(): StoryboardFormData {
     durationMins: 15,
     content: "",
     learningObjectives: "",
+    learningOutcomes: "", // Support both field names
     targetAudience: "",
     companyImages: [],
     options: { skipAIImages: false },
@@ -219,28 +222,93 @@ const GeneratorApp: React.FC = () => {
     setAbortController(controller);
 
     try {
-      const fileSummary = selectedFiles.length
-        ? `\n\nUploaded files:\n${selectedFiles.map((file) => `- ${file.name}`).join('\n')}`
-        : '';
-      const imageSummary = imageFiles.length
-        ? `\n\nUploaded images:\n${imageFiles.map((file) => `- ${file.name}`).join('\n')}`
-        : '';
-
-      const payload = {
-        topic: formData.moduleName || "Untitled Module",
-        duration: `${formData.durationMins || 15} minutes`,
-        audience: formData.targetAudience || "General staff",
-        sourceMaterial: `${formData.content || ""}${fileSummary}${imageSummary}`.trim(),
-      };
-
-      console.log("Posting to:", endpoint, payload);
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
+      // Extract and normalize learning outcomes - check both field names
+      const learningOutcomesRaw = formData.learningOutcomes || formData.learningObjectives || "";
+      console.log("🔍 Raw learning outcomes from form:", {
+        learningOutcomes: formData.learningOutcomes,
+        learningObjectives: formData.learningObjectives,
+        raw: learningOutcomesRaw,
+        type: typeof learningOutcomesRaw
       });
+      
+      const learningOutcomes = learningOutcomesRaw
+        ? (typeof learningOutcomesRaw === 'string' 
+            ? learningOutcomesRaw.split(/\r?\n|•|- |\u2022/).map(lo => lo.trim()).filter(lo => lo !== "")
+            : Array.isArray(learningOutcomesRaw) 
+              ? learningOutcomesRaw.map((lo: any) => typeof lo === 'string' ? lo.trim() : lo.text || String(lo)).filter((lo: string) => lo !== "")
+              : [])
+        : [];
+
+      // Check if we have PDF files to upload
+      const pdfFiles = selectedFiles.filter(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf'));
+      
+      let res: Response;
+      
+      if (pdfFiles.length > 0) {
+        // Option B: Upload PDF file(s) - backend will extract text
+        console.log(`📄 Uploading ${pdfFiles.length} PDF file(s) to backend for text extraction...`);
+        
+        const formDataToSend = new FormData();
+        
+        // Add the first PDF file (backend currently handles single file)
+        formDataToSend.append("file", pdfFiles[0]);
+        
+        // Add form data as JSON string (backend will parse)
+        formDataToSend.append("formData", JSON.stringify({
+          moduleName: formData.moduleName || "Untitled Module",
+          topic: formData.moduleName || "Untitled Module",
+          durationMins: formData.durationMins || 15,
+          duration: formData.durationMins || 15,
+          targetAudience: formData.targetAudience || "General staff",
+          audience: formData.targetAudience || "General staff",
+          learningOutcomes: learningOutcomes,
+          learningObjectives: learningOutcomes,
+          content: formData.content || "", // Additional text content if any
+          sourceMaterial: formData.content || "", // Additional source material
+        }));
+        
+        console.log("🎯 Sending learning outcomes:", learningOutcomes);
+        console.log("🎯 Learning outcomes count:", learningOutcomes.length);
+        console.log("📄 Uploading PDF:", pdfFiles[0].name, `(${Math.round(pdfFiles[0].size / 1024)}KB)`);
+        console.log("Posting to:", endpoint, "with FormData");
+
+        res = await fetch(endpoint, {
+          method: "POST",
+          body: formDataToSend,
+          signal: controller.signal,
+          // Don't set Content-Type header - browser will set it with boundary for FormData
+        });
+      } else {
+        // Option A: Send text content only (no files)
+        const imageSummary = imageFiles.length
+          ? `\n\nUploaded images:\n${imageFiles.map((file) => `- ${file.name}`).join('\n')}`
+          : '';
+        
+        const payload = {
+          moduleName: formData.moduleName || "Untitled Module",
+          topic: formData.moduleName || "Untitled Module",
+          durationMins: formData.durationMins || 15,
+          duration: formData.durationMins || 15,
+          targetAudience: formData.targetAudience || "General staff",
+          audience: formData.targetAudience || "General staff",
+          learningOutcomes: learningOutcomes,
+          learningObjectives: learningOutcomes,
+          content: `${formData.content || ""}${imageSummary}`.trim(),
+          sourceMaterial: `${formData.content || ""}${imageSummary}`.trim(),
+        };
+
+        console.log("🎯 Sending learning outcomes:", learningOutcomes);
+        console.log("🎯 Learning outcomes count:", learningOutcomes.length);
+        console.log("📝 No PDF files - sending text content only");
+        console.log("Posting to:", endpoint, payload);
+
+        res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      }
       if (!res.ok) {
         let msg = res.statusText;
         try {
@@ -267,21 +335,59 @@ const GeneratorApp: React.FC = () => {
         response?.data ??
         response;
 
-      const scenes =
-        response?.storyboard?.scenes ??
-        response?.storyboard?.data?.scenes ??
-        storyboardEnvelope?.scenes ??
-        storyboardEnvelope?.data?.scenes ??
-        response?.data?.scenes ??
-        [];
+      // Handle Brandon Hall format (pages[]) - check if we need to convert
+      let scenes: any[] = [];
+      
+      if (response?.storyboard?.pages && Array.isArray(response.storyboard.pages)) {
+        // Brandon Hall format - convert pages to scenes
+        console.log("🔄 Frontend: Converting Brandon Hall pages[] to scenes[]");
+        scenes = response.storyboard.pages.map((page: any) => {
+          const ostTexts = page.events?.map((e: any) => e.ost).filter(Boolean) || [];
+          const audioTexts = page.events?.map((e: any) => e.audio).filter(Boolean) || [];
+          
+          return {
+            sceneNumber: page.pageNumber || 'p00',
+            title: page.title || 'Untitled Scene',
+            pageTitle: page.title || 'Untitled Scene',
+            pageType: page.pageType || 'Text + Image',
+            onScreenText: ostTexts.join('\n\n') || 'Content not available',
+            voiceoverScript: audioTexts.join(' ') || 'Content not available',
+            estimatedDuration: page.estimatedDurationSec || 60,
+            timing: { estimatedSeconds: page.estimatedDurationSec || 60 },
+            learningObjectiveIds: page.learningObjectiveIds || [],
+            events: page.events || [],
+            developerNotes: page.events?.map((e: any) => e.devNotes).filter(Boolean).join('\n') || '',
+            accessibility: page.accessibility || {},
+          };
+        });
+        console.log(`✅ Converted ${scenes.length} pages to scenes`);
+      } else {
+        // Legacy format - extract scenes from various locations
+        scenes =
+          response?.storyboard?.scenes ??
+          response?.storyboard?.data?.scenes ??
+          storyboardEnvelope?.scenes ??
+          storyboardEnvelope?.data?.scenes ??
+          response?.data?.scenes ??
+          [];
+      }
+
+      // Extract module name from Brandon Hall format or legacy format
+      const moduleName = 
+        response?.storyboard?.moduleTitle || // Brandon Hall format
+        storyboardEnvelope?.moduleTitle || 
+        storyboardEnvelope?.moduleName || 
+        formData.moduleName || 
+        "Untitled Module";
 
       const normalized = normalizeToScenes({
         ...storyboardEnvelope,
+        moduleName, // Ensure moduleName is set
         scenes,
       });
 
       if (!normalized.moduleName) {
-        normalized.moduleName = formData.moduleName || "Untitled Module";
+        normalized.moduleName = moduleName;
       }
 
       if (!normalized || !Array.isArray(normalized.scenes) || normalized.scenes.length === 0) {
@@ -297,7 +403,9 @@ const GeneratorApp: React.FC = () => {
         throw new Error("Failed to prepare storyboard for display. Please try again.");
       }
       
+      // Extract metadata from API response (supports both old and new formats)
       const meta =
+        response?.metadata || // New format from /api/generate-storyboard
         response?.storyboard?.meta ||
         response?.meta ||
         response?.data?.meta ||
@@ -306,8 +414,21 @@ const GeneratorApp: React.FC = () => {
           sourceValid: response?.storyboard?.source_valid ?? storyboardEnvelope?.source_valid,
         };
 
+      // Normalize metadata structure for QualityMetricsPanel
+      const normalizedMetadata = meta ? {
+        qualityScore: meta.qualityScore ?? meta.qaScore,
+        grade: meta.grade,
+        framework: meta.framework,
+        agentsUsed: meta.agentsUsed,
+        sceneCount: meta.sceneCount,
+        estimatedDuration: meta.estimatedDuration,
+        dimensionScores: meta.dimensionScores,
+        validationIssues: meta.validationIssues,
+        validationStrengths: meta.validationStrengths,
+      } : null;
+
       setStoryboardModule(uiReady);
-      setMeta(meta || null);
+      setMeta(normalizedMetadata);
       setAppState(AppState.Success);
       showToast("Storyboard generated successfully!");
       console.log("Scenes rendered:", uiReady.scenes.length);
@@ -452,7 +573,7 @@ const GeneratorApp: React.FC = () => {
                 </div>
 
                 <ErrorBoundary>
-                  <StoryboardDisplay storyboardModule={storyboardModule} />
+                  <StoryboardDisplay storyboardModule={storyboardModule} metadata={meta || undefined} />
                 </ErrorBoundary>
               </>
             ) : (

@@ -2,7 +2,8 @@
 
 // Base URL for the backend Agents v2 service
 const BASE_URL = (import.meta.env.VITE_BACKEND_BASE || "http://localhost:8080").replace(/\/$/, "");
-const STORYBOARD_ENDPOINT = `${BASE_URL}/api/v2/storyboards`;
+// Use Brandon Hall pipeline endpoint for new architecture
+const STORYBOARD_ENDPOINT = `${BASE_URL}/api/generate`;
 const STORYBOARD_PDF_ENDPOINT = `${BASE_URL}/api/storyboard/pdf`;
 
 /* -------------------------- tiny helpers -------------------------- */
@@ -50,12 +51,74 @@ function normalizeEnvelope(json: any) {
   // { success, data: { storyboardModule } }
   // { storyboardModule }
   // { data } where data itself is the storyboard
-  // { success, storyboard }
+  // { success, storyboard } (Brandon Hall format with pages[])
+  // { success, storyboard: { pages: [...] } } (Brandon Hall format)
   const sb =
     json?.data?.storyboardModule ||
     json?.storyboardModule ||
     json?.storyboard ||
     (Array.isArray(json?.scenes) ? json : json?.data);
+
+  // Handle Brandon Hall format (pages[]) - convert to scenes[] for compatibility
+  if (sb?.pages && Array.isArray(sb.pages) && sb.pages.length > 0) {
+    console.log("🔄 Converting Brandon Hall pages[] to scenes[] for frontend compatibility");
+    
+    // Convert pages to scenes format
+    const scenes = sb.pages.map((page: any) => {
+      // Combine all event OST fields into one
+      const ostTexts = page.events
+        ?.map((event: any) => event.ost)
+        .filter((text: string) => text && text.trim().length > 0) || [];
+
+      // Combine all event audio fields into one
+      const audioTexts = page.events
+        ?.map((event: any) => event.audio)
+        .filter((text: string) => text && text.trim().length > 0) || [];
+
+      return {
+        sceneNumber: page.pageNumber || 'p00',
+        title: page.title || 'Untitled Scene',
+        pageTitle: page.title || 'Untitled Scene',
+        pageType: page.pageType || 'Text + Image',
+        
+        // CRITICAL: These are the fields the frontend expects
+        onScreenText: ostTexts.length > 0 ? ostTexts.join('\n\n') : 'Content not available',
+        voiceoverScript: audioTexts.length > 0 ? audioTexts.join(' ') : 'Content not available',
+        
+        // Additional metadata
+        estimatedDuration: page.estimatedDurationSec || 60,
+        timing: {
+          estimatedSeconds: page.estimatedDurationSec || 60,
+        },
+        learningObjectiveIds: page.learningObjectiveIds || [],
+        
+        // Include events for detailed view
+        events: page.events || [],
+        
+        // Developer notes
+        developerNotes: page.events
+          ?.map((event: any) => event.devNotes)
+          .filter((text: string) => text && text.trim().length > 0)
+          .join('\n') || '',
+        
+        // Accessibility
+        accessibility: page.accessibility || {
+          altText: [],
+          keyboardNav: 'Standard navigation',
+          contrastNotes: 'Standard contrast',
+          screenReader: 'Standard screen reader support'
+        }
+      };
+    });
+
+    // Add scenes to storyboard object
+    sb.scenes = scenes;
+    console.log(`✅ Converted ${scenes.length} pages to ${scenes.length} scenes`);
+    if (scenes.length > 0) {
+      console.log(`   Scene 1 OST: ${scenes[0].onScreenText?.substring(0, 50)}...`);
+      console.log(`   Scene 1 VO: ${scenes[0].voiceoverScript?.substring(0, 50)}...`);
+    }
+  }
 
   if (sb?.scenes) {
     normalizeSceneImages(sb);
@@ -106,13 +169,17 @@ export async function generateFromText(formData: any) {
       ? parsedDuration
       : 20;
 
+  // Map learning outcomes to simple strings (not objects)
+  const learningOutcomesArray = mapLearningOutcomes(
+    formData.learningOutcomes || formData.learningObjectives
+  );
+  const learningOutcomes = learningOutcomesArray.map(lo => lo.text);
+
   const payload = {
     topic: formData.moduleName || formData.topic,
     duration,
     audience: formData.targetAudience || formData.audience || "General staff",
-    learningOutcomes: mapLearningOutcomes(
-      formData.learningOutcomes || formData.learningObjectives
-    ),
+    learningOutcomes: learningOutcomes, // Send as array of strings
     sourceMaterial: formData.sourceMaterial || formData.content || "",
   };
 
@@ -145,13 +212,17 @@ export async function generateFromFiles(formData: any) {
       ? parsedDuration
       : 20;
 
+  // Map learning outcomes to simple strings (not objects)
+  const learningOutcomesArray = mapLearningOutcomes(
+    formData.learningOutcomes || formData.learningObjectives
+  );
+  const learningOutcomes = learningOutcomesArray.map(lo => lo.text);
+
   const payload = {
     topic: formData.moduleName || formData.topic,
     duration,
     audience: formData.targetAudience || formData.audience || "General staff",
-    learningOutcomes: mapLearningOutcomes(
-      formData.learningOutcomes || formData.learningObjectives
-    ),
+    learningOutcomes: learningOutcomes, // Send as array of strings
     sourceMaterial: formData.sourceMaterial || formData.content || "",
   };
 

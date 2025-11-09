@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "ingest": "ts-node -r tsconfig-paths/register scripts/bulkUpload.ts",
     "gcp-build": "npm run build",
-    "start:dev": "NODE_ENV=development ts-node -r tsconfig-paths/register src/index.ts"
+    "start:dev": "NODE_ENV=development ts-node -r tsconfig-paths/register src/index.ts",
+    "test:compare": "ts-node -r tsconfig-paths/register src/tests/compareOutputs.ts"
   },
   "author": "Genesis AI",
   "license": "MIT",
@@ -40,7 +41,7 @@
     "nanoid": "^5.1.5",
     "office-text-extractor": "^3.0.3",
     "openai": "^5.12.2",
-    "pdf-parse": "^1.1.1",
+    "pdf-parse": "^1.1.4",
     "pdfkit": "^0.13.0",
     "pg": "^8.16.0",
     "pino": "^9.9.0",
@@ -55,6 +56,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^1.4.13",
     "@types/node": "^20.19.10",
@@ -62,10 +64,13 @@
     "@types/pdfkit": "^0.12.12",
     "@types/pg": "^8.15.4",
     "@types/uuid": "^10.0.0",
+    "jest": "^30.2.0",
     "jsondiffpatch": "^0.7.3",
     "nodemon": "^2.0.22",
     "prettier": "^3.6.2",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "zod": "^4.1.12"
   }
 }

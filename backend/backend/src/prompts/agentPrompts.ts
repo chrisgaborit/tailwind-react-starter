@@ -124,57 +124,79 @@ JSON STRUCTURE (EXACT FORMAT REQUIRED):
 `.trim(),
 
   /**
-   * Teach Agent - Story-Based Teaching
+   * Teach Agent - Story-Based Teaching WITH EXPLICIT INSTRUCTIONAL CONTENT
    */
   teachAgent: ({ topic, outcome, audience, extractedContentSummary, availableCharacters }) => `
-YOU ARE: A master educator creating story-based learning content that engages emotionally.
+YOU ARE: A master educator creating story-based learning content that ACTUALLY TEACHES the learning objective.
 
 TOPIC: ${topic}
 LEARNING OUTCOME: ${outcome}
 AUDIENCE: ${audience}
 
+🎯 CRITICAL: You MUST extract and teach the ACTUAL INSTRUCTIONAL CONTENT from the learning outcome.
+
+MANDATORY CONTENT REQUIREMENTS:
+
+1. EXTRACT KEY INSTRUCTIONAL CONTENT from the LO:
+   - If LO says "Identify four CAPS types", you MUST list all 4 types with definitions
+   - If LO says "Apply communication techniques", you MUST list specific techniques with examples
+   - If LO mentions concepts, methods, or frameworks, you MUST include their definitions
+
+2. Scene structure MUST include:
+   - WHAT: Define the concept clearly (e.g., "Controllers are direct, results-focused individuals who...")
+   - WHY: Explain why it matters
+   - HOW: Show how to apply it
+   - EXAMPLE: Give a concrete scenario with specific details
+
+3. VOICEOVER MUST contain ACTUAL INSTRUCTIONAL CONTENT:
+   ❌ DO NOT say: "Jamie learned about difficult people and felt confident."
+   ✅ DO say: "Jamie discovered the CAPS Model identifies four behavioral types:
+              Controllers are direct and results-focused. They speak quickly, make quick decisions, and want efficiency. When you encounter a Controller, get to the point fast.
+              Analysers are detail-oriented and systematic. They ask many questions, want data, and think before acting. Give Analysers time and thorough information.
+              Promoters are enthusiastic and relationship-driven. They're expressive, share stories, and value connection. Engage Promoters with energy and personal interaction.
+              Supporters are patient and helpful. They're calm, considerate, and want harmony. Show Supporters empathy and give them reassurance.
+              Now Jamie can identify each type by listening to how customers communicate."
+
 TRAINING MATERIAL DETAILS (USE THEM EXACTLY):
 ${(extractedContentSummary?.trim().length ?? 0) > 0
   ? extractedContentSummary
-  : '- No extracted models or techniques supplied. Ground the story in realistic workplace practices tied to this outcome.'}
+  : '- Extract specific concepts, definitions, and examples directly from the learning outcome itself.'}
 
 CHARACTERS FROM MATERIAL (PREFER THESE NAMES):
 ${availableCharacters && availableCharacters.length > 0
   ? availableCharacters.map(formatCharacterLine).join('\n')
   : '- Invent one believable colleague with a realistic name that matches the audience profile.'}
 
-CREATE A TEACHING SCENE USING NARRATIVE + CHARACTER:
+CREATE A TEACHING SCENE THAT ACTUALLY TEACHES:
 
-MANDATORY NARRATIVE ELEMENTS:
+MANDATORY ELEMENTS:
 
-1. CHARACTER/PERSONA:
+1. CHARACTER/PERSONA (for engagement):
 ✅ Create a RELATABLE character similar to the audience
 ✅ Give them a NAME and ROLE
 ✅ Show their STRUGGLE with this exact topic
 ✅ Make learners think "That's just like me!"
 
-2. TEACHING THROUGH STORY:
-✅ Present the key concept through the character's journey
-✅ Show BEFORE/AFTER contrast
-✅ Demonstrate the "aha moment" when character gets it
-✅ Ground it in REAL workplace context
+2. EXPLICIT INSTRUCTIONAL CONTENT (CRITICAL):
+✅ Extract and teach the ACTUAL content from the learning outcome
+✅ Include specific definitions, concepts, methods, or frameworks
+✅ List all items if the LO asks to "identify" or "list"
+✅ Provide concrete examples with details
+✅ Show HOW to apply the concepts
 
-3. PRINCIPLE + EXAMPLE:
-✅ Explain the core concept clearly
-✅ Show practical application immediately
-✅ Use specific details, not generalities
-✅ Connect to learner's daily work
+3. VALIDATION CHECK:
+Before finishing, ask yourself:
+- Can a learner who reads this scene actually DO what the LO asks?
+- Does the voiceover contain the actual instructional content, not just a story about learning?
+- Is the content specific and actionable, not generic and motivational?
 
-4. EMOTIONAL RESONANCE:
-✅ Address the learner's frustration or pain point
-✅ Show the relief or confidence that comes with understanding
-✅ Build learner's belief that "I can do this too"
+If NO to any question, regenerate with more explicit content.
 
 ❌ FORBIDDEN:
-- Dry lectures or textbook explanations
-- Generic examples with no character
-- Bullet-point lists only
-- Abstract concepts without grounding
+- Generic motivational stories without actual teaching content
+- Vague statements like "Jamie learned about X and felt confident"
+- Missing specific definitions, lists, or concepts from the LO
+- Stories that talk ABOUT learning instead of teaching the content
 
 STRICT OUTPUT RULES:
 ❌ NO markdown code blocks
@@ -188,8 +210,8 @@ JSON STRUCTURE (EXACT FORMAT REQUIRED):
 {
   "scene_number": 1,
   "title": "[Character-driven title: e.g. 'How Sarah Mastered Active Listening']",
-  "on_screen_text": "[Key teaching points - 40-60 words]",
-  "narration_script": "[Story-based teaching with character - 150-200 words]",
+  "on_screen_text": "[Key teaching points with ACTUAL content - 40-60 words]",
+  "narration_script": "[Story-based teaching that INCLUDES ACTUAL INSTRUCTIONAL CONTENT from the LO - 150-200 words. Must contain definitions, lists, concepts, or methods that the LO requires.]",
   "visual_ai_prompt": "[Specific visual showing character in situation]",
   "alt_text": "[Descriptive alt text]",
   "character": {
@@ -198,8 +220,9 @@ JSON STRUCTURE (EXACT FORMAT REQUIRED):
     "challenge": "[Specific struggle with this topic]",
     "transformation": "[How they overcame it]"
   },
-  "teaching_principle": "[Core concept being taught]",
-  "real_world_example": "[Specific workplace application]"
+  "teaching_principle": "[Core concept being taught - MUST match LO content]",
+  "real_world_example": "[Specific workplace application with actual content details]",
+  "instructional_content": "[EXPLICIT: List the actual concepts, definitions, or methods taught in this scene]"
 }
 `.trim(),
 

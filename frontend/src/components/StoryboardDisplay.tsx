@@ -2,7 +2,26 @@
 import React, { Fragment, useMemo, useRef, useEffect } from "react";
 import type { StoryboardModule } from "@/types";
 
-type Props = { storyboardModule: StoryboardModule | any };
+type Props = { 
+  storyboardModule: StoryboardModule | any;
+  metadata?: {
+    qualityScore?: number;
+    grade?: string;
+    framework?: string;
+    agentsUsed?: string[];
+    sceneCount?: number;
+    estimatedDuration?: string;
+    dimensionScores?: {
+      loAlignment?: number;
+      pedagogicalStructure?: number;
+      frameworkIntegration?: number;
+      interactivityQuality?: number;
+      productionReadiness?: number;
+    };
+    validationIssues?: number;
+    validationStrengths?: number;
+  };
+};
 
 const FORCE_PAGE_BREAK_BETWEEN_SCENES = true;
 
@@ -61,6 +80,112 @@ const Card = ({ title, children, className = "" }: any) => (
   </div>
 );
 
+/* ----------------------------- Brandon Hall Page Card ---------------------------- */
+
+const BrandonHallPageCard = ({ page, index }: any) => {
+  const pills = useMemo(() => {
+    const p: React.ReactNode[] = [];
+    if (page.pageType) p.push(<Pill key="type">{page.pageType}</Pill>);
+    if (page.pageNumber) p.push(<Pill key="page">{page.pageNumber}</Pill>);
+    if (page.estimatedDurationSec) p.push(<Pill key="duration">{page.estimatedDurationSec}s</Pill>);
+    return p;
+  }, [page]);
+
+  // Combine all event OST into one field
+  const onScreenText = page.events
+    ?.map((e: any) => e.ost)
+    .filter(Boolean)
+    .join('\n\n') || '—';
+
+  // Combine all event audio into one field
+  const voiceoverScript = page.events
+    ?.map((e: any) => e.audio)
+    .filter(Boolean)
+    .join(' ') || '—';
+
+  return (
+    <div className="scene-card pdf-avoid-break animate-fade-in rounded-2xl border border-slate-700/70 bg-slate-800/80 shadow-xl overflow-hidden" data-testid="page">
+      {/* Title row */}
+      <div className="px-6 py-4 border-b border-slate-700/60">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-xl md:text-2xl font-semibold text-sky-300">
+            {page.pageNumber || `p${String(index + 1).padStart(2, "0")}`}. {page.title || `Page ${index + 1}`}
+          </h3>
+          <div className="flex flex-wrap gap-2">{pills}</div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-6 md:p-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* LEFT */}
+        <div className="space-y-6 md:space-y-8">
+          <Card title="On-Screen Text (OST)">
+            <div className="prose prose-invert max-w-none text-slate-100 whitespace-pre-wrap text-base md:text-lg">
+              {onScreenText}
+            </div>
+          </Card>
+
+          <Card title="Voiceover Script (VO)">
+            <div className="prose prose-invert max-w-none text-slate-100 whitespace-pre-wrap text-base md:text-lg">
+              {voiceoverScript}
+            </div>
+          </Card>
+        </div>
+
+        {/* RIGHT */}
+        <div className="space-y-6 md:space-y-8">
+          <Card title="Page Details">
+            <div className="grid grid-cols-1 gap-2">
+              <KeyRow label="Page Type" value={page.pageType} />
+              <KeyRow label="Estimated Duration" value={page.estimatedDurationSec ? `${page.estimatedDurationSec}s` : undefined} />
+              <KeyRow label="Learning Objectives" value={Array.isArray(page.learningObjectiveIds) ? page.learningObjectiveIds.join(", ") : undefined} />
+            </div>
+          </Card>
+
+          <Card title="Accessibility">
+            <div className="grid grid-cols-1 gap-2">
+              <KeyRow label="Alt Text" value={Array.isArray(page.accessibility?.altText) ? page.accessibility.altText.join(", ") : undefined} />
+              <KeyRow label="Keyboard Navigation" value={page.accessibility?.keyboardNav} />
+              <KeyRow label="Contrast Notes" value={page.accessibility?.contrastNotes} />
+              <KeyRow label="Screen Reader" value={page.accessibility?.screenReader} />
+            </div>
+          </Card>
+
+          {page.events && page.events.length > 0 && (
+            <Card title={`Events (${page.events.length})`}>
+              <div className="space-y-4">
+                {page.events.map((event: any, eventIdx: number) => (
+                  <div key={eventIdx} className="border border-slate-700 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-sky-300 font-semibold">Event {event.number || `${index + 1}.${eventIdx + 1}`}</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-slate-400 text-sm font-medium">Audio:</span>
+                        <p className="text-slate-100 text-sm mt-1 whitespace-pre-wrap">{event.audio || "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 text-sm font-medium">On-Screen Text:</span>
+                        <p className="text-slate-100 text-sm mt-1 whitespace-pre-wrap">{event.ost || "—"}</p>
+                      </div>
+                      {event.devNotes && (
+                        <div>
+                          <span className="text-slate-400 text-sm font-medium">Dev Notes:</span>
+                          <p className="text-slate-100 text-sm mt-1 whitespace-pre-wrap">{event.devNotes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ----------------------------- Scene section ---------------------------- */
 
 const SceneCard = ({ scene, index }: any) => {
@@ -106,7 +231,8 @@ const SceneCard = ({ scene, index }: any) => {
     undefined;
 
   const ost = scene.onScreenText || scene?.textOnScreen?.onScreenTextContent || "—";
-  const vo = scene?.audio?.script || scene.narrationScript || "—";
+  // Check all possible VO field names in order of preference
+  const vo = (scene as any)?.voiceoverScript || scene.narration || scene?.audio?.script || scene.narrationScript || (scene as any)?.voiceover || (scene as any)?.VO || "—";
 
   const estimatedS =
     scene?.timing?.estimatedSecs ??
@@ -567,7 +693,197 @@ const SceneCard = ({ scene, index }: any) => {
 
 /* --------------------------- Module-level header -------------------------- */
 
-const StoryboardHeader = ({ storyboardModule }: { storyboardModule: any }) => {
+/* --------------------------- Quality Metrics Panel -------------------------- */
+
+const QualityMetricsPanel = ({ metadata }: { metadata: Props["metadata"] }) => {
+  if (!metadata) return null;
+
+  const qualityScore = metadata.qualityScore ?? 0;
+  const grade = metadata.grade || "N/A";
+  const framework = metadata.framework || "None";
+  const agentsUsed = metadata.agentsUsed || [];
+  const dimensionScores = metadata.dimensionScores || {};
+  
+  // Color coding for quality score
+  const getQualityColor = (score: number) => {
+    if (score >= 85) return "bg-emerald-500/20 border-emerald-500/50 text-emerald-300";
+    if (score >= 70) return "bg-amber-500/20 border-amber-500/50 text-amber-300";
+    return "bg-red-500/20 border-red-500/50 text-red-300";
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return "text-emerald-400";
+    if (score >= 70) return "text-amber-400";
+    return "text-red-400";
+  };
+
+  const getScoreIcon = (score: number) => {
+    if (score >= 85) return "✅";
+    if (score >= 70) return "⚠️";
+    return "❌";
+  };
+
+  return (
+    <Card title="Quality Metrics" className="pdf-avoid-break">
+      {/* Quality Score Badge */}
+      <div className="mb-6">
+        <div className={`inline-flex items-center gap-3 px-4 py-3 rounded-lg border-2 ${getQualityColor(qualityScore)}`}>
+          <span className="text-2xl font-bold">{qualityScore}%</span>
+          <div className="flex flex-col">
+            <span className="text-xs font-medium opacity-80">Quality Score</span>
+            <span className="text-sm font-semibold">Grade: {grade}</span>
+          </div>
+          {qualityScore < 85 && (
+            <div className="ml-auto text-xs bg-red-500/30 px-2 py-1 rounded border border-red-500/50">
+              Below Threshold
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Warning if quality < 85% */}
+      {qualityScore < 85 && (
+        <div className="mb-6 p-4 bg-amber-900/30 border border-amber-500/50 rounded-lg">
+          <div className="flex items-start gap-2">
+            <span className="text-amber-400 text-xl">⚠️</span>
+            <div>
+              <p className="text-amber-300 font-semibold mb-1">Quality below threshold</p>
+              <p className="text-amber-200 text-sm">
+                Review flagged issues before production. Quality score must be ≥85% for production readiness.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Framework Integration */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🔍</span>
+          <span className="font-semibold text-slate-200">Framework Integration</span>
+        </div>
+        {framework !== "None" ? (
+          <div className="flex items-center gap-2 text-emerald-400">
+            <span>✅</span>
+            <span>{framework} Integrated</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-slate-400">
+            <span>❌</span>
+            <span>No framework detected</span>
+          </div>
+        )}
+      </div>
+
+      {/* Agent Orchestration Status */}
+      {agentsUsed.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🤖</span>
+            <span className="font-semibold text-slate-200">Agent Orchestration</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {agentsUsed.map((agent, index) => (
+              <React.Fragment key={agent}>
+                <span className="px-2 py-1 bg-sky-900/30 border border-sky-500/30 rounded text-sky-300">
+                  {agent}
+                </span>
+                {index < agentsUsed.length - 1 && (
+                  <span className="text-slate-500">→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dimension Scores */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">📊</span>
+          <span className="font-semibold text-slate-200">Dimension Scores</span>
+        </div>
+        <div className="space-y-2">
+          {dimensionScores.loAlignment !== undefined && (
+            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+              <span className="text-slate-300">LO Alignment</span>
+              <span className={`font-semibold ${getScoreColor(dimensionScores.loAlignment)}`}>
+                {getScoreIcon(dimensionScores.loAlignment)} {dimensionScores.loAlignment}%
+              </span>
+            </div>
+          )}
+          {dimensionScores.pedagogicalStructure !== undefined && (
+            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+              <span className="text-slate-300">Pedagogical Structure</span>
+              <span className={`font-semibold ${getScoreColor(dimensionScores.pedagogicalStructure)}`}>
+                {getScoreIcon(dimensionScores.pedagogicalStructure)} {dimensionScores.pedagogicalStructure}%
+              </span>
+            </div>
+          )}
+          {dimensionScores.frameworkIntegration !== undefined && (
+            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+              <span className="text-slate-300">Framework Integration</span>
+              <span className={`font-semibold ${getScoreColor(dimensionScores.frameworkIntegration)}`}>
+                {getScoreIcon(dimensionScores.frameworkIntegration)} {dimensionScores.frameworkIntegration}%
+              </span>
+            </div>
+          )}
+          {dimensionScores.interactivityQuality !== undefined && (
+            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+              <span className="text-slate-300">Interactivity Quality</span>
+              <span className={`font-semibold ${getScoreColor(dimensionScores.interactivityQuality)}`}>
+                {getScoreIcon(dimensionScores.interactivityQuality)} {dimensionScores.interactivityQuality}%
+              </span>
+            </div>
+          )}
+          {dimensionScores.productionReadiness !== undefined && (
+            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded">
+              <span className="text-slate-300">Production Readiness</span>
+              <span className={`font-semibold ${getScoreColor(dimensionScores.productionReadiness)}`}>
+                {getScoreIcon(dimensionScores.productionReadiness)} {dimensionScores.productionReadiness}%
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Scene Count and Structure Validation */}
+      {(metadata.sceneCount !== undefined || metadata.estimatedDuration) && (
+        <div className="pt-4 border-t border-slate-700/50">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            {metadata.sceneCount !== undefined && (
+              <div>
+                <span className="text-slate-400">Scene Count:</span>
+                <span className="ml-2 text-slate-200 font-semibold">{metadata.sceneCount}</span>
+              </div>
+            )}
+            {metadata.estimatedDuration && (
+              <div>
+                <span className="text-slate-400">Duration:</span>
+                <span className="ml-2 text-slate-200 font-semibold">{metadata.estimatedDuration}</span>
+              </div>
+            )}
+          </div>
+          {metadata.validationIssues !== undefined && metadata.validationStrengths !== undefined && (
+            <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-slate-400">Issues:</span>
+                <span className="ml-2 text-red-300 font-semibold">{metadata.validationIssues}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Strengths:</span>
+                <span className="ml-2 text-emerald-300 font-semibold">{metadata.validationStrengths}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+};
+
+const StoryboardHeader = ({ storyboardModule, metadata }: { storyboardModule: any; metadata?: Props["metadata"] }) => {
+  const isBrandonHall = Array.isArray(storyboardModule?.pages) && storyboardModule.pages.length > 0;
   const moduleTiming =
     storyboardModule?.metadata?.moduleTiming || storyboardModule?.moduleTiming || undefined;
 
@@ -583,7 +899,10 @@ const StoryboardHeader = ({ storyboardModule }: { storyboardModule: any }) => {
   const colours =
     Array.isArray(brand?.colours) ? brand.colours.join(", ") : typeof brand?.colours === "string" ? brand.colours : "";
 
-  const toc: string[] = Array.isArray(storyboardModule?.tableOfContents)
+  // Handle Brandon Hall TOC format
+  const toc: any[] = isBrandonHall && Array.isArray(storyboardModule?.toc)
+    ? storyboardModule.toc
+    : Array.isArray(storyboardModule?.tableOfContents)
     ? storyboardModule.tableOfContents
     : [];
 
@@ -598,11 +917,15 @@ const StoryboardHeader = ({ storyboardModule }: { storyboardModule: any }) => {
   const learningLevel =
     storyboardModule?.learningLevel || storyboardModule?.complexityLevel || undefined;
 
+  const moduleTitle = isBrandonHall
+    ? (storyboardModule.moduleTitle || "Untitled Module")
+    : (storyboardModule.moduleName || "Untitled Module");
+
   return (
     <div className="pdf-avoid-break rounded-2xl border border-slate-700 bg-slate-800 shadow-xl overflow-hidden">
       <div className="px-6 py-5 border-b border-slate-700">
         <h2 className="text-2xl font-bold text-sky-300">
-          {storyboardModule.moduleName || "Untitled Module"}
+          {moduleTitle}
         </h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {storyboardModule.moduleType && <Pill>{storyboardModule.moduleType}</Pill>}
@@ -667,6 +990,9 @@ const StoryboardHeader = ({ storyboardModule }: { storyboardModule: any }) => {
             </div>
           </Card>
         )}
+
+        {/* Quality Metrics Panel */}
+        {metadata && <QualityMetricsPanel metadata={metadata} />}
       </div>
     </div>
   );
@@ -674,7 +1000,7 @@ const StoryboardHeader = ({ storyboardModule }: { storyboardModule: any }) => {
 
 /* --------------------------- Main wrapper/view --------------------------- */
 
-const StoryboardDisplay: React.FC<Props> = ({ storyboardModule }) => {
+const StoryboardDisplay: React.FC<Props> = ({ storyboardModule, metadata }) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   // Attach an id for html2pdf selection
@@ -682,20 +1008,35 @@ const StoryboardDisplay: React.FC<Props> = ({ storyboardModule }) => {
     if (rootRef.current) rootRef.current.id = "storyboard-root";
   }, []);
 
-  const scenes: any[] = Array.isArray(storyboardModule?.scenes) ? storyboardModule.scenes : [];
+  // Handle Brandon Hall format (pages[]) or legacy format (scenes[])
+  const isBrandonHall = Array.isArray(storyboardModule?.pages) && storyboardModule.pages.length > 0;
+  const scenes: any[] = isBrandonHall 
+    ? (storyboardModule.pages || [])
+    : (Array.isArray(storyboardModule?.scenes) ? storyboardModule.scenes : []);
 
   return (
     <div ref={rootRef} className="space-y-8 md:space-y-12">
       {/* Header */}
-      <StoryboardHeader storyboardModule={storyboardModule} />
+      <StoryboardHeader storyboardModule={storyboardModule} metadata={metadata} />
 
-      {/* Scenes */}
-      {scenes.map((scene: any, i: number) => (
-        <Fragment key={scene.screenId || scene.sceneNumber || i}>
-          <SceneCard scene={scene} index={i} />
-          {FORCE_PAGE_BREAK_BETWEEN_SCENES && i < scenes.length - 1 ? <div className="pdf-pagebreak" /> : null}
-        </Fragment>
-      ))}
+      {/* Pages (Brandon Hall) or Scenes (Legacy) */}
+      {isBrandonHall ? (
+        // Brandon Hall format: render pages with events
+        storyboardModule.pages.map((page: any, i: number) => (
+          <Fragment key={page.pageNumber || i}>
+            <BrandonHallPageCard page={page} index={i} />
+            {FORCE_PAGE_BREAK_BETWEEN_SCENES && i < storyboardModule.pages.length - 1 ? <div className="pdf-pagebreak" /> : null}
+          </Fragment>
+        ))
+      ) : (
+        // Legacy format: render scenes
+        scenes.map((scene: any, i: number) => (
+          <Fragment key={scene.screenId || scene.sceneNumber || i}>
+            <SceneCard scene={scene} index={i} />
+            {FORCE_PAGE_BREAK_BETWEEN_SCENES && i < scenes.length - 1 ? <div className="pdf-pagebreak" /> : null}
+          </Fragment>
+        ))
+      )}
 
       {/* Assessment (legacy / optional) */}
       {Array.isArray(storyboardModule?.assessment?.items) && storyboardModule.assessment.items.length > 0 && (

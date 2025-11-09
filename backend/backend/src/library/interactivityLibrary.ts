@@ -145,6 +145,7 @@ export function buildMultiSelectKC(
 /** --------- Enforcement: make any storyboard meet the profile ---------- */
 
 export function enforceInteractiveDensity(storyboard: StoryboardModule, formData: any): StoryboardModule {
+  console.log("📚 Interactivity templates loaded:", Object.keys(INTERACTIVITY_LIBRARY).length);
   const profile = pickProfile(formData?.level, formData?.moduleType);
 
   if (!storyboard || !Array.isArray(storyboard.scenes)) {
